@@ -69,8 +69,8 @@ static void nwk_tcpip_init(void)
 	struct ip_addr ipaddr, netmask, gateway;
 	
 	IP4_ADDR(&ipaddr, 192, 168, 19, 66);
-	IP4_ADDR(&netmask, 192, 168, 19, 1);
-	IP4_ADDR(&gateway, 255, 255, 255, 0);
+	IP4_ADDR(&gateway, 192, 168, 19, 1);
+	IP4_ADDR(&netmask, 255, 255, 255, 0);
 	
 	netif_add(&nwk_tcpip, &ipaddr, &netmask, &gateway, PLAT_NULL, PLAT_NULL, tcpip_input);	
 	

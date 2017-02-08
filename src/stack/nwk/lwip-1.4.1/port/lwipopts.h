@@ -82,6 +82,8 @@
 //LWIP调试选项
 #define LWIP_DEBUG                    	 0	 //关闭DEBUG选项
 #define ICMP_DEBUG                      LWIP_DBG_OFF //开启/关闭ICMPdebug
+#define IP_DEBUG                      	LWIP_DBG_OFF
+#define ETHARP_DEBUG                    LWIP_DBG_OFF
 
 //杂项
 #define LWIP_STATS 0
