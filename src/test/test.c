@@ -1236,6 +1236,7 @@ static void test_uart_rx_cb(void)
 					test_cb.rf_send_data = PLAT_FALSE;
 					break;
 				default:
+                    test_cb.uart_recv_date = PLAT_TRUE;
 					return;
 			}
 			test_cb.uart_recv_date = PLAT_TRUE;

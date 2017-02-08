@@ -382,8 +382,8 @@ netif_set_ipaddr(struct netif *netif, ip_addr_t *ipaddr)
   if(addr1!=0)
        {
 
-	  printf("\n\r Use the following IP address to browse the Webserver");
-       printf("\n\r Requested IP address : %d.%d.%d.%d\n\r",addr1,addr2,addr3,addr4);
+	  //printf("\n\r Use the following IP address to browse the Webserver");
+       //printf("\n\r Requested IP address : %d.%d.%d.%d\n\r",addr1,addr2,addr3,addr4);
 
        }
 

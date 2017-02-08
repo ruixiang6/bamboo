@@ -23,9 +23,7 @@ OSEL_DECLARE_TASK(NWK_TASK, param)
 	
 	DBG_TRACE("NWK_TASK!\r\n");
 
-	osel_systick_delay(5000);
-
-	netio_init();
+	osel_systick_delay(100);
 	
 	while (1)
 	{		
@@ -34,7 +32,6 @@ OSEL_DECLARE_TASK(NWK_TASK, param)
 		{
 			nwk_handler(OSEL_EVENT_GET(nwk_event_h, uint16_t));
 		}
-		
 	}
 }
 
@@ -68,9 +65,9 @@ static void nwk_tcpip_init(void)
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	struct ip_addr ipaddr, netmask, gateway;
 	
-	IP4_ADDR(&ipaddr, 192, 168, 19, 66);
-	IP4_ADDR(&netmask, 192, 168, 19, 1);
-	IP4_ADDR(&gateway, 255, 255, 255, 0);
+	IP4_ADDR(&ipaddr, 192, 168, 12, 66);
+	IP4_ADDR(&netmask, 255, 255, 255, 0);
+	IP4_ADDR(&gateway, 192, 168, 12, 1);
 	
 	netif_add(&nwk_tcpip, &ipaddr, &netmask, &gateway, PLAT_NULL, PLAT_NULL, tcpip_input);	
 	
