@@ -13,6 +13,8 @@ static uint32_t task_heap_free_size;
 #pragma location = ".task_stk"
 __no_init static OS_STK task_stk[STK_MEM_WORD_SIZE];
 
+static fpv_t osel_task_idle_hook = PLAT_NULL;
+
 bool_t osel_task_init(void)
 {
 	task_pool = pool_create(OSEL_TASK_MAX,	sizeof(osel_task_t));
@@ -158,4 +160,15 @@ bool_t osel_task_query(osel_task_t *task)
 	}
 }
 
+void osel_task_idle_hook_reg(fpv_t func)
+{
+	osel_task_idle_hook = func;
+}
 
+void osel_idle_task_hook(void)
+{
+	if (osel_task_idle_hook)
+	{
+		osel_task_idle_hook();
+	}
+}

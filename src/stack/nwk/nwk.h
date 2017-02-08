@@ -35,6 +35,8 @@ void nwk_eth_send_cb(void *arg);
 void nwk_eth_recv_cb(void *arg);
 err_t nwk_tcpip_output(nwk_tcpip_t *nwk_tcpip, pbuf_t *p);
 void nwk_init(void);
+void nwk_deinit(void);
+void nwk_idle_hook(void);
 void nwk_handler(uint16_t event_type);
 
 #endif

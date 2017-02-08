@@ -1,5 +1,6 @@
 #include <platform.h>
 #include <kbuf.h>
+#include <nwk.h>
 #include "Control_IO.h"
 
 #define INIT_TASK_STK_SIZE			256
@@ -31,7 +32,7 @@ void main(void)
     osel_init();
 	/* 创建 INIT 任务 */
 	init_task_h = osel_task_create(INIT_TASK, 
-    								NULL, 
+    								PLAT_NULL, 
     								INIT_TASK_STK_SIZE, 
     								INIT_TASK_PRIO);
     DBG_ASSERT(init_task_h != PLAT_NULL);
@@ -57,13 +58,16 @@ OSEL_DECLARE_TASK(INIT_TASK, param)
 	osel_systick_init();
 	//设备信息初始化
 	device_info_init();	
-	/* TEST Task */
+	/* TEST */
 	test_init();
 	/* APP Task */
 	//app_init();
 	/* NWK Task */
 	nwk_init();
+    
 	//mac_init();
+
+	osel_task_idle_hook_reg(nwk_idle_hook);
 	
     while(1)
 	{

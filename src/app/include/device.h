@@ -51,16 +51,12 @@ typedef struct
 {
     uint8_t id[5];
 	char_t version[10];
-	
-	union
-	{
-		dev_func_bit_t func_bit;
-		uint32_t func_word;
-	};	
-
-	uint8_t eth_local_mac_addr[6];
+	uint8_t local_eth_mac_addr[6];
+	uint8_t local_ip_addr[4];
+	uint8_t local_gateway_addr[4];
+	uint8_t local_netmask_addr[4];
 	//dont save
-	dev_pos_t pos;	
+	dev_pos_t pos;
 	dev_time_t time;	
 }device_info_t;
 

@@ -23,8 +23,9 @@ static void mac_rx_callback(uint8_t * p_rx_packet, uint32_t pckt_length, void * 
 bool_t hal_eth_init(hal_eth_mcb_t *eth_mcb)
 {    
 	kbuf_t *kbuf;
+	bool_t res;
 
-	if (eth_mcb==PLAT_NULL)
+	if (eth_mcb == PLAT_NULL)
 	{
 		return PLAT_FALSE;
 	}
@@ -48,7 +49,12 @@ bool_t hal_eth_init(hal_eth_mcb_t *eth_mcb)
 	eth_rx_cb = eth_mcb->rx_func;
 	eth_rx_list = eth_mcb->rx_list;
    
-    MSS_MAC_init(&eth_config);    
+    res = MSS_MAC_init(&eth_config);
+	if (res == PLAT_FALSE)
+	{
+		hal_gpio_output(GPIO_ETH, 0);
+		return PLAT_FALSE;
+	}
    
     MSS_MAC_set_tx_callback(mac_tx_callback);
     MSS_MAC_set_rx_callback(mac_rx_callback);
@@ -66,13 +72,11 @@ bool_t hal_eth_init(hal_eth_mcb_t *eth_mcb)
 	kbuf->offset = kbuf->base + eth_pkt_offset;
 	MSS_MAC_receive_pkt(kbuf->offset, kbuf);
     
-    return PLAT_TRUE;
+    return res;
 }
 
 bool_t hal_eth_deinit()
 {
-	kbuf_t *kbuf;
-	
 	MSS_MAC_cfg_struct_def_init(&eth_config);
 	MSS_MAC_init(&eth_config);
 

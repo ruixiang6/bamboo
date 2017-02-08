@@ -124,71 +124,74 @@ void EthernetMAC_IRQHandler(void);
 /**************************************************************************//**
  * See mss_ethernet_mac.h for details of how to use this function.
  */
-void 
+uint8_t 
 MSS_MAC_init
 ( 
     MAC_cfg_t * cfg 
 )
 {
 	uint16_t phy_reg;
+
+	if (cfg == NULL_POINTER)
+	{
+		return 0;
+	}
 	
-    ASSERT(cfg != NULL_POINTER);
+    NVIC_DisableIRQ(EthernetMAC_IRQn);
+    mac_reset();
+    NVIC_ClearPendingIRQ(EthernetMAC_IRQn);
+    
+    config_mac_hw(cfg);
 
-    if(cfg != NULL_POINTER)
-    {
-        NVIC_DisableIRQ(EthernetMAC_IRQn);
-        mac_reset();
-        NVIC_ClearPendingIRQ(EthernetMAC_IRQn);
-        
-        config_mac_hw(cfg);
+    /* Assign MAC station address */
+    assign_station_addr(cfg->mac_addr);
 
-        /* Assign MAC station address */
-        assign_station_addr(cfg->mac_addr);
+    /* Intialize Tx & Rx descriptor rings */
+    tx_desc_ring_init();
+    rx_desc_ring_init();
+    
+    /* Initialize Tx descriptors related variables. */
+    g_mac.first_tx_index = INVALID_INDEX;
+    g_mac.last_tx_index = INVALID_INDEX;
+    g_mac.next_tx_index = 0;
+    g_mac.nb_available_tx_desc = MSS_MAC_TX_RING_SIZE;
 
-        /* Intialize Tx & Rx descriptor rings */
-        tx_desc_ring_init();
-        rx_desc_ring_init();
-        
-        /* Initialize Tx descriptors related variables. */
-        g_mac.first_tx_index = INVALID_INDEX;
-        g_mac.last_tx_index = INVALID_INDEX;
-        g_mac.next_tx_index = 0;
-        g_mac.nb_available_tx_desc = MSS_MAC_TX_RING_SIZE;
+    /* Initialize Rx descriptors related variables. */
+    g_mac.nb_available_rx_desc = MSS_MAC_RX_RING_SIZE;
+    g_mac.next_free_rx_desc_index = 0;
+    g_mac.first_rx_desc_index = INVALID_INDEX;
 
-        /* Initialize Rx descriptors related variables. */
-        g_mac.nb_available_rx_desc = MSS_MAC_RX_RING_SIZE;
-        g_mac.next_free_rx_desc_index = 0;
-        g_mac.first_rx_desc_index = INVALID_INDEX;
+    /* initialize default interrupt handlers */
+    g_mac.tx_complete_handler = NULL_POINTER;
+    g_mac.pckt_rx_callback = NULL_POINTER;
 
-        /* initialize default interrupt handlers */
-        g_mac.tx_complete_handler = NULL_POINTER;
-        g_mac.pckt_rx_callback = NULL_POINTER;
-
-        /* Initialize PHY interface */
-		cfg->phy_addr = 0x01;
-		do
+    /* Initialize PHY interface */
+	cfg->phy_addr = 0x01;
+	do
+	{
+		phy_reg = MSS_MAC_read_phy_reg(cfg->phy_addr, MII_BMCR);
+		if (phy_reg != 0xFFFF)
 		{
-			phy_reg = MSS_MAC_read_phy_reg(cfg->phy_addr, MII_BMCR);
-			if (phy_reg != 0xFFFF)
+			eth_phy_init(cfg);            
+            break;
+		}
+		else
+		{
+			cfg->phy_addr++;
+			if (cfg->phy_addr >= 0x08)
 			{
-				eth_phy_init(cfg);
-                DBG_TRACE("Ethernet Phy Addr=%d\r\n", cfg->phy_addr);
-				break;
+				DBG_TRACE("Eth Phy Addr Erorr\r\n");
+				return 0;
 			}
-			else
-			{
-				cfg->phy_addr++;
-				if (cfg->phy_addr >= 0x08)
-				{
-					DBG_TRACE("Ethernet Phy Addr Erorr\r\n");
-					break;
-				}
-			}
-		} while(1);
-        eth_phy_set_link_speed(cfg->speed_duplex_select);
-        eth_phy_autonegotiate();
-        update_mac_cfg();
-        
+		}
+	} while(1);
+	
+    eth_phy_set_link_speed(cfg->speed_duplex_select);
+
+	if (eth_phy_autonegotiate())
+    {
+    	update_mac_cfg();
+    
         /* Enable transmission at MAC level. */
         set_bit_reg32( &MAC->CFG1, CFG1_TX_EN);
         /* Enable reception at MAC level.    */
@@ -198,7 +201,19 @@ MSS_MAC_init
         set_bit_reg32(&MAC->DMA_IRQ_MASK, MSS_MAC_TXPKTSENT_IRQ);
         /* Enable RX Packet interrupt */
         set_bit_reg32(&MAC->DMA_IRQ_MASK, MSS_MAC_RXPKTRCVD_IRQ);
+
+		DBG_TRACE("Eth Phy Addr=%d\r\n", cfg->phy_addr);
+		DBG_TRACE("Eth connectted\r\n");
     }
+    else
+    {
+    	NVIC_DisableIRQ(EthernetMAC_IRQn);
+    	mac_reset();
+        //DBG_TRACE("Eth not connectted\r\n");
+		return 0;
+    }
+  
+	return 1;
 }
 
 /**************************************************************************//**

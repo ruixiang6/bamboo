@@ -83,7 +83,7 @@ void eth_phy_set_link_speed(uint32_t speed_duplex_select)
 /**************************************************************************//**
  * 
  */
-void eth_phy_autonegotiate(void)
+uint8_t eth_phy_autonegotiate(void)
 {
     uint16_t phy_reg;
     uint16_t autoneg_complete;
@@ -99,14 +99,15 @@ void eth_phy_autonegotiate(void)
         phy_reg = MSS_MAC_read_phy_reg(g_phy_addr, MII_BMSR);
         autoneg_complete = phy_reg & BMSR_AUTO_NEGOTIATION_COMPLETE;
 		delay_cnt++;
+		//osel_systick_delay(100);
 		delay_ms(100);
-		DBG_PRINTF(".");
 		if (delay_cnt>30)
 		{
-			DBG_PRINTF("No detect ETH connectted\r\n");
-			break;
+			return 0;
 		}
     } while(!autoneg_complete);
+
+	return 1;
 }
 
 /**************************************************************************//**
