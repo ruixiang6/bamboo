@@ -23,9 +23,7 @@ OSEL_DECLARE_TASK(NWK_TASK, param)
 	
 	DBG_TRACE("NWK_TASK!\r\n");
 
-	osel_systick_delay(5000);
-
-	netio_init();
+	osel_systick_delay(100);
 	
 	while (1)
 	{		
@@ -34,22 +32,21 @@ OSEL_DECLARE_TASK(NWK_TASK, param)
 		{
 			nwk_handler(OSEL_EVENT_GET(nwk_event_h, uint16_t));
 		}
-		
 	}
 }
 
 
-static void nwk_eth_init(void)
+static bool_t nwk_eth_init(void)
 {
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	hal_eth_mcb_t mcb;	
 
-    mcb.mac[0] = p_device_info->eth_local_mac_addr[0];
-    mcb.mac[1] = p_device_info->eth_local_mac_addr[1];
-    mcb.mac[2] = p_device_info->eth_local_mac_addr[2];
-    mcb.mac[3] = p_device_info->eth_local_mac_addr[3];
-    mcb.mac[4] = p_device_info->eth_local_mac_addr[4];
-    mcb.mac[5] = p_device_info->eth_local_mac_addr[5];
+    mcb.mac[0] = p_device_info->local_eth_mac_addr[0];
+    mcb.mac[1] = p_device_info->local_eth_mac_addr[1];
+    mcb.mac[2] = p_device_info->local_eth_mac_addr[2];
+    mcb.mac[3] = p_device_info->local_eth_mac_addr[3];
+    mcb.mac[4] = p_device_info->local_eth_mac_addr[4];
+    mcb.mac[5] = p_device_info->local_eth_mac_addr[5];
 
 	mcb.pkt_offset = 8;	
 	mcb.tx_func = nwk_eth_send_cb;
@@ -59,7 +56,7 @@ static void nwk_eth_init(void)
 	list_init(&nwk_eth_tx_list);
 	list_init(&nwk_eth_rx_list);
 	
-	hal_eth_init(&mcb);
+	return hal_eth_init(&mcb);
 }
 
 
@@ -68,18 +65,32 @@ static void nwk_tcpip_init(void)
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	struct ip_addr ipaddr, netmask, gateway;
 	
-	IP4_ADDR(&ipaddr, 192, 168, 19, 66);
-	IP4_ADDR(&gateway, 192, 168, 19, 1);
-	IP4_ADDR(&netmask, 255, 255, 255, 0);
+	IP4_ADDR(&ipaddr, 
+             p_device_info->local_ip_addr[0], 
+             p_device_info->local_ip_addr[1], 
+             p_device_info->local_ip_addr[2],
+             p_device_info->local_ip_addr[3]);
+    
+	IP4_ADDR(&netmask, 
+             p_device_info->local_netmask_addr[0], 
+             p_device_info->local_netmask_addr[1], 
+             p_device_info->local_netmask_addr[2], 
+             p_device_info->local_netmask_addr[3]);
+    
+	IP4_ADDR(&gateway, 
+             p_device_info->local_gateway_addr[0], 
+             p_device_info->local_gateway_addr[1], 
+             p_device_info->local_gateway_addr[2], 
+             p_device_info->local_gateway_addr[3]);
 	
 	netif_add(&nwk_tcpip, &ipaddr, &netmask, &gateway, PLAT_NULL, PLAT_NULL, tcpip_input);	
 	
-    nwk_tcpip.hwaddr[0] = p_device_info->eth_local_mac_addr[0];
-    nwk_tcpip.hwaddr[1] = p_device_info->eth_local_mac_addr[1];
-    nwk_tcpip.hwaddr[2] = p_device_info->eth_local_mac_addr[2];
-    nwk_tcpip.hwaddr[3] = p_device_info->eth_local_mac_addr[3];
-    nwk_tcpip.hwaddr[4] = p_device_info->eth_local_mac_addr[4];
-    nwk_tcpip.hwaddr[5] = p_device_info->eth_local_mac_addr[5];
+    nwk_tcpip.hwaddr[0] = p_device_info->local_eth_mac_addr[0];
+    nwk_tcpip.hwaddr[1] = p_device_info->local_eth_mac_addr[1];
+    nwk_tcpip.hwaddr[2] = p_device_info->local_eth_mac_addr[2];
+    nwk_tcpip.hwaddr[3] = p_device_info->local_eth_mac_addr[3];
+    nwk_tcpip.hwaddr[4] = p_device_info->local_eth_mac_addr[4];
+    nwk_tcpip.hwaddr[5] = p_device_info->local_eth_mac_addr[5];
 
     nwk_tcpip.state = 0;
     nwk_tcpip.name[0] = 'E';
@@ -112,8 +123,6 @@ void nwk_init(void)
 	DBG_ASSERT(nwk_event_h != PLAT_NULL);	
 
 	mem_set(&nwk_tcpip, 0, sizeof(nwk_tcpip_t));
-
-	nwk_eth_init();
 	
 	nwk_tcpip_init();
 
@@ -140,4 +149,14 @@ void nwk_deinit(void)
 		kbuf = (kbuf_t *)list_front_get(&nwk_eth_tx_list);
 		if (kbuf) kbuf_free(kbuf);
 	}while(kbuf);
+}
+
+void nwk_idle_hook(void)
+{
+	static bool_t nwk_eth_flag = PLAT_FALSE;
+
+	if (nwk_eth_flag == PLAT_FALSE)
+	{
+		nwk_eth_flag = nwk_eth_init();
+	}
 }
