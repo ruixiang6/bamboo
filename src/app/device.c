@@ -30,13 +30,6 @@ void device_info_init(void)
 		
 		strcpy(pg_device_info->version, VERSION);
 		
-        pg_device_info->local_eth_mac_addr[0] = 0x4C;
-		pg_device_info->local_eth_mac_addr[1] = 0xCC;
-		pg_device_info->local_eth_mac_addr[2] = 0x6A;
-		pg_device_info->local_eth_mac_addr[3] = 0x12;
-		pg_device_info->local_eth_mac_addr[4] = 0x3B;
-		pg_device_info->local_eth_mac_addr[5] = 0x9B;
-
 		pg_device_info->local_ip_addr[0] = 192;
 		pg_device_info->local_ip_addr[1] = 168;
 		pg_device_info->local_ip_addr[2] = 12;
@@ -51,6 +44,13 @@ void device_info_init(void)
 		pg_device_info->local_netmask_addr[1] = 255;
 		pg_device_info->local_netmask_addr[2] = 255;
 		pg_device_info->local_netmask_addr[3] = 0;
+
+        pg_device_info->local_eth_mac_addr[0] = 0x4C;
+		pg_device_info->local_eth_mac_addr[1] = pg_device_info->local_ip_addr[0];
+		pg_device_info->local_eth_mac_addr[2] = pg_device_info->local_ip_addr[1];
+		pg_device_info->local_eth_mac_addr[3] = pg_device_info->local_ip_addr[2];
+		pg_device_info->local_eth_mac_addr[4] = pg_device_info->local_ip_addr[3];
+		pg_device_info->local_eth_mac_addr[5] = 0x9B;		
 
 		hal_flash_write(DEVICE_BASE_ADDR, (uint8_t *)pg_device_info, SAVE_SIZE);
 	}
