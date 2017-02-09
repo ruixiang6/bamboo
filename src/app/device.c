@@ -2,7 +2,7 @@
 #include "device.h"
 #include <string.h>
 
-#define VERSION		"V1.0.2.3"
+#define VERSION		"V0.0.0.1"
 #define SAVE_SIZE	(sizeof(device_info_t)-sizeof(dev_time_t)-sizeof(dev_pos_t))
 
 #define DEVICE_BASE_ADDR		HAL_FLASH_BASE_ADDR
@@ -30,12 +30,27 @@ void device_info_init(void)
 		
 		strcpy(pg_device_info->version, VERSION);
 		
-        pg_device_info->eth_local_mac_addr[0] = 0x4C;
-		pg_device_info->eth_local_mac_addr[1] = 0xCC;
-		pg_device_info->eth_local_mac_addr[2] = 0x6A;
-		pg_device_info->eth_local_mac_addr[3] = 0x12;
-		pg_device_info->eth_local_mac_addr[4] = 0x3B;
-		pg_device_info->eth_local_mac_addr[5] = 0x9B;
+        pg_device_info->local_eth_mac_addr[0] = 0x4C;
+		pg_device_info->local_eth_mac_addr[1] = 0xCC;
+		pg_device_info->local_eth_mac_addr[2] = 0x6A;
+		pg_device_info->local_eth_mac_addr[3] = 0x12;
+		pg_device_info->local_eth_mac_addr[4] = 0x3B;
+		pg_device_info->local_eth_mac_addr[5] = 0x9B;
+
+		pg_device_info->local_ip_addr[0] = 192;
+		pg_device_info->local_ip_addr[1] = 168;
+		pg_device_info->local_ip_addr[2] = 12;
+		pg_device_info->local_ip_addr[3] = 66;
+
+		pg_device_info->local_gateway_addr[0] = 192;
+		pg_device_info->local_gateway_addr[1] = 168;
+		pg_device_info->local_gateway_addr[2] = 12;
+		pg_device_info->local_gateway_addr[3] = 1;
+
+		pg_device_info->local_netmask_addr[0] = 255;
+		pg_device_info->local_netmask_addr[1] = 255;
+		pg_device_info->local_netmask_addr[2] = 255;
+		pg_device_info->local_netmask_addr[3] = 0;
 
 		hal_flash_write(DEVICE_BASE_ADDR, (uint8_t *)pg_device_info, SAVE_SIZE);
 	}
@@ -43,14 +58,39 @@ void device_info_init(void)
 	{
 		mem_cpy(pg_device_info, p_flash_device_info, SAVE_SIZE);
 		strcpy(pg_device_info->version, VERSION);
-	}
-	DBG_PRINTF("Device ID=0x%x, Mesh ID=0x%x, NWK ID=0x%x\r\n", 
+	}	
+	DBG_PRINTF("Device Software Version=%s\r\n", pg_device_info->version);
+
+	DBG_PRINTF("Device ID=0x%x\r\nMesh ID=0x%x\r\nNWK ID=0x%x\r\n", 
 				GET_DEV_ID(pg_device_info->id), 
 				GET_MESH_ID(pg_device_info->id),
 				GET_NWK_ID(pg_device_info->id));
+
+	DBG_PRINTF("Ethernet MAC Addr=%x:%x:%x:%x:%x:%x\r\n", 
+				pg_device_info->local_eth_mac_addr[0],
+				pg_device_info->local_eth_mac_addr[1],
+				pg_device_info->local_eth_mac_addr[2],
+				pg_device_info->local_eth_mac_addr[3],
+				pg_device_info->local_eth_mac_addr[4],
+				pg_device_info->local_eth_mac_addr[5]);
+
+	DBG_PRINTF("Ethernet IP Addr=%d:%d:%d:%d\r\n", 
+				pg_device_info->local_ip_addr[0],
+				pg_device_info->local_ip_addr[1],
+				pg_device_info->local_ip_addr[2],
+				pg_device_info->local_ip_addr[3]);
+
+	DBG_PRINTF("Ethernet Gateway=%d:%d:%d:%d\r\n", 
+				pg_device_info->local_gateway_addr[0],
+				pg_device_info->local_gateway_addr[1],
+				pg_device_info->local_gateway_addr[2],
+				pg_device_info->local_gateway_addr[3]);
 	
-	DBG_PRINTF("Device Software Version=%s\r\n", pg_device_info->version);
-	DBG_PRINTF("Use Mode=%d\r\n", pg_device_info->func_bit.mode);
+	DBG_PRINTF("Ethernet Netmask=%d:%d:%d:%d\r\n", 
+				pg_device_info->local_netmask_addr[0],
+				pg_device_info->local_netmask_addr[1],
+				pg_device_info->local_netmask_addr[2],
+				pg_device_info->local_netmask_addr[3]);
 }
 
 device_info_t *device_info_get(bool_t flag)
@@ -64,7 +104,7 @@ bool_t device_info_set(device_info_t *device_info, bool_t force_update)
 	{
 		if (force_update == PLAT_TRUE)
 		{
-			hal_flash_write(HAL_FLASH_BASE_ADDR, (uint8_t *)pg_device_info, SAVE_SIZE);
+			hal_flash_write(DEVICE_BASE_ADDR, (uint8_t *)pg_device_info, SAVE_SIZE);
 			return PLAT_TRUE;
 		}		
 		return PLAT_FALSE;

@@ -750,8 +750,8 @@ OS_EXT  INT8U             OSTaskCtr;                       /* Number of tasks cr
 
 OS_EXT  volatile  INT32U  OSIdleCtr;                                 /* Idle counter                   */
 
-OS_EXT  OS_STK            OSTaskIdleStk[OS_TASK_IDLE_STK_SIZE];      /* Idle task stack                */
-
+//edit by qhw@20170208
+//OS_EXT  OS_STK            OSTaskIdleStk[OS_TASK_IDLE_STK_SIZE];      /* Idle task stack                */
 
 OS_EXT  OS_TCB           *OSTCBCur;                        /* Pointer to currently running TCB         */
 OS_EXT  OS_TCB           *OSTCBFreeList;                   /* Pointer to list of free TCBs             */

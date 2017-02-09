@@ -12,6 +12,7 @@
 #define __PLATFORM_H
 
 #define CFG_DEBUG_EN 		1	/* debug enable */
+#define RTC_EN				1
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -60,4 +61,5 @@ typedef void (*fppv_t)(void *);   /* function pointer void and parameter void po
 #include <hal_gpio.h>
 #include <hal_usb.h>
 #include <hal_ethernet.h>
+#include <hal_audio.h>
 #endif

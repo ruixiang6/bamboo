@@ -5,9 +5,10 @@ extern uint32_t SystemCoreClock;         /*!< System Clock Frequency (Core Clock
 
 void osel_init(void)
 {
-    OSInit();
-    osel_task_init();
+	osel_task_init();
     osel_event_init();
+	
+    OSInit();
 }
 
 void osel_start(void)

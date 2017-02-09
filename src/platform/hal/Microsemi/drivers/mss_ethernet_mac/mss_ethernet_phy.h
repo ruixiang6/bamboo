@@ -216,7 +216,7 @@ void eth_phy_set_link_speed(uint32_t speed_duplex_select);
 /***************************************************************************//**
  
  */
-void eth_phy_autonegotiate(void);
+uint8_t eth_phy_autonegotiate(void);
 
 /***************************************************************************//**
  

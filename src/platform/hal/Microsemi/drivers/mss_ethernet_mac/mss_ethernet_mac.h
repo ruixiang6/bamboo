@@ -370,7 +370,7 @@ MSS_MAC_cfg_struct_def_init
    the device’s MAC address. 
 
   @return
-    This function does not return a value.
+    This function return 1 success reutn 0 failed.
 
   Example:
   @code
@@ -388,7 +388,7 @@ MSS_MAC_cfg_struct_def_init
     MSS_MAC_init(&cfg);
   @endcode
  */
-void 
+uint8_t 
 MSS_MAC_init
 ( 
     MAC_cfg_t * cfg 

@@ -1374,6 +1374,7 @@ static  void  OS_InitRdyList (void)
 * Returns    : none
 *********************************************************************************************************
 */
+#include <platform.h>
 
 static  void  OS_InitTaskIdle (void)
 {
@@ -1384,6 +1385,7 @@ static  void  OS_InitTaskIdle (void)
 
 #if OS_TASK_CREATE_EXT_EN > 0u
     #if OS_STK_GROWTH == 1u
+	#if 0
     (void)OSTaskCreateExt(OS_TaskIdle,
                           (void *)0,                                 /* No arguments passed to OS_TaskIdle() */
                           &OSTaskIdleStk[OS_TASK_IDLE_STK_SIZE - 1u],/* Set Top-Of-Stack                     */
@@ -1393,7 +1395,14 @@ static  void  OS_InitTaskIdle (void)
                           OS_TASK_IDLE_STK_SIZE,
                           (void *)0,                                 /* No TCB extension                     */
                           OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR);/* Enable stack checking + clear stack  */
-    #else
+	#else
+	osel_task_create(OS_TaskIdle,
+					(void *)0,
+					OS_TASK_IDLE_STK_SIZE,
+					OS_TASK_IDLE_PRIO);
+	#endif
+	
+	#else
     (void)OSTaskCreateExt(OS_TaskIdle,
                           (void *)0,                                 /* No arguments passed to OS_TaskIdle() */
                           &OSTaskIdleStk[0],                         /* Set Top-Of-Stack                     */
@@ -1727,20 +1736,21 @@ INT8U  OS_StrLen (INT8U *psrc)
 *                 power.
 *********************************************************************************************************
 */
+extern void osel_idle_task_hook(void);
 
 void  OS_TaskIdle (void *p_arg)
 {
 #if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
     //OS_CPU_SR  cpu_sr = 0u;
 #endif
-
-
+	//DBG_TRACE("IDLE_TASK");
 
     (void)p_arg;                                 /* Prevent compiler warning for not using 'p_arg'     */
     for (;;) {
         //OS_ENTER_CRITICAL();
         //OSIdleCtr++;
 		//OS_EXIT_CRITICAL();
+		osel_idle_task_hook();
 #if OS_CPU_HOOKS_EN > 0u
 		OSTaskIdleHook();                        /* Call user definable HOOK                           */
 #endif
