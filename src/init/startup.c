@@ -61,7 +61,7 @@ OSEL_DECLARE_TASK(INIT_TASK, param)
 	/* TEST */
 	test_init();
 	/* APP Task */
-	//app_init();
+	app_init();
 	/* NWK Task */
 	nwk_init();
     

@@ -1374,6 +1374,7 @@ static  void  OS_InitRdyList (void)
 * Returns    : none
 *********************************************************************************************************
 */
+#include <platform.h>
 
 static  void  OS_InitTaskIdle (void)
 {

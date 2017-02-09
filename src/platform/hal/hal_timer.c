@@ -3,6 +3,7 @@
 #include <cortex_nvic.h>
 #include <mss_timer.h>
 #include <mss_watchdog.h>
+#include <mss_rtc.h>
 #include <hal_timer.h>
 
 #define HAL_DELAY_TIMER_MHZ	50
@@ -76,6 +77,18 @@ void hal_timer_init(void)
 	MSS_TIM2_init(MSS_TIMER_ONE_SHOT_MODE);
 	//
 	mem_clr(timer_reg, sizeof(timer_reg));
+#if RTC_EN	
+#define PO_RESET_DETECT_MASK	0x00000001u
+//#define RTC_PRESCALER	(32768u - 1u)	  /* 32KHz crystal is RTC clock source. */
+//#define RTC_PRESCALER (1000000u - 1u)        /* 1MHz clock is RTC clock source. */
+//#define RTC_PRESCALER	(25000000u - 1u)  /* 25MHz clock is RTC clock source. */
+#define RTC_PRESCALER	(50000000u - 1u)  /* 50MHz clock is RTC clock source. */	
+    if(SYSREG->RESET_SOURCE_CR & PO_RESET_DETECT_MASK)
+    {
+        MSS_RTC_init(MSS_RTC_CALENDAR_MODE, RTC_PRESCALER);
+        SYSREG->RESET_SOURCE_CR = PO_RESET_DETECT_MASK;
+    }	
+#endif
 }
 
 uint8_t hal_timer_alloc(uint64_t time_us, fpv_t func)
@@ -241,3 +254,17 @@ void Timer2_IRQHandler(void)
 	}
 }
 
+void hal_rtc_set(hal_rtc_block_t *rtc_block)
+{
+#if RTC_EN
+	MSS_RTC_set_calendar_count((mss_rtc_calendar_t *)rtc_block);
+	MSS_RTC_start();
+#endif
+}
+
+void hal_rtc_get(hal_rtc_block_t *rtc_block)
+{
+#if RTC_EN
+	MSS_RTC_get_calendar_count((mss_rtc_calendar_t *)rtc_block);
+#endif
+}

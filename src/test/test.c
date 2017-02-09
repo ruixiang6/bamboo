@@ -5,10 +5,17 @@
 #include <Control_IO.h>
 #include <device.h>
 
+const uint8_t slience_enforce_2400bps_voice[] = 
+{
+	//0000
+	0x13,0xec,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xBC,0xA8,0xC2,0x42,0x72,0x78,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+};
+
+
 const uint8_t TEST_INTERFACE[] = 
 "\r\n\
 <***********************************************>\r\n\
-Test Software Version 4.1(Burst RF) (by qhw)\r\n\
+Test Software Version 4.2(Burst RF) (by qhw)\r\n\
 1.RF DSSS Test\r\n\
 2.RF OFDM Test\r\n\
 3.Misc Test\r\n\
@@ -848,9 +855,12 @@ static void test_lpddr_handler(void)
 	}	
 }
 
-static void test_eth_handler(void)
-{	
+extern void netio_init(void);//@netio.c
 
+static void test_eth_handler(void)
+{
+	DBG_PRINTF("ping ip or win32-i386 -t ip\r\n");
+	netio_init();
 }
 
 static void test_power_handler(void)
@@ -1077,8 +1087,11 @@ static void test_misc_handler(void)
 		hal_uart_printf(UART_DEBUG, "ETH Test\r\n");		
 		test_cb.uart_state = UART_MENU_STATE;
 		test_cb.uart_recv_date = PLAT_FALSE;
-		//test_eth_handler();		
-		while(!test_cb.uart_recv_date);
+		test_eth_handler();
+		while(!test_cb.uart_recv_date)
+		{
+			osel_systick_delay(5000);
+		}
 		DBG_PRINTF("ETH Test Over\r\n");
 		break;
 	case STEP_LEVEL3_6://Power
