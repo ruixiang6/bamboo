@@ -732,7 +732,7 @@ fp32_t hal_rf_ofdm_cal_sn(uint16_t s_pow, uint16_t n_pow)
 	snr=2.0*(fp32_t)s_pow/((fp32_t)n_pow)-1.0;
 
 	if(snr>0) lqi_dB = 10*log10(snr);
-    else lqi_dB = -100;
+    else lqi_dB = 0;
 
 	return lqi_dB;
 }

@@ -531,7 +531,7 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 	
 	while(test_cb.rf_state == HAL_RF_OF_RECV_M)
 	{
-		test_cb.rf_recv_data = PLAT_FALSE;
+		test_cb.rf_recv_data = PLAT_FALSE;		
 		while(!test_cb.rf_recv_data);
 		if (test_cb.rf_state != HAL_RF_OF_RECV_M) goto RECV_OVER;
 		
@@ -777,8 +777,19 @@ void test_rf_timeout_cb(void)
 	test_rf_timeout_id = hal_timer_free(test_rf_timeout_id);
 	test_rf_timeout_id = hal_timer_alloc(REFRESH_TIME_MS*1000, test_rf_timeout_cb);
 
-	mode = hal_rf_of_get_reg(HAL_RF_OF_REG_TRX_CMD) & 0xF;
-    if (mode <= HAL_RF_OF_RECV_RDY_S)
+	if (test_cb.rf_time_out == PLAT_FALSE)
+	{
+		test_cb.rf_time_out = PLAT_TRUE;
+		return;
+	}
+	else
+	{
+		test_cb.rf_time_out = PLAT_TRUE;
+	}
+
+	mode = HAL_RF_OFDM->trc_cmd;
+	
+    if (mode <= HAL_RF_OF_RECV_TRAIN_SHORT_S)
     {
     	cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW)>>8;
 		DBG_PRINTF("P-");
