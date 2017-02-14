@@ -1,6 +1,10 @@
-﻿iar/
-si/
 *.pdf
 *.PDF
 *.txt
 *.doc
+*.bak
+*.dep
+si/
+iar/Debug/
+iar/Release/
+iar/settings/
