@@ -689,7 +689,7 @@ const int8_t OFDM_CAL_ARRAY_1315[] =
 -100,-101,-102,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,
 -103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103};//1315
 
-int8_t hal_rf_ofdm_cal_value(uint8_t value, int8_t offset)
+int8_t hal_rf_ofdm_cal_agc(uint8_t value, int8_t offset)
 {
 	int8_t cal_value;
 		
@@ -708,6 +708,12 @@ int8_t hal_rf_ofdm_cal_value(uint8_t value, int8_t offset)
 
 	return cal_value+offset;
 }
+
+int8_t hal_rf_ofdm_cal_pow(uint8_t value, int8_t offset)
+{
+	return value+offset;
+}
+
 
 fp32_t hal_rf_ofdm_cal_dbfs(uint32_t value)
 {

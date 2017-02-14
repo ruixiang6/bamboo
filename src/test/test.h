@@ -84,8 +84,8 @@ typedef struct
 	uint16_t frm_len;
 	uint16_t frm_num;
 	uint16_t frm_interv_ms;
-	uint16_t src_addr;
-	uint16_t dst_addr;
+	uint8_t src_addr;
+	uint8_t dst_addr;
 	uint8_t value;
 	bool_t csma_flag;
 	bool_t dma_flag;

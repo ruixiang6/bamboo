@@ -1,5 +1,7 @@
 #include <platform.h>
 #include <kbuf.h>
+#include <device.h>
+#include <test.h>
 #include <nwk.h>
 #include "Control_IO.h"
 

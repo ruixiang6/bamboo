@@ -312,10 +312,10 @@ static test_rf_ofdm_t *test_ofdm_script(void)
 					test_ofdm.frm_interv_ms = 5;
 					break;
 				case TEST_OFDM_PARA_SRC:
-					test_ofdm.src_addr = 0xffff;
+					test_ofdm.src_addr = 0xff;
 					break;
 				case TEST_OFDM_PARA_DST:
-					test_ofdm.dst_addr = 0xffff;
+					test_ofdm.dst_addr = 0xff;
 					break;
 				case TEST_OFDM_PARA_VALUE:
 					test_ofdm.value = 0xa5;
@@ -335,6 +335,10 @@ static test_rf_ofdm_t *test_ofdm_script(void)
 static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 {
 	uint16_t i=0;
+	uint32_t agc_value;
+	hal_rf_param_t *p_rf_param = hal_rf_param_get();
+	int8_t cca;
+	uint8_t clean_cca_cnt = 0;
 
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
 
@@ -382,8 +386,35 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 				{
 					//放入tx_ram
 					hal_rf_of_write_ram(p_of_frm1, p_test_ofdm->frm_len);
+					//csma模式
+					if (p_test_ofdm->csma_flag)
+					{
+						hal_rf_of_set_state(HAL_RF_OF_CCA_M);
+						delay_us(150);
+						clean_cca_cnt = 0;
+#define THRED	-70
+						do
+						{
+							agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)>>8;
+							cca = hal_rf_ofdm_cal_agc(agc_value, 28);
+							if (cca<=-THRED)
+							{
+								clean_cca_cnt++;
+								if (clean_cca_cnt>20)
+								{
+									hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
+									break;
+								}
+							}
+							else
+							{
+								DBG_PRINTF(".");
+								clean_cca_cnt = 0;
+							}
+						}while(test_cb.rf_state==HAL_RF_OF_SEND_M);
+					}
 					hal_rf_of_set_state(HAL_RF_OF_SEND_M);
-				}		
+				}
 				//等待传输完毕
 				while(hal_rf_of_get_state() != HAL_RF_OF_IDLE_M 
 					&& test_cb.rf_send_data == PLAT_TRUE
@@ -574,9 +605,17 @@ ERROR_INSIDE_RECV:
 				
 				if(*(uint32_t *)&p_of_frm->payload[frame_len-TEST_FRAME_HEAD_SIZE-4]
 						== crc32_tab((uint8_t *)p_of_frm, 0, frame_len-4))
-				{					
+				{
+					//判断地址位是否符合
+					if (p_test_ofdm->src_addr != 0xFF)
+					{
+						if (p_of_frm->head.dst_addr != p_test_ofdm->src_addr)
+						{
+							break;
+						}
+					}
 					seq_num = p_of_frm->head.seq_num;
-					DBG_PRINTF("R=%u-L=%u-SNR=%0.1f\r\n", seq_num, p_of_frm->head.frm_len, snr);				
+					DBG_PRINTF("R=%u-L=%u-SNR=%0.1f\r\n", seq_num, frame_len, snr);				
 					if((seq_num - prev_seq_num)>1)
 					{
 						loss_frame_count += seq_num - prev_seq_num - 1;
@@ -685,7 +724,11 @@ static void test_ofdm_handler(void)
 	case TEST_OFDM_CMD_TX:
 		DBG_PRINTF("TX Mode\r\n");		
 		test_ofdm_send(p_test_ofdm);
-		DBG_PRINTF("Send Over!\r\n");		
+		DBG_PRINTF("Send Over! -m=%d;-l=%d;-n=%d;-t=%d\r\n", 
+					p_test_ofdm->mode,
+					p_test_ofdm->frm_len,
+					p_test_ofdm->frm_num,
+					p_test_ofdm->frm_interv_ms);		
 		break;
 	case TEST_OFDM_CMD_RX:
 		DBG_PRINTF("RX Mode\r\n");
@@ -728,22 +771,33 @@ void test_rf_timeout_cb(void)
 	uint32_t cur_pow = 0;
 	uint32_t agc_value = 0;
 	int8_t cca = 0;
+    uint8_t mode = 0;
 	hal_rf_param_t *p_rf_param = hal_rf_param_get();
 	
 	test_rf_timeout_id = hal_timer_free(test_rf_timeout_id);
-	test_rf_timeout_id = hal_timer_alloc(REFRESH_TIME_MS*5000, test_rf_timeout_cb);
+	test_rf_timeout_id = hal_timer_alloc(REFRESH_TIME_MS*1000, test_rf_timeout_cb);
 
-	if (test_cb.rf_time_out && test_cb.rf_state == HAL_RF_OF_RECV_M)
-	{
-		cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW);
-		DBG_PRINTF("CurPow=0x%x\r\n", (uint8_t)(cur_pow>>8));
+	mode = hal_rf_of_get_reg(HAL_RF_OF_REG_TRX_CMD) & 0xF;
+    if (mode <= HAL_RF_OF_RECV_RDY_S)
+    {
+    	cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW)>>8;
+		DBG_PRINTF("P-");
+		cca = hal_rf_ofdm_cal_pow(cur_pow, -72);
 	}
-	else if (test_cb.rf_state == HAL_RF_OF_CCA_M)
+	else
 	{
-		agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL);  
-		cca = hal_rf_ofdm_cal_value((uint8_t)(agc_value>>8), p_rf_param->ofdm_rssi_offset[p_rf_param->use_level]);
-		DBG_PRINTF("CCA=%d\r\n", cca);
+		if (mode == HAL_RF_OF_CCA_S)
+		{
+			agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)>>8;
+		}
+		else
+		{
+			agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL) & 0xFF;
+		}
+		DBG_PRINTF("A-");
+		cca = hal_rf_ofdm_cal_agc(agc_value, 28);		
 	}
+	DBG_PRINTF("CCA=%d\r\n", cca);
 	//创建超时位
 	test_cb.rf_time_out = PLAT_TRUE;
 }

@@ -236,7 +236,9 @@ bool_t hal_rf_of_set_state(uint8_t state);
 //查询RF状态
 uint8_t hal_rf_of_get_state(void);
 //获得OFDM状态
-int8_t hal_rf_ofdm_cal_value(uint8_t value, int8_t offset);
+int8_t hal_rf_ofdm_cal_agc(uint8_t value, int8_t offset);
+//获得OFDM状态
+int8_t hal_rf_ofdm_cal_pow(uint8_t value, int8_t offset);
 //获得OFDM状态
 fp32_t hal_rf_ofdm_cal_dbfs(uint32_t value);
 //获得OFDM状态

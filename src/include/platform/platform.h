@@ -12,7 +12,7 @@
 #define __PLATFORM_H
 
 #define CFG_DEBUG_EN 		1	/* debug enable */
-#define RTC_EN				0
+#define RTC_EN				1
 
 #include <stdarg.h>
 #include <stdio.h>
