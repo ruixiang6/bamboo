@@ -11,6 +11,9 @@
 #define NWK_EVENT_ETH_RX		(1u<<0)
 #define NWK_EVENT_ETH_TX		(1u<<1)
 
+#define	NODE_MAX_NUM				32
+
+
 typedef struct netif nwk_tcpip_t;
 typedef struct pbuf pbuf_t;
 typedef struct eth_hdr eth_hdr_t;
