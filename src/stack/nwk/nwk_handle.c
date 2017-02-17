@@ -113,6 +113,9 @@ err_t nwk_tcpip_output(nwk_tcpip_t *nwk_tcpip, pbuf_t *p)
     uint16_t pckt_length = 0u;
     uint32_t kbuf_chain_end = 0u;    
 	kbuf_t *kbuf = PLAT_NULL;
+	kbuf_t *kbuf_copy = PLAT_NULL;
+	uint8_t output_type;
+	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
 
 	if (nwk_tcpip == PLAT_NULL || p == PLAT_NULL)
 	{
@@ -143,9 +146,37 @@ err_t nwk_tcpip_output(nwk_tcpip_t *nwk_tcpip, pbuf_t *p)
             q = q->next;
         }
     } while (0u == kbuf_chain_end);
-	//异步发送给NWK的eth
-	nwk_eth_send_asyn(kbuf);
-
+	//这边应该对数据包去
+	output_type = nwk_pkt_transfer(SRC_IP, kbuf);
+	kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
+	if (kbuf_copy)
+	{
+		kbuf_copy->offset = kbuf_copy->base + sizeof(mac_frm_head_t);
+		kbuf_copy->valid_len = kbuf->valid_len;
+		mem_cpy(kbuf_copy->offset, kbuf->offset, kbuf->valid_len);
+	}
+	
+	if (output_type & DEST_MESH)
+	{
+		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+		//填充长度
+		p_mac_frm_head->frm_len = kbuf->valid_len;
+		//填充目的地址
+		p_mac_frm_head->dest_dev_id = BROADCAST_ID;
+		//帧类型
+		p_mac_frm_head->frm_ctrl.type = MAC_FRM_DATA_TYPE;
+		mac_send(kbuf);
+	}
+	
+	if (output_type & DEST_ETH)
+	{
+		//异步发送给NWK的eth
+		nwk_eth_send_asyn(kbuf_copy);
+	}
+	else
+	{
+		kbuf_free(kbuf_copy);
+	}
     return ERR_OK;
 }
 
@@ -346,6 +377,10 @@ static uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf)
 		{
 			return DEST_MESH;
 		}
+	}
+	else if (src_type == SRC_IP)
+	{
+		return DEST_MESH|DEST_ETH;
 	}
 	else
 	{

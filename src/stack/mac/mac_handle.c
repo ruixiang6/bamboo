@@ -31,7 +31,7 @@ bool_t mac_send(kbuf_t *kbuf)
 	//填写SRC_DEV_ID
 	p_mac_frm_head->src_dev_id = GET_DEV_ID(p_device_info->id);
 	//kbuf赋予总长度
-	kbuf->valid_len += sizeof(mac_frm_head_t) + p_mac_frm_head->frm_len;
+	kbuf->valid_len = sizeof(mac_frm_head_t) + p_mac_frm_head->frm_len;
 	//最大的长度倍数
 	p_mac_frm_head->phy = (kbuf->valid_len-1)/HAL_RF_OF_REG_MAX_RAM_SIZE;
 	//前导码+发射时间+切换时间+offset

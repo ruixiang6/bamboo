@@ -119,7 +119,7 @@ int8_t phy_ofdm_cca(void)
     if (mode <= HAL_RF_OF_RECV_TRAIN_SHORT_S)
     {
     	cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW)>>8;
-		DBG_PRINTF("P-");
+		//DBG_PRINTF("P-");
 		cca = hal_rf_ofdm_cal_pow(cur_pow, -72);
 	}
 	else
@@ -132,10 +132,10 @@ int8_t phy_ofdm_cca(void)
 		{
 			agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL) & 0xFF;
 		}
-		DBG_PRINTF("A-");
+		//DBG_PRINTF("A-");
 		cca = hal_rf_ofdm_cal_agc(agc_value, 28);		
 	}
-	DBG_PRINTF("CCA=%d\r\n", cca);
+	//DBG_PRINTF("CCA=%d\r\n", cca);
 
 	return cca;
 }
