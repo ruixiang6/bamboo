@@ -3,6 +3,7 @@
 #include <device.h>
 #include <test.h>
 #include <nwk.h>
+#include <mac.h>
 #include "Control_IO.h"
 
 #define INIT_TASK_STK_SIZE			256
@@ -66,8 +67,8 @@ OSEL_DECLARE_TASK(INIT_TASK, param)
 	app_init();
 	/* NWK Task */
 	nwk_init();
-    
-	//mac_init();
+    /* MAC Task */
+	mac_init();
 
 	osel_task_idle_hook_reg(nwk_idle_hook);
 	

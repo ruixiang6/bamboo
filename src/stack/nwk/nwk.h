@@ -6,6 +6,7 @@
 #include "lwip/err.h"
 #include "lwip/netif.h"
 #include "lwip/pbuf.h"
+#include "lwip/ip.h"
 #include "netif/etharp.h"
 
 #define NWK_EVENT_ETH_RX		(1u<<0)
@@ -14,6 +15,7 @@
 typedef struct netif nwk_tcpip_t;
 typedef struct pbuf pbuf_t;
 typedef struct eth_hdr eth_hdr_t;
+typedef struct etharp_hdr etharp_hdr_t;
 typedef struct ip_hdr ip_hdr_t;
 
 #pragma pack(1)

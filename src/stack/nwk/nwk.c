@@ -1,6 +1,7 @@
 #include <platform.h>
 #include <device.h>
 #include <nwk.h>
+#include <mac.h>
 
 #define NWK_TASK_STK_SIZE			256
 #define NWK_TASK_PRIO				OSEL_TASK_PRIO(2)
@@ -47,8 +48,8 @@ static bool_t nwk_eth_init(void)
     mcb.mac[3] = p_device_info->local_eth_mac_addr[3];
     mcb.mac[4] = p_device_info->local_eth_mac_addr[4];
     mcb.mac[5] = p_device_info->local_eth_mac_addr[5];
-
-	mcb.pkt_offset = 8;	
+	//ÌîÐ´Æ«ÒÆÁ¿
+	mcb.pkt_offset = sizeof(mac_frm_head_t);	
 	mcb.tx_func = nwk_eth_send_cb;
 	mcb.rx_func = nwk_eth_recv_cb;
 	mcb.rx_list = &nwk_eth_rx_list;
@@ -63,7 +64,7 @@ static bool_t nwk_eth_init(void)
 static void nwk_tcpip_init(void)
 {
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
-	struct ip_addr ipaddr, netmask, gateway;
+	ip_addr_t ipaddr, netmask, gateway;
 	
 	IP4_ADDR(&ipaddr, 
              p_device_info->local_ip_addr[0], 

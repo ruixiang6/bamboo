@@ -4,7 +4,7 @@
 #define KBUF_BIG_TYPE		(0u<<7)
 #define KBUF_SMALL_TYPE		(1u<<7)
 
-#define KBUF_BIG_SIZE		2700
+#define KBUF_BIG_SIZE		2048
 #define KBUF_BIG_NUM		2048
 
 #define KBUF_SMALL_SIZE		256

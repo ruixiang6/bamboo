@@ -2599,6 +2599,15 @@
     </group>
     <group>
       <name>mac</name>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\mac\mac.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\mac\mac.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\mac\mac_handle.c</name>
+      </file>
     </group>
     <group>
       <name>nwk</name>
@@ -2737,6 +2746,12 @@
     </group>
     <group>
       <name>phy</name>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\phy\phy.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\phy\phy.h</name>
+      </file>
     </group>
   </group>
   <group>
