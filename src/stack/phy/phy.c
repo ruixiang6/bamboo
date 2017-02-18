@@ -26,7 +26,7 @@ static void phy_ofdm_recv_cb(void)
 	crc32 = p_mac_head->crc32;
 	p_mac_head->crc32 = 0;
 
-	if (crc32 != crc32_tab((uint8_t *)p_mac_head, 0, sizeof(mac_frm_head_t)))
+	if (crc32 != crc32_tab((uint8_t *)p_mac_head, 0, sizeof(mac_frm_head_t)-sizeof(uint32_t)))
 	{
 		kbuf_free(kbuf);
 		return;
@@ -97,7 +97,7 @@ bool_t phy_ofdm_send(kbuf_t *kbuf)
 	
 	p_mac_head = (mac_frm_head_t *)kbuf->base;
 	//·ÅÈëtx_ram
-	hal_rf_of_write_ram(p_mac_head, p_mac_head->phy*HAL_RF_OF_REG_MAX_RAM_SIZE);
+	hal_rf_of_write_ram(p_mac_head, (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE);
 
 	phy_send_frm = kbuf;
 
@@ -135,7 +135,7 @@ int8_t phy_ofdm_cca(void)
 		//DBG_PRINTF("A-");
 		cca = hal_rf_ofdm_cal_agc(agc_value, 28);		
 	}
-	DBG_PRINTF("CCA=%d\r\n", cca);
+	//DBG_PRINTF("CCA=%d\r\n", cca);
 
 	return cca;
 }

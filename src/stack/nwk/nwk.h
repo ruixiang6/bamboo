@@ -11,6 +11,7 @@
 
 #define NWK_EVENT_ETH_RX		(1u<<0)
 #define NWK_EVENT_ETH_TX		(1u<<1)
+#define NWK_EVENT_MESH_RX		(1u<<2)
 
 typedef struct netif nwk_tcpip_t;
 typedef struct pbuf pbuf_t;
@@ -31,6 +32,7 @@ extern osel_task_t *nwk_task_h;
 extern osel_event_t *nwk_event_h;
 extern list_t nwk_eth_tx_list;
 extern list_t nwk_eth_rx_list;
+extern list_t nwk_mesh_rx_list;
 extern nwk_tcpip_t nwk_tcpip;
 
 void nwk_eth_send_cb(void *arg);

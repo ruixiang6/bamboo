@@ -120,7 +120,7 @@ static void mac_of_tx_handler(void)
 		if (kbuf == PLAT_NULL) return;
 	}
 	//尝试发送
-	for(loop=0; loop<5; loop++)
+	for(loop=0; loop<1; loop++)
 	{
 		cca = phy_ofdm_cca();
 		if (cca>-68)
@@ -169,16 +169,16 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_DATA_TYPE
 			|| p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
 		{
-#if 1
-			object = NWK_EVENT_ETH_TX;
+			object = NWK_EVENT_MESH_RX;
+			//把数据偏移到网络层
 			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+			//kbuf的长度为网络层的长度
 			kbuf->valid_len = p_mac_frm_head->frm_len;
 			OSEL_ENTER_CRITICAL();
-			list_behind_put(&kbuf->list, &nwk_eth_tx_list);
+			list_behind_put(&kbuf->list, &nwk_mesh_rx_list);
 			OSEL_EXIT_CRITICAL();
 			//上至NWK
 			osel_event_set(nwk_event_h, &object);
-#endif
 		}
 		else
 		{

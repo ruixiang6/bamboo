@@ -13,6 +13,8 @@ osel_event_t *nwk_event_h;
 //以太网交互的接口队列
 list_t nwk_eth_tx_list;
 list_t nwk_eth_rx_list;
+//MESH到换的接口队列
+list_t nwk_mesh_rx_list;
 //TCPIP交互的结构
 nwk_tcpip_t nwk_tcpip;
 
@@ -127,6 +129,8 @@ void nwk_init(void)
 	
 	nwk_tcpip_init();
 
+	list_init(&nwk_mesh_rx_list);
+
 	DBG_TRACE("nwk_init ok\r\n");
 }
 
@@ -148,6 +152,12 @@ void nwk_deinit(void)
 	do
 	{
 		kbuf = (kbuf_t *)list_front_get(&nwk_eth_tx_list);
+		if (kbuf) kbuf_free(kbuf);
+	}while(kbuf);
+
+	do
+	{
+		kbuf = (kbuf_t *)list_front_get(&nwk_mesh_rx_list);
 		if (kbuf) kbuf_free(kbuf);
 	}while(kbuf);
 }

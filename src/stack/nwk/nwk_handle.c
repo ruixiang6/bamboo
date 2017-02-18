@@ -279,6 +279,7 @@ static void nwk_eth_rx_handler(void)
 			{
 				//经过判断处理后，确定提交本地tcpip协议栈
 				nwk_tcpip_input(&nwk_tcpip, kbuf->offset, kbuf->valid_len);
+				//这里没有删除kbuf是下面mesh要使用
 			}
 
 			if (output_type & DEST_MESH)
@@ -305,6 +306,44 @@ static void nwk_eth_rx_handler(void)
 	}
 }
 
+static void nwk_mesh_rx_handler(void)
+{
+	kbuf_t *kbuf = PLAT_NULL;	
+	uint8_t output_type;
+	
+	OSEL_DECL_CRITICAL();
+	
+	do
+	{		
+		OSEL_ENTER_CRITICAL();
+		kbuf = (kbuf_t *)list_front_get(&nwk_mesh_rx_list);
+		OSEL_EXIT_CRITICAL();
+		
+		if (kbuf)
+		{
+			output_type = nwk_pkt_transfer(SRC_MESH, kbuf);
+			
+			if (output_type & DEST_IP)
+			{
+				//经过判断处理后，确定提交本地tcpip协议栈
+				nwk_tcpip_input(&nwk_tcpip, kbuf->offset, kbuf->valid_len);
+				//这里没有删除kbuf是下面eth要使用
+			}
+			
+			if (output_type & DEST_ETH)
+			{
+				//异步发送给NWK的eth
+				nwk_eth_send_asyn(kbuf);
+			}
+			else
+			{
+				kbuf_free(kbuf);
+			}
+		}
+	}while(kbuf != PLAT_NULL);
+}
+
+
 //return 1:send to mesh
 //return 2:send to local_ip
 //return 4:send to eth
@@ -313,7 +352,7 @@ static uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf)
 	eth_hdr_t *p_eth_hdr = PLAT_NULL;
 	etharp_hdr_t *p_etharp_hdr = PLAT_NULL;
 	ip_hdr_t *p_ip_hdr = PLAT_NULL;
-	ip_addr_t ipaddr;
+	ip_addr_t ipaddr, netmask;
     uint16_t ipaddr2_0, ipaddr2_1;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
@@ -361,16 +400,26 @@ static uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf)
 							p_device_info->local_ip_addr[1],
 							p_device_info->local_ip_addr[2],
 							p_device_info->local_ip_addr[3]);
-					if (p_ip_hdr->dest.addr == ipaddr.addr)
+					IP4_ADDR(&netmask, 
+				             p_device_info->local_netmask_addr[0], 
+				             p_device_info->local_netmask_addr[1], 
+				             p_device_info->local_netmask_addr[2], 
+				             p_device_info->local_netmask_addr[3]);
+					//IP广播包
+					if ((p_ip_hdr->dest.addr & ~netmask.addr) == (IPADDR_BROADCAST & ~netmask.addr))
 					{
-						return DEST_IP;
+						return DEST_IP|DEST_MESH;
 					}
-					else
+					else if (p_ip_hdr->dest.addr == ipaddr.addr)
 					{
 						return DEST_MESH;
 					}
+					else
+					{
+						return 0;
+					}
 					break;
-				default: return 0;				
+				default: return 0;
 			}
 		}
 		else
@@ -381,6 +430,72 @@ static uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf)
 	else if (src_type == SRC_IP)
 	{
 		return DEST_MESH|DEST_ETH;
+	}
+	else if (src_type == SRC_MESH)
+	{
+		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
+		if (p_eth_hdr->dest.addr[0] == p_device_info->local_eth_mac_addr[0]
+			&& p_eth_hdr->dest.addr[1] == p_device_info->local_eth_mac_addr[1]
+			&& p_eth_hdr->dest.addr[2] == p_device_info->local_eth_mac_addr[2]
+			&& p_eth_hdr->dest.addr[3] == p_device_info->local_eth_mac_addr[3]
+			&& p_eth_hdr->dest.addr[4] == p_device_info->local_eth_mac_addr[4]
+			&& p_eth_hdr->dest.addr[5] == p_device_info->local_eth_mac_addr[5])
+
+		{
+			return DEST_IP;
+		}
+		else if (p_eth_hdr->dest.addr[0] == 0xFF
+			&& p_eth_hdr->dest.addr[1] == 0xFF
+			&& p_eth_hdr->dest.addr[2] == 0xFF
+			&& p_eth_hdr->dest.addr[3] == 0xFF
+			&& p_eth_hdr->dest.addr[4] == 0xFF
+			&& p_eth_hdr->dest.addr[5] == 0xFF)
+		{
+			switch(htons(p_eth_hdr->type))
+			{
+				case ETHTYPE_ARP:
+					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
+                    ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
+                    ipaddr2_1 = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
+					if (p_etharp_hdr->dipaddr.addrw[0] == ipaddr2_0
+						&& p_etharp_hdr->dipaddr.addrw[1] == ipaddr2_1)
+					{
+						return DEST_IP;
+					}
+					else
+					{
+						return DEST_ETH;
+					}
+					break;
+				case ETHTYPE_IP:
+					p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
+					if (IPH_V(p_ip_hdr) != 4) return 0;
+					IP4_ADDR(&ipaddr, 
+							p_device_info->local_ip_addr[0],
+							p_device_info->local_ip_addr[1],
+							p_device_info->local_ip_addr[2],
+							p_device_info->local_ip_addr[3]);
+					//IP广播包
+					if ((p_ip_hdr->dest.addr & ~netmask.addr) == (IPADDR_BROADCAST & ~netmask.addr))
+					{
+						return DEST_ETH|DEST_IP;
+					}
+					else if (p_ip_hdr->dest.addr == ipaddr.addr)
+					{
+						return DEST_IP;
+					}
+					else
+					{
+						return DEST_ETH;
+					}
+					break;
+				default: return 0;				
+			}
+		}
+		else
+		{
+			return DEST_ETH;
+		}
 	}
 	else
 	{
@@ -404,6 +519,12 @@ void nwk_handler(uint16_t event_type)
 		object = NWK_EVENT_ETH_RX;
 		osel_event_clear(nwk_event_h, &object);
 		nwk_eth_rx_handler();
+	}
+	else if (event_type & NWK_EVENT_MESH_RX)
+	{
+		object = NWK_EVENT_MESH_RX;
+		osel_event_clear(nwk_event_h, &object);
+		nwk_mesh_rx_handler();
 	}
 }
 
