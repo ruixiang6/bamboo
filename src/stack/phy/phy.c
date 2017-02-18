@@ -135,7 +135,7 @@ int8_t phy_ofdm_cca(void)
 		//DBG_PRINTF("A-");
 		cca = hal_rf_ofdm_cal_agc(agc_value, 28);		
 	}
-	//DBG_PRINTF("CCA=%d\r\n", cca);
+	DBG_PRINTF("CCA=%d\r\n", cca);
 
 	return cca;
 }
