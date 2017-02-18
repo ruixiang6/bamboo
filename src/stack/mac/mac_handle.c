@@ -92,6 +92,7 @@ static void mac_of_tx_handler(void)
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t loop;
 	int8_t cca;
+	uint16_t object;
 	
 	if (skbuf)
 	{
@@ -119,8 +120,15 @@ static void mac_of_tx_handler(void)
 
 		if (kbuf == PLAT_NULL) return;
 	}
+	
+	if (hal_rf_of_get_state() == HAL_RF_OF_SEND_M)
+	{
+		object = MAC_EVENT_OF_TX;
+		osel_event_set(mac_event_h, &object);
+		return;
+	}
 	//≥¢ ‘∑¢ÀÕ
-	for(loop=0; loop<1; loop++)
+	for(loop=0; loop<5; loop++)
 	{
 		cca = phy_ofdm_cca();
 		if (cca>-68)
