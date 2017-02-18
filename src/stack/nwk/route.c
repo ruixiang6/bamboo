@@ -7,31 +7,45 @@ static route_table_t route_table;
 static uint8_t local_id = 0;
 
 
-void route_field_handle(route_field_t *p_rf, uint8_t id, uint8_t flag)
+void route_field_handle(route_field_t *p_rf, uint8_t id)
 {
 	uint8_t i = 0;
 
-	if (flag)
+	for (i = 0; i < NODE_MAX_NUM; i++)
 	{
-		for (i = 0; i < NODE_MAX_NUM; i++)
+		if ((i + 1) == local_id)
 		{
-			//no this route
-			if (route_table.item[i].hop >= ROUTE_HOP_INVALID)
+			if (p_rf->item[i].seq > route_table.item[i].seq)
 			{
-				if (p_rf->item[i].hop < ROUTE_HOP_MAX)
-				{
-					route_table.item[i].next_id = id;
-					route_table.item[i].hop = p_rf->item[i].hop + 1;
-					route_table.item[i].seq = p_rf->item[i].seq;
-				}
+				route_table.item[i].seq = ((p_rf->item[i].seq >> 1) << 1) + 2;
+				route_table.item[i].next_id = local_id;
+				route_table.item[i].hop = 0;
+			}
+			continue;
+		}
+		
+		if (route_table.item[i].next_id == id)
+		{
+			route_table.item[i].seq = p_rf->item[i].seq;
+			if (p_rf->item[i].hop < ROUTE_HOP_MAX)
+			{
+				route_table.item[i].hop = p_rf->item[i].hop + 1;
 			}
 			else
 			{
-				if (route_table.item[i].next_id == id)
+				route_table.item[i].hop = ROUTE_HOP_INVALID;
+			}
+		}
+		else
+		{
+			if ((p_rf->item[i].seq > route_table.item[i].seq) && (p_rf->item[i].hop < ROUTE_HOP_MAX))
+			{
+				if ((route_table.item[i].hop > ROUTE_HOP_MAX) || ((p_rf->item[i].hop + 1) < route_table.item[i].hop))
 				{
-					
+					route_table.item[i].seq = p_rf->item[i].seq;
+					route_table.item[i].hop = p_rf->item[i].hop + 1;
+					route_table.item[i].next_id = id;
 				}
-				
 			}
 		}
 	}
