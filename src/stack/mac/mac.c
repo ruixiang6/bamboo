@@ -9,6 +9,7 @@ OSEL_DECLARE_TASK(MAC_TASK, param);
 
 osel_task_t *mac_task_h;
 osel_event_t *mac_event_h;
+mac_timer_t mac_csma_tmr;
 
 static list_t mac_ofdm_send_q0_list;
 static list_t mac_ofdm_send_q1_list;
@@ -48,6 +49,8 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 
 	list_init(&mac_ofdm_recv_list);
 	list_init(&mac_ofdm_send_list);
+
+	mem_set(&mac_csma_tmr, 0, sizeof(mac_timer_t));
 	
 	mac_ofdm_send_multi_list[0] = &mac_ofdm_send_q0_list;
 	mac_ofdm_send_multi_list[1] = &mac_ofdm_send_q1_list;

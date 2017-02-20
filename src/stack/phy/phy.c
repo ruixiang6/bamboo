@@ -65,6 +65,12 @@ static void phy_ofdm_send_cb(void)
 	osel_event_set(mac_event_h, &object);
 }
 
+static void phy_csma_nav_cb(void)
+{
+	uint16_t object = MAC_EVENT_CSMA;
+	osel_event_set(mac_event_h, &object);
+}
+
 static void phy_ofdm_init(void)
 {
 	//OFDM进入IDLE态
@@ -85,26 +91,75 @@ static void phy_ofdm_init(void)
 	hal_rf_of_set_state(HAL_RF_OF_RECV_M);
 }
 
+static void phy_tmr_init(void)
+{
+	hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR0_INT, phy_csma_nav_cb);
+	hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR1_INT, PLAT_NULL);
+	hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, PLAT_NULL);
+
+	hal_rf_misc_int_clear(HAL_RF_MISC_TMR0_INT);
+	hal_rf_misc_int_clear(HAL_RF_MISC_TMR1_INT);
+	hal_rf_misc_int_clear(HAL_RF_MISC_TMR2_INT);
+	
+	hal_rf_misc_int_enable(HAL_RF_MISC_TMR0_INT);
+	hal_rf_misc_int_enable(HAL_RF_MISC_TMR1_INT);
+	hal_rf_misc_int_enable(HAL_RF_MISC_TMR2_INT);
+}
+
+void phy_tmr_start(uint32_t delay_us)
+{
+	hal_rf_misc_set_timer(0, delay_us);
+}
+
+void phy_tmr_stop(void)
+{
+	hal_rf_misc_set_timer(0, 0);
+}
+
+void phy_tmr_add(uint32_t delay_us)
+{
+	uint32_t cur_us;
+	
+	cur_us = hal_rf_misc_get_timer(0);
+
+	hal_rf_misc_set_timer(0, delay_us+cur_us);
+}
+
 bool_t phy_ofdm_send(kbuf_t *kbuf)
 {
 	mac_frm_head_t *p_mac_head = PLAT_NULL;
+	int8_t cca;
 
-	if (kbuf == PLAT_NULL && phy_send_frm)
+	if (kbuf == PLAT_NULL)
 	{
 		return PLAT_FALSE;
 	}
-	//恢复IDLE
-	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
+
+	if (phy_send_frm && phy_send_frm != kbuf)
+	{
+		return PLAT_FALSE;
+	}
+
+	if (phy_send_frm != kbuf)
+	{
+		p_mac_head = (mac_frm_head_t *)kbuf->base;
+		//放入tx_ram
+		hal_rf_of_write_ram(p_mac_head, (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE);
+		phy_send_frm = kbuf;
+	}
 	
-	p_mac_head = (mac_frm_head_t *)kbuf->base;
-	//放入tx_ram
-	hal_rf_of_write_ram(p_mac_head, (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE);
-
-	phy_send_frm = kbuf;
-
-	hal_rf_of_set_state(HAL_RF_OF_SEND_M);
-
-	return PLAT_TRUE;
+	cca = phy_ofdm_cca();
+	if (cca > MAC_CCA_THREDHOLD)
+	{
+		return PLAT_FALSE;
+	}
+	else
+	{
+		hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
+		delay_us(150);
+		hal_rf_of_set_state(HAL_RF_OF_SEND_M);
+		return PLAT_TRUE;
+	}
 }
 
 int8_t phy_ofdm_cca(void)
@@ -147,7 +202,9 @@ void phy_init(void)
 	/* 射频初始化 */
 	hal_rf_init();	
 
-	phy_ofdm_init();	
+	phy_ofdm_init();
+
+    phy_tmr_init();	
 }
 
 void phy_deinit(void)

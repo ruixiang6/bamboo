@@ -47,7 +47,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t id[3];
+    uint8_t id[4];
 	char_t version[10];
 	uint8_t local_eth_mac_addr[6];
 	uint8_t local_ip_addr[4];

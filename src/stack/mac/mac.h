@@ -6,6 +6,16 @@
 
 #define MAC_EVENT_OF_RX			(1u<<0)
 #define MAC_EVENT_OF_TX			(1u<<1)
+#define MAC_EVENT_CSMA			(1u<<2)
+
+#define MAC_CSMA_RTS			1
+#define MAC_CSMA_CTS			2
+#define MAC_CSMA_DIFS			3
+#define MAC_CSMA_SIFS			4
+#define MAC_CSMA_SLOT			5
+#define MAC_CSMA_FREE			0
+
+#define MAC_CCA_THREDHOLD		-68
 
 #define	BROADCAST_ID			0xFF
 
@@ -59,6 +69,12 @@ typedef struct
 	uint32_t crc32;
 } mac_frm_head_t;
 
+typedef struct
+{
+	uint8_t type;
+	uint32_t send_cnt;
+}mac_timer_t;
+
 #pragma pack()
 
 #define MAC_QOS_LIST_MAX_NUM	5	
@@ -69,6 +85,7 @@ extern list_t mac_ofdm_send_list;
 
 extern osel_task_t *mac_task_h;
 extern osel_event_t *mac_event_h;
+extern mac_timer_t mac_csma_tmr;
 
 bool_t mac_send(kbuf_t *kbuf);
 void mac_handler(uint16_t event_type);

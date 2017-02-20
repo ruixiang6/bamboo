@@ -87,17 +87,16 @@ static void mac_of_rx_handler(void)
 static void mac_of_tx_handler(void)
 {
 	OSEL_DECL_CRITICAL();
-	static kbuf_t *skbuf = PLAT_NULL;
-	static uint8_t delay_time_cnt = 0;
+	static kbuf_t *skbuf = PLAT_NULL;	
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t loop;
 	int8_t cca;
-	uint16_t object;
 	
 	if (skbuf)
 	{
-		if (delay_time_cnt>=5)
+		if (mac_csma_tmr.send_cnt>=5)
 		{
+			DBG_PRINTF("#");
 			kbuf_free(skbuf);
 			skbuf = PLAT_NULL;
 		}
@@ -113,7 +112,7 @@ static void mac_of_tx_handler(void)
 			if (kbuf)
 			{
 				skbuf = kbuf;
-				delay_time_cnt = 0;
+				mac_csma_tmr.send_cnt = 0;
 				break;
 			}
 		}
@@ -123,28 +122,46 @@ static void mac_of_tx_handler(void)
 	
 	if (hal_rf_of_get_state() == HAL_RF_OF_SEND_M)
 	{
-		object = MAC_EVENT_OF_TX;
-		osel_event_set(mac_event_h, &object);
+		DBG_PRINTF("*");
 		return;
 	}
-	//尝试发送
-	for(loop=0; loop<5; loop++)
+
+	if (mac_csma_tmr.type == MAC_CSMA_FREE)
 	{
-		cca = phy_ofdm_cca();
-		if (cca>-68)
+		if (phy_ofdm_send(skbuf) == PLAT_TRUE)
 		{
-			delay_time_cnt++;
+			skbuf = PLAT_NULL;
 			return;
-		}
+		}		
+
+		DBG_PRINTF(".");
+		mac_csma_tmr.type = MAC_CSMA_DIFS;
+		mac_csma_tmr.send_cnt++;
+		phy_tmr_start(2000);//2ms		
 	}
-	//可以发送
-	if (phy_ofdm_send(skbuf))
-	{		
-		skbuf = PLAT_NULL;
+}
+
+void mac_csma_handler(void)
+{
+	uint32_t random_slot;
+	uint16_t object = 0;
+	
+	if (mac_csma_tmr.type == MAC_CSMA_DIFS)
+	{
+		random_slot = rand()%(mac_csma_tmr.send_cnt*10)+1;	//产生一个时隙数
+		mac_csma_tmr.type = MAC_CSMA_SLOT;
+		phy_tmr_start(random_slot*50);						//50us产生一个时隙
 	}
+	else if (mac_csma_tmr.type == MAC_CSMA_SLOT)
+	{
+		object = MAC_EVENT_OF_TX;
+		osel_event_set(mac_event_h, &object);
+		mac_csma_tmr.type = MAC_CSMA_FREE;
+	}	
 	else
 	{
-		delay_time_cnt++;
+		mac_csma_tmr.type = MAC_CSMA_DIFS;		
+		phy_tmr_start(2000);//2ms
 	}
 }
 
@@ -219,8 +236,10 @@ void mac_handler(uint16_t event_type)
 		osel_event_clear(mac_event_h, &object);		
 		mac_of_tx_handler();
 	}
-	else
+	else if (event_type & MAC_EVENT_CSMA)
 	{
-		//
+		object = MAC_EVENT_CSMA;
+		osel_event_clear(mac_event_h, &object);		
+		mac_csma_handler();
 	}
 }

@@ -108,6 +108,7 @@ static struct
 static struct
 {
 	hal_rf_misc_t *hw;
+	fpv_t tmr_handler[8];
 } misc_handler = 
 {
 	.hw = HAL_RF_MISC
@@ -279,12 +280,15 @@ void hal_rf_init(void)
 	hal_rf_misc_set_lms_tx_pow(p_rf_param->ofdm_lms_power[p_rf_param->use_level]<<16|0);
     //tx_pow值
     hal_rf_of_set_reg(HAL_RF_OF_SCL_TX_POW, p_rf_param->ofdm_scl_power[p_rf_param->use_level]);
-    
 
-	//OFDM中断使用FIC1和FIC2
+	//OFDM中断使用FIC1
 	NVIC_ClearPendingIRQ(FabricIrq1_IRQn);
 	/*注册FIC1中断 */
-	NVIC_EnableIRQ(FabricIrq1_IRQn);	
+	NVIC_EnableIRQ(FabricIrq1_IRQn);
+	//MISC中断使用FIC2
+	NVIC_ClearPendingIRQ(FabricIrq2_IRQn);
+	/*注册FIC2中断 */
+    NVIC_EnableIRQ(FabricIrq2_IRQn);	
 	//给PA上电
 	PA_PWR_EN;
 	//配置完RF给灯上电
@@ -666,9 +670,52 @@ void hal_rf_misc_set_lms_bw_cfg(uint32_t bw)
 	misc_handler.hw->lms_bw_cfg = bw;
 }
 
+void hal_rf_misc_int_enable(uint32_t int_type)
+{
+	misc_handler.hw->int_mask |= int_type;
+}
+
+void hal_rf_misc_int_disable(uint32_t int_type)
+{
+	misc_handler.hw->int_mask &= ~int_type;
+}
+
+void hal_rf_misc_int_clear(uint32_t int_type)
+{
+	misc_handler.hw->int_clr |= int_type;
+}
+
+void hal_rf_misc_int_reg_handler(uint32_t int_type, fpv_t handler)
+{
+	uint8_t index;
+
+	for (index=0; index<8; index++)
+	{
+		if (int_type>>(index) & 1)
+		{
+			break;
+		}
+	}
+
+	if (index == 8) return;
+
+	misc_handler.tmr_handler[index] = handler;
+}
+
+
 uint8_t hal_rf_misc_get_pa_ctrl(void)
 {
 	return (uint8_t)(misc_handler.hw->pa_ctrl);
+}
+
+void hal_rf_misc_set_timer(uint8_t index, uint32_t value)
+{
+	misc_handler.hw->tmr_var[index] = value;
+}
+
+uint32_t hal_rf_misc_get_timer(uint8_t index)
+{
+	return misc_handler.hw->tmr_var[index];
 }
 
 const int8_t OFDM_CAL_ARRAY_1445[] =
@@ -792,6 +839,26 @@ void FabricIrq1_IRQHandler(void)
 		}
 	}
 }
+
+void FabricIrq2_IRQHandler(void)
+{
+	uint32_t int_status = HAL_RF_MISC->int_mask_status;
+	uint8_t index;
+	
+	for(index=0; index<8; index++)
+	{
+		if (int_status>>index & 1u)
+		{
+			HAL_RF_MISC->int_clr |= 1u<<index;
+			
+			if (misc_handler.tmr_handler[index])
+			{
+				(*(misc_handler.tmr_handler[index]))();
+			}
+		}
+	}
+}
+
 
 static void config_lms6002_init()
 {
