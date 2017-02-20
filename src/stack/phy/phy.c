@@ -69,6 +69,7 @@ static void phy_csma_nav_cb(void)
 {
 	uint16_t object = MAC_EVENT_CSMA;
 	osel_event_set(mac_event_h, &object);
+	//DBG_PRINTF("N");
 }
 
 static void phy_ofdm_init(void)
@@ -108,21 +109,20 @@ static void phy_tmr_init(void)
 
 void phy_tmr_start(uint32_t delay_us)
 {
-	hal_rf_misc_set_timer(0, delay_us);
+	hal_rf_misc_set_timer(0, delay_us);	
 }
 
 void phy_tmr_stop(void)
 {
-	hal_rf_misc_set_timer(0, 0);
+	hal_rf_misc_set_timer(0, 0);	
 }
 
 void phy_tmr_add(uint32_t delay_us)
-{
+{	
 	uint32_t cur_us;
-	
-	cur_us = hal_rf_misc_get_timer(0);
 
-	hal_rf_misc_set_timer(0, delay_us+cur_us);
+	cur_us = hal_rf_misc_get_timer(0);
+	hal_rf_misc_set_timer(0, delay_us+cur_us);	
 }
 
 bool_t phy_ofdm_send(kbuf_t *kbuf)

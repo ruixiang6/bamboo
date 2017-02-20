@@ -51,6 +51,7 @@ bool_t mac_send(kbuf_t *kbuf)
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, mac_ofdm_send_multi_list[1]);
 		OSEL_EXIT_CRITICAL();
+		//DBG_PRINTF("+");
 	}
 	else
 	{
@@ -111,6 +112,7 @@ static void mac_of_tx_handler(void)
 			OSEL_EXIT_CRITICAL();
 			if (kbuf)
 			{
+				//DBG_PRINTF("-");
 				skbuf = kbuf;
 				mac_csma_tmr.send_cnt = 0;
 				break;
@@ -130,6 +132,7 @@ static void mac_of_tx_handler(void)
 	{
 		if (phy_ofdm_send(skbuf) == PLAT_TRUE)
 		{
+            DBG_PRINTF("S");
 			skbuf = PLAT_NULL;
 			return;
 		}		
@@ -139,27 +142,36 @@ static void mac_of_tx_handler(void)
 		mac_csma_tmr.send_cnt++;
 		phy_tmr_start(2000);//2ms		
 	}
+    else
+    {
+        DBG_PRINTF("%d", mac_csma_tmr.type);
+    }
 }
 
 void mac_csma_handler(void)
 {
 	uint32_t random_slot;
 	uint16_t object = 0;
-	
+		
 	if (mac_csma_tmr.type == MAC_CSMA_DIFS)
 	{
-		random_slot = rand()%(mac_csma_tmr.send_cnt*10)+1;	//产生一个时隙数
+		if (mac_csma_tmr.send_cnt == 0) mac_csma_tmr.send_cnt = 1;
+		random_slot = (rand()%(mac_csma_tmr.send_cnt*10))+1;	//产生一个时隙数		
 		mac_csma_tmr.type = MAC_CSMA_SLOT;
 		phy_tmr_start(random_slot*50);						//50us产生一个时隙
+		
+		//DBG_PRINTF("D=%d%d|", mac_csma_tmr.send_cnt, random_slot);
 	}
 	else if (mac_csma_tmr.type == MAC_CSMA_SLOT)
 	{
+        //DBG_PRINTF("L");
 		object = MAC_EVENT_OF_TX;
 		osel_event_set(mac_event_h, &object);
 		mac_csma_tmr.type = MAC_CSMA_FREE;
 	}	
 	else
 	{
+        DBG_PRINTF("T");
 		mac_csma_tmr.type = MAC_CSMA_DIFS;		
 		phy_tmr_start(2000);//2ms
 	}
@@ -204,6 +216,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			OSEL_EXIT_CRITICAL();
 			//上至NWK
 			osel_event_set(nwk_event_h, &object);
+			DBG_PRINTF("R");
 		}
 		else
 		{
