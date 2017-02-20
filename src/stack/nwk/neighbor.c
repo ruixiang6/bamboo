@@ -6,13 +6,13 @@
 static neighbor_table_t neighbor_table;
 
 
-uint8_t neighbor_field_get_snrtx(neighbor_field_t *p_nf, uint8_t id)
+uint8_t neighbor_field_get_snrtx(neighbor_field_t *p_nf, uint8_t my_id)
 {
 	uint8_t snrtx = 0;
 	
-	if ((id > 0 ) && (id <= NODE_MAX_NUM))
+	if ((my_id > 0 ) && (my_id <= NODE_MAX_NUM))
 	{
-		snrtx = p_nf->item[id-1].snr;
+		snrtx = p_nf->item[my_id-1].snr;
 	}
 
 	return snrtx;

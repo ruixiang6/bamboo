@@ -1,7 +1,6 @@
 #ifndef __AFFILIATE_H
 #define __AFFILIATE_H
 
-#include <platform.h>
 #include <nwk.h>
 
 

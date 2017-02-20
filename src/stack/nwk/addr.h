@@ -1,7 +1,7 @@
 #ifndef __ADDR_H
 #define __ADDR_H
 
-#include <platform.h>
+#include <nwk.h>
 
 
 #define ADDR_TABLE_MODE_QUEUE		1

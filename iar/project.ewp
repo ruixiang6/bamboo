@@ -2598,6 +2598,21 @@
         </group>
       </group>
       <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\addr.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\affiliate.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\broadcast.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\ctrl.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\neighbor.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\src\stack\nwk\nwk.c</name>
       </file>
       <file>
@@ -2605,6 +2620,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\src\stack\nwk\nwk_handle.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\route.c</name>
       </file>
     </group>
     <group>

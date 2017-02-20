@@ -1,6 +1,7 @@
 #ifndef __NWK_H
 #define __NWK_H
 
+#include <platform.h>
 #include <kbuf.h>
 #include "lwip/tcpip.h"
 #include "lwip/err.h"
