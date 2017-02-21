@@ -61,7 +61,7 @@ static void phy_ofdm_send_cb(void)
 	}
     //DBG_PRINTF("send\r\n");
 	//进入接收状态
-	hal_rf_of_set_state(HAL_RF_OF_RECV_M);	
+	hal_rf_of_set_state(HAL_RF_OF_RECV_M);
 	osel_event_set(mac_event_h, &object);
 }
 

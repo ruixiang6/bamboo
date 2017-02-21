@@ -140,7 +140,7 @@ static void mac_of_tx_handler(void)
 		DBG_PRINTF(".");
 		mac_csma_tmr.type = MAC_CSMA_DIFS;
 		mac_csma_tmr.send_cnt++;
-		phy_tmr_start(2000);//2ms		
+		phy_tmr_start(2000);//2ms
 	}
     else
     {
