@@ -1,84 +1,15 @@
 #include <mac.h>
 #include <phy.h>
 
-static kbuf_t *phy_send_frm = PLAT_NULL;
+static phy_tmr_t phy_tmr_array[MAX_PHY_TMR_NUM];
 
-static void phy_ofdm_recv_cb(void)
-{
-	uint32_t crc32 = 0;
-	uint16_t object = MAC_EVENT_OF_RX;
-	mac_frm_head_t *p_mac_head = PLAT_NULL;
-	uint16_t s_pow = hal_rf_of_get_reg(HAL_RF_OF_SIG_POW);
-	uint16_t n_pow = hal_rf_of_get_reg(HAL_RF_OF_NOI_POW);
-	uint16_t snr = 0;
-	
-	kbuf_t *kbuf = kbuf_alloc(KBUF_BIG_TYPE);
-
-	if (kbuf == PLAT_NULL)
-	{
-		return;
-	}
-	
-	hal_rf_of_read_ram(kbuf->base, sizeof(mac_frm_head_t));
-
-	p_mac_head = (mac_frm_head_t *)kbuf->base;
-
-	crc32 = p_mac_head->crc32;
-	p_mac_head->crc32 = 0;
-
-	if (crc32 != crc32_tab((uint8_t *)p_mac_head, 0, sizeof(mac_frm_head_t)-sizeof(uint32_t)))
-	{
-		kbuf_free(kbuf);
-		return;
-	}
-   
-	if (p_mac_head->phy+1<=MAX_PHY_OFDM_FRM_MULTI)//max = 1888Bytes
-	{
-		kbuf->valid_len = (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
-		//将信噪比传给帧头
-		snr = (uint16_t)(hal_rf_ofdm_cal_sn(s_pow, n_pow)*10);
-		if (snr>255) snr = 255;
-		p_mac_head->phy = (uint8_t)snr;
-		hal_rf_of_read_ram(p_mac_head, kbuf->valid_len);
-		list_behind_put(&kbuf->list, &mac_ofdm_recv_list);
-		osel_event_set(mac_event_h, &object);
-	}
-	else
-	{
-		kbuf_free(kbuf);
-	}
-}
-
-
-static void phy_ofdm_send_cb(void)
-{	
-	uint16_t object = MAC_EVENT_OF_TX;
-
-	if (phy_send_frm)
-	{
-		kbuf_free(phy_send_frm);
-		phy_send_frm = PLAT_NULL;
-	}
-    DBG_PRINTF("&");
-	//进入接收状态
-	hal_rf_of_set_state(HAL_RF_OF_RECV_M);
-	osel_event_set(mac_event_h, &object);
-}
-
-static void phy_csma_nav_cb(void)
-{
-	uint16_t object = MAC_EVENT_CSMA;
-	osel_event_set(mac_event_h, &object);
-	//DBG_PRINTF("N");
-}
-
-static void phy_ofdm_init(void)
+void phy_ofdm_init(fpv_t send_func, fpv_t recv_func)
 {
 	//OFDM进入IDLE态
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);	
 	//使能ofdm接收和发送中断
-	hal_rf_of_int_reg_handler(HAL_RF_OF_TX_FIN_INT, phy_ofdm_send_cb);
-	hal_rf_of_int_reg_handler(HAL_RF_OF_RX_FIN_INT, phy_ofdm_recv_cb);		
+	hal_rf_of_int_reg_handler(HAL_RF_OF_TX_FIN_INT, send_func);
+	hal_rf_of_int_reg_handler(HAL_RF_OF_RX_FIN_INT, recv_func);		
 	hal_rf_of_reset();
 	//清除中断
 	hal_rf_of_int_clear(HAL_RF_OF_TX_FIN_INT);
@@ -92,75 +23,140 @@ static void phy_ofdm_init(void)
 	hal_rf_of_set_state(HAL_RF_OF_RECV_M);
 }
 
-static void phy_tmr_init(void)
+void phy_tmr_init(void)
 {
-	hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR0_INT, phy_csma_nav_cb);
-	//hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR1_INT, PLAT_NULL);
-	//hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, PLAT_NULL);
-
-	hal_rf_misc_int_clear(HAL_RF_MISC_TMR0_INT);
-	//hal_rf_misc_int_clear(HAL_RF_MISC_TMR1_INT);
-	//hal_rf_misc_int_clear(HAL_RF_MISC_TMR2_INT);
+	uint8_t index;
 	
-	hal_rf_misc_int_enable(HAL_RF_MISC_TMR0_INT);
-	//hal_rf_misc_int_enable(HAL_RF_MISC_TMR1_INT);
-	//hal_rf_misc_int_enable(HAL_RF_MISC_TMR2_INT);
-}
-
-void phy_tmr_start(uint32_t delay_us)
-{
-	hal_rf_misc_set_timer(0, delay_us);	
-}
-
-void phy_tmr_stop(void)
-{
-	hal_rf_misc_set_timer(0, 0);	
-}
-
-void phy_tmr_add(uint32_t delay_us)
-{	
-	uint32_t cur_us;
-
-	cur_us = hal_rf_misc_get_timer(0);
-	hal_rf_misc_set_timer(0, delay_us+cur_us);	
-}
-
-bool_t phy_ofdm_send(kbuf_t *kbuf)
-{
-	mac_frm_head_t *p_mac_head = PLAT_NULL;
-	int8_t cca;
-
-	if (kbuf == PLAT_NULL)
+	for(index=0; index<MAX_PHY_TMR_NUM; index++)
 	{
-		return PLAT_FALSE;
+		phy_tmr_array[index].tmr_int = 1u<<index;
+		hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
+		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);		
+		phy_tmr_array[index].count = 0;
 	}
+}
 
-	if (phy_send_frm && phy_send_frm != kbuf)
-	{
-		return PLAT_FALSE;
-	}
-
-	if (phy_send_frm != kbuf)
-	{
-		p_mac_head = (mac_frm_head_t *)kbuf->base;
-		//放入tx_ram
-		hal_rf_of_write_ram(p_mac_head, (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE);
-		phy_send_frm = kbuf;
-	}
+uint8_t phy_tmr_start(uint32_t delay_us, fpv_t func)
+{
+	uint8_t index;
 	
-	cca = phy_ofdm_cca();
-	if (cca > MAC_CCA_THREDHOLD)
+	for(index=0; index<MAX_PHY_TMR_NUM; index++)
 	{
-		return PLAT_FALSE;
+		if (phy_tmr_array[index].count == 0)
+		{
+			phy_tmr_array[index].count = delay_us;
+			hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, func);
+			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_set_timer(index, delay_us);
+			return index+1;
+		}
+	}
+
+	return 0;
+}
+
+bool_t phy_tmr_stop(uint8_t id)
+{
+	uint8_t index;
+
+	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
+
+	index = id-1;
+	
+	if (phy_tmr_array[index].count)
+	{
+		hal_rf_misc_set_timer(index, 0);
+		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);
+		phy_tmr_array[index].count = 0;
+		return PLAT_TRUE;
 	}
 	else
 	{
-		hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
-		delay_us(150);
-		hal_rf_of_set_state(HAL_RF_OF_SEND_M);
-		//DBG_PRINTF("%");
+		return PLAT_FALSE;
+	}
+		
+}
+
+bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
+{	
+	uint32_t cur_us;
+	uint8_t index;
+
+	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
+
+	index = id-1;
+
+	if (phy_tmr_array[index].count)
+	{
+		cur_us = hal_rf_misc_get_timer(index);
+		hal_rf_misc_set_timer(index, delay_us+cur_us);		
 		return PLAT_TRUE;
 	}
+	else
+	{
+		return PLAT_FALSE;
+	}
+}
+
+bool_t phy_tmr_repeat(uint8_t id)
+{
+	uint8_t index;
+	
+	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
+
+	index = id-1;
+
+	if (phy_tmr_array[index].count)
+	{
+		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);		
+		return PLAT_TRUE;
+	}
+	else
+	{
+		return PLAT_FALSE;
+	}
+}
+
+bool_t phy_ofdm_write(uint8_t *buf, uint32_t size)
+{
+	if (buf == PLAT_NULL)
+	{
+		return PLAT_FALSE;
+	}
+
+	hal_rf_of_write_ram(buf, size);
+
+	return PLAT_TRUE;
+}
+
+bool_t phy_ofdm_read(uint8_t *buf, uint32_t size)
+{
+	if (buf == PLAT_NULL)
+	{
+		return PLAT_FALSE;
+	}
+
+	hal_rf_of_read_ram(buf, size);
+	
+	return PLAT_TRUE;
+}
+
+void phy_ofdm_recv(void)
+{
+	hal_rf_of_set_state(HAL_RF_OF_RECV_M);
+}
+
+void phy_ofdm_send(void)
+{
+	hal_rf_of_set_state(HAL_RF_OF_SEND_M);	
+}
+
+void phy_ofdm_idle(void)
+{
+	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);		
 }
 
 int8_t phy_ofdm_cca(void)
@@ -197,15 +193,21 @@ int8_t phy_ofdm_cca(void)
 	return cca;
 }
 
+uint16_t phy_ofdm_snr(void)
+{
+	uint16_t s_pow = hal_rf_of_get_reg(HAL_RF_OF_SIG_POW);
+	uint16_t n_pow = hal_rf_of_get_reg(HAL_RF_OF_NOI_POW);
+	uint16_t snr = 0;
+
+	//将信噪比传给帧头
+	snr = (uint16_t)(hal_rf_ofdm_cal_sn(s_pow, n_pow)*10);
+	if (snr>255) snr = 255;
+}
 
 void phy_init(void)
 {
 	/* 射频初始化 */
-	hal_rf_init();	
-
-	phy_ofdm_init();
-
-    phy_tmr_init();	
+	hal_rf_init();
 }
 
 void phy_deinit(void)

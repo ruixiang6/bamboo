@@ -21,6 +21,8 @@ static void app_test_cb(void);
 static void app_test_handler(void);
 static void app_test_mac_handler(void);
 
+static uint16_t app_test_id = 0;
+
 
 void app_handler(uint16_t event_type)
 {
@@ -174,9 +176,8 @@ static void app_uart_handler(void)
 				sscanf(p_start, "%d", &value);
 			}
 			
-			hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, app_test_cb);
-			hal_rf_misc_int_enable(HAL_RF_MISC_TMR2_INT);			
-			hal_rf_misc_set_timer(2, value);
+			app_test_id = hal_timer_free(app_test_id);
+			app_test_id = hal_timer_alloc(value, app_test_cb);
 			seq = 0;
 			return;
 		}
@@ -184,10 +185,7 @@ static void app_uart_handler(void)
 		p_start =  strstr((char_t*)temp_buf, "over");
 		if (p_start)
 		{			
-			hal_rf_misc_int_disable(HAL_RF_MISC_TMR2_INT);
-			hal_rf_misc_set_timer(HAL_RF_MISC_TMR2_INT, 0);
-			hal_rf_misc_int_clear(HAL_RF_MISC_TMR2_INT);
-			hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, PLAT_NULL);
+			app_test_id = hal_timer_free(app_test_id);
 			DBG_PRINTF("Send=%d\r\n", seq);
 			return;
 		}
@@ -569,7 +567,9 @@ static void app_test_cb(void)
 	uint16_t object = APP_EVENT_TEST;
 	
 	osel_event_set(app_event_h, &object);
-	hal_rf_misc_set_timer(2, value);
+
+	app_test_id = hal_timer_free(app_test_id);
+	app_test_id = hal_timer_alloc(value, app_test_cb);
 }
 
 static void app_test_handler(void)

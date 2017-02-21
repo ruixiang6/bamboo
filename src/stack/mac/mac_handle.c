@@ -40,6 +40,8 @@ bool_t mac_send(kbuf_t *kbuf)
 	//计算CRC32
 	p_mac_frm_head->crc32 = 0;
 	p_mac_frm_head->crc32 = crc32_tab(kbuf->base, 0, sizeof(mac_frm_head_t)-sizeof(uint32_t));
+	//kbuf赋予总长度HAL_RF_OF_REG_MAX_RAM_SIZE倍数
+	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
 
 	if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
 	{
@@ -94,95 +96,100 @@ static void mac_of_rx_handler(void)
 
 static void mac_of_tx_handler(void)
 {
-	OSEL_DECL_CRITICAL();
-	static kbuf_t *skbuf = PLAT_NULL;	
+	OSEL_DECL_CRITICAL();	
 	kbuf_t *kbuf = PLAT_NULL;
-	uint8_t loop;
+	uint8_t loop;	
 	int8_t cca;
 	
-	if (skbuf)
+	if (mac_rdy_snd_kbuf != PLAT_NULL)
 	{
-		if (mac_csma_tmr.send_cnt>=5)
-		{
-			DBG_PRINTF("#");
-			kbuf_free(skbuf);
-			skbuf = PLAT_NULL;
-		}
-	}
-	
-	if (skbuf == PLAT_NULL)
-	{
-		for (loop=0; loop<MAC_QOS_LIST_MAX_NUM; loop++)
-		{
-			OSEL_ENTER_CRITICAL();
-			kbuf = (kbuf_t *)list_front_get(mac_ofdm_send_multi_list[loop]);
-			OSEL_EXIT_CRITICAL();
-			if (kbuf)
-			{
-				//DBG_PRINTF("-");
-				skbuf = kbuf;
-				mac_csma_tmr.send_cnt = 0;
-				break;
-			}
-		}
-		//延时3ms
-		osel_systick_delay(3);
-		
-		if (kbuf == PLAT_NULL) return;
-	}
-	
-	if (hal_rf_of_get_state() == HAL_RF_OF_SEND_M)
-	{
-		DBG_PRINTF("*");
 		return;
 	}
 
-	if (mac_csma_tmr.type == MAC_CSMA_FREE)
+	for (loop=0; loop<MAC_QOS_LIST_MAX_NUM; loop++)
 	{
-		if (phy_ofdm_send(skbuf) == PLAT_TRUE)
+		OSEL_ENTER_CRITICAL();
+		kbuf = (kbuf_t *)list_front_get(mac_ofdm_send_multi_list[loop]);
+		OSEL_EXIT_CRITICAL();
+		if (kbuf)
 		{
-            DBG_PRINTF("S");
-			skbuf = PLAT_NULL;
-			return;
-		}		
-
-		DBG_PRINTF(".");
-		mac_csma_tmr.type = MAC_CSMA_DIFS;
-		mac_csma_tmr.send_cnt++;
-		phy_tmr_start(2000);//2ms
+			//DBG_PRINTF("-");
+			mac_rdy_snd_kbuf = kbuf;				
+			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);
+			mac_timer.live_id = phy_tmr_start(MAC_PKT_LIVE_US, mac_rdy_kbuf_live_cb);
+			break;
+		}
 	}
-    else
-    {
-        DBG_PRINTF("%d", mac_csma_tmr.type);
-    }
+	
+	if (kbuf == PLAT_NULL) return;
+
+	cca = phy_ofdm_cca();
+
+	if (cca>MAC_CCA_THREDHOLD)
+	{
+		mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);
+		mac_timer.csma_type = MAC_CSMA_DIFS;
+		mac_timer.csma_difs_cnt = 1;
+		return;
+	}
+	else
+	{
+		mac_timer.csma_id = phy_tmr_start(MAC_PKT_SLOT_UNIT_US, mac_csma_cb);
+		mac_timer.csma_type = MAC_CSMA_SLOT;
+		mac_timer.csma_slot_cnt = 1;
+		return;
+	}
 }
 
 void mac_csma_handler(void)
 {
-	uint32_t random_slot;
-	uint16_t object = 0;
-		
-	if (mac_csma_tmr.type == MAC_CSMA_DIFS)
+	int8_t cca;
+
+	switch(mac_timer.csma_type)
 	{
-		if (mac_csma_tmr.send_cnt == 0) mac_csma_tmr.send_cnt = 1;
-		random_slot = (rand()%(mac_csma_tmr.send_cnt*10))+1;	//产生一个时隙数		
-		mac_csma_tmr.type = MAC_CSMA_SLOT;
-		phy_tmr_start(random_slot*50);						//50us产生一个时隙
-		
-		//DBG_PRINTF("D=%d%d|", mac_csma_tmr.send_cnt, random_slot);
-	}
-	else if (mac_csma_tmr.type == MAC_CSMA_SLOT)
-	{
-        //DBG_PRINTF("L");
-		object = MAC_EVENT_OF_TX;
-		osel_event_set(mac_event_h, &object);
-		mac_csma_tmr.type = MAC_CSMA_FREE;
-	}	
-	else
-	{
-        DBG_PRINTF("T");
-		mac_csma_tmr.type = MAC_CSMA_DIFS;		
-		phy_tmr_start(2000);//2ms
+		case MAC_CSMA_DIFS:
+            DBG_PRINTF("*");
+			cca = phy_ofdm_cca();
+			if (cca>MAC_CCA_THREDHOLD)
+			{
+				mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);
+				mac_timer.csma_type = MAC_CSMA_DIFS;				
+			}
+			else
+			{
+				mac_timer.csma_slot_cnt = pow(2, mac_timer.csma_difs_cnt);
+				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;
+				mac_timer.csma_id = phy_tmr_start(MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt, mac_csma_cb);
+				mac_timer.csma_type = MAC_CSMA_SLOT;
+			}
+			mac_timer.csma_difs_cnt++;
+			break;
+		case MAC_CSMA_SLOT:
+            DBG_PRINTF("^");
+			cca = phy_ofdm_cca();
+			if (cca>MAC_CCA_THREDHOLD)
+			{
+				mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);
+				mac_timer.csma_type = MAC_CSMA_DIFS;
+				mac_timer.csma_difs_cnt++;
+			}
+			else
+			{
+				phy_ofdm_idle();
+				mac_timer.csma_id = phy_tmr_start(MAC_IDLE_TO_SEND_US, mac_csma_cb);
+				mac_timer.csma_type = MAC_CSMA_RDY;
+			}
+			break;
+		case MAC_CSMA_RDY:
+            DBG_PRINTF("@");
+			phy_ofdm_send();
+			phy_tmr_stop(mac_timer.csma_id);
+			mac_timer.csma_type = MAC_CSMA_FREE;
+			mac_timer.csma_id = 0;
+			break;
+		default:
+			DBG_TRACE("mac_timer.csma_type=%d\r\n", mac_timer.csma_type);
+			break;
 	}
 }
 
