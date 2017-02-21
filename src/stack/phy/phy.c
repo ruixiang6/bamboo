@@ -59,7 +59,7 @@ static void phy_ofdm_send_cb(void)
 		kbuf_free(phy_send_frm);
 		phy_send_frm = PLAT_NULL;
 	}
-    //DBG_PRINTF("send\r\n");
+    DBG_PRINTF("&");
 	//进入接收状态
 	hal_rf_of_set_state(HAL_RF_OF_RECV_M);
 	osel_event_set(mac_event_h, &object);
@@ -95,16 +95,16 @@ static void phy_ofdm_init(void)
 static void phy_tmr_init(void)
 {
 	hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR0_INT, phy_csma_nav_cb);
-	hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR1_INT, PLAT_NULL);
-	hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, PLAT_NULL);
+	//hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR1_INT, PLAT_NULL);
+	//hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, PLAT_NULL);
 
 	hal_rf_misc_int_clear(HAL_RF_MISC_TMR0_INT);
-	hal_rf_misc_int_clear(HAL_RF_MISC_TMR1_INT);
-	hal_rf_misc_int_clear(HAL_RF_MISC_TMR2_INT);
+	//hal_rf_misc_int_clear(HAL_RF_MISC_TMR1_INT);
+	//hal_rf_misc_int_clear(HAL_RF_MISC_TMR2_INT);
 	
 	hal_rf_misc_int_enable(HAL_RF_MISC_TMR0_INT);
-	hal_rf_misc_int_enable(HAL_RF_MISC_TMR1_INT);
-	hal_rf_misc_int_enable(HAL_RF_MISC_TMR2_INT);
+	//hal_rf_misc_int_enable(HAL_RF_MISC_TMR1_INT);
+	//hal_rf_misc_int_enable(HAL_RF_MISC_TMR2_INT);
 }
 
 void phy_tmr_start(uint32_t delay_us)
@@ -158,6 +158,7 @@ bool_t phy_ofdm_send(kbuf_t *kbuf)
 		hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
 		delay_us(150);
 		hal_rf_of_set_state(HAL_RF_OF_SEND_M);
+		//DBG_PRINTF("%");
 		return PLAT_TRUE;
 	}
 }

@@ -136,6 +136,7 @@ static void app_gps_handler(void)
 
 
 static uint32_t value = 1000000;
+static uint8_t seq = 0;
 
 static void app_uart_handler(void)
 {
@@ -174,8 +175,9 @@ static void app_uart_handler(void)
 			}
 			
 			hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, app_test_cb);
-			hal_rf_misc_int_enable(HAL_RF_MISC_TMR2_INT);
+			hal_rf_misc_int_enable(HAL_RF_MISC_TMR2_INT);			
 			hal_rf_misc_set_timer(2, value);
+			seq = 0;
 			return;
 		}
 
@@ -572,8 +574,7 @@ static void app_test_cb(void)
 static void app_test_handler(void)
 {
 	kbuf_t *kbuf;
-	mac_frm_head_t *p_mac_frm_head;
-	static uint8_t seq = 0;
+	mac_frm_head_t *p_mac_frm_head;	
 
 	kbuf = kbuf_alloc(KBUF_BIG_TYPE);
 

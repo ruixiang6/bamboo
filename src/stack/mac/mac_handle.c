@@ -54,6 +54,12 @@ bool_t mac_send(kbuf_t *kbuf)
 		OSEL_EXIT_CRITICAL();
 		//DBG_PRINTF("+");
 	}
+	else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
+	{
+		OSEL_ENTER_CRITICAL();
+		list_behind_put(&kbuf->list, mac_ofdm_send_multi_list[2]);
+		OSEL_EXIT_CRITICAL();
+	}
 	else
 	{
 		return PLAT_FALSE;

@@ -812,11 +812,11 @@ void FabricIrq1_IRQHandler(void)
 	if (HAL_RF_OFDM->int_mask_status & HAL_RF_OF_RX_FIN_INT)
 	{
 		HAL_RF_OFDM->int_clr_status = HAL_RF_OF_RX_FIN_INT;
-
 		if (ofdm_handler.rx_req_handler)
 		{
 			(*(ofdm_handler.rx_req_handler))();
 		}
+		HAL_RF_OFDM->int_clr_status = HAL_RF_OF_RX_FIN_INT;
 	}
 
 	if (HAL_RF_OFDM->int_mask_status & HAL_RF_OF_COARSE_SYNC_INT)
@@ -831,12 +831,12 @@ void FabricIrq1_IRQHandler(void)
 
 	if (HAL_RF_OFDM->int_mask_status & HAL_RF_OF_TX_FIN_INT)
 	{
-		HAL_RF_OFDM->int_clr_status = HAL_RF_OF_TX_FIN_INT;		
-
+		HAL_RF_OFDM->int_clr_status = HAL_RF_OF_TX_FIN_INT;
 		if (ofdm_handler.tx_req_handler)
 		{
 			(*(ofdm_handler.tx_req_handler))();
 		}
+		HAL_RF_OFDM->int_clr_status = HAL_RF_OF_TX_FIN_INT;
 	}
 }
 
