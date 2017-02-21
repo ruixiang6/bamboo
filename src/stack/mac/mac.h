@@ -22,6 +22,7 @@
 #define MAC_FRM_DATA_TYPE		0
 #define MAC_FRM_CTRL_TYPE		1
 #define MAC_FRM_MGMT_TYPE		2
+#define MAC_FRM_TEST_TYPE		3
 
 #define MAC_FRM_PROBE_STYPE		6
 #define MAC_FRM_RTS_STYPE		11

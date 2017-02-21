@@ -13,6 +13,7 @@ uint8_t *app_gps_buf = PLAT_NULL;
 osel_task_t *app_task_h;
 osel_event_t *app_event_h;
 app_audio_t app_audio;
+list_t app_recv_list;
 
 void gui_hook_func(void);//per2ms
 
@@ -44,6 +45,9 @@ void app_init(void)
 	
 	//初始化串口回调
 	hal_uart_rx_irq_enable(UART_DEBUG, uart_recv_callback);
+
+	//
+	list_init(&app_recv_list);
 
 	//srand(p_device_info->id);
 }

@@ -55,10 +55,13 @@ extern app_audio_t app_audio;
 extern const uint8_t slience_enforce_2400bps_voice[];	//@test.c
 extern NMEA_RMC_GGA_MSG *p_nmea_gps_msg;
 extern uint8_t *app_gps_buf;
+extern list_t app_recv_list;
 
 #define APP_EVENT_GPS			(1u<<0)
 #define APP_EVENT_UART			(1u<<1)
 #define APP_EVENT_AUDIO			(1u<<2)
+#define APP_EVENT_TEST			(1u<<7)
+#define APP_EVENT_TEST_MAC		(1u<<6)
 
 void app_handler(uint16_t event_type);
 void app_timeout_handler(void);

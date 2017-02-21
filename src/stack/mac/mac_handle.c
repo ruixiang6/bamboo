@@ -1,6 +1,7 @@
 #include <mac.h>
 #include <phy.h>
 #include <device.h>
+#include <app.h>
 
 list_t *mac_ofdm_send_multi_list[MAC_QOS_LIST_MAX_NUM];
 list_t mac_ofdm_recv_list;
@@ -216,6 +217,16 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			OSEL_EXIT_CRITICAL();
 			//上至NWK
 			osel_event_set(nwk_event_h, &object);
+			DBG_PRINTF("R");
+		}
+		else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
+		{
+			object = APP_EVENT_TEST_MAC;
+			OSEL_ENTER_CRITICAL();
+			list_behind_put(&kbuf->list, &app_recv_list);
+			OSEL_EXIT_CRITICAL();
+			//上至APP
+			osel_event_set(app_event_h, &object);
 			DBG_PRINTF("R");
 		}
 		else
