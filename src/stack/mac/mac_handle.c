@@ -125,7 +125,9 @@ static void mac_of_tx_handler(void)
 				break;
 			}
 		}
-
+		//—” ±3ms
+		osel_systick_delay(3);
+		
 		if (kbuf == PLAT_NULL) return;
 	}
 	

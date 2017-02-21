@@ -136,7 +136,7 @@ static void app_gps_handler(void)
 
 
 static uint32_t value = 1000000;
-static uint8_t seq = 0;
+static uint32_t seq = 0;
 
 static void app_uart_handler(void)
 {
@@ -187,7 +187,8 @@ static void app_uart_handler(void)
 			hal_rf_misc_int_disable(HAL_RF_MISC_TMR2_INT);
 			hal_rf_misc_set_timer(HAL_RF_MISC_TMR2_INT, 0);
 			hal_rf_misc_int_clear(HAL_RF_MISC_TMR2_INT);
-			hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, PLAT_NULL);			
+			hal_rf_misc_int_reg_handler(HAL_RF_MISC_TMR2_INT, PLAT_NULL);
+			DBG_PRINTF("Send=%d\r\n", seq);
 			return;
 		}
 	}
@@ -594,7 +595,7 @@ static void app_test_handler(void)
 		//·¢ËÍ¸ømac²ã
 		mac_send(kbuf);
 
-		DBG_PRINTF("Q=%d\r\n", seq);
+		//DBG_PRINTF("Q=%d\r\n", seq);
 	}
 	else
 	{
