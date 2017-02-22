@@ -148,7 +148,7 @@ void mac_ofdm_send_cb(void)
 		phy_tmr_stop(mac_timer.live_id);
 		mac_timer.live_id = 0;
 	}
-    //DBG_PRINTF("&");
+    DBG_PRINTF("&");
 	//进入接收状态
 	phy_ofdm_recv();
 }

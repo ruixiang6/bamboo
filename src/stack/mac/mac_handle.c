@@ -54,7 +54,7 @@ bool_t mac_send(kbuf_t *kbuf)
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, mac_ofdm_send_multi_list[1]);
 		OSEL_EXIT_CRITICAL();
-		//DBG_PRINTF("+");
+		DBG_PRINTF("+");
 	}
 	else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
 	{
@@ -113,7 +113,7 @@ static void mac_of_tx_handler(void)
 		OSEL_EXIT_CRITICAL();
 		if (kbuf)
 		{
-			//DBG_PRINTF("+");
+			DBG_PRINTF("N");
 			mac_rdy_snd_kbuf = kbuf;				
 			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);
 			OSEL_ENTER_CRITICAL();
@@ -252,7 +252,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			OSEL_EXIT_CRITICAL();
 			//ÉÏÖÁNWK
 			osel_event_set(nwk_event_h, &object);
-			//DBG_PRINTF("R");
+			DBG_PRINTF("R");
 		}
 		else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
 		{

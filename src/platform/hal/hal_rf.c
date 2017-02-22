@@ -848,13 +848,13 @@ void FabricIrq2_IRQHandler(void)
 	for(index=0; index<8; index++)
 	{
 		if (int_status>>index & 1u)
-		{
-			HAL_RF_MISC->int_clr |= 1u<<index;
-			
+		{			
 			if (misc_handler.tmr_handler[index])
 			{
 				(*(misc_handler.tmr_handler[index]))();
 			}
+
+			HAL_RF_MISC->int_clr |= 1u<<index;
 		}
 	}
 }

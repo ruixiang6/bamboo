@@ -112,6 +112,7 @@ bool_t phy_tmr_repeat(uint8_t id)
 	}
 	else
 	{
+		DBG_PRINTF("O");
 		return PLAT_FALSE;
 	}
 }
