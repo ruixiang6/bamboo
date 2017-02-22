@@ -12,6 +12,7 @@
 typedef struct
 {
 	uint8_t tmr_int;
+	bool_t used;
 	uint32_t count;
 }phy_tmr_t;
 #pragma pack()
@@ -31,7 +32,9 @@ void phy_tmr_init(void);
 
 void phy_deinit(void);
 
-uint8_t phy_tmr_start(uint32_t delay_us, fpv_t func);
+uint8_t phy_tmr_alloc(fpv_t func);
+bool_t phy_tmr_free(uint8_t id);
+bool_t phy_tmr_start(uint8_t id, uint32_t delay_us);
 bool_t phy_tmr_stop(uint8_t id);
 bool_t phy_tmr_add(uint8_t id, uint32_t delay_us);
 bool_t phy_tmr_repeat(uint8_t id);

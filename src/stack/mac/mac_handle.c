@@ -117,7 +117,7 @@ static void mac_of_tx_handler(void)
 			mac_rdy_snd_kbuf = kbuf;				
 			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);
 			OSEL_ENTER_CRITICAL();
-			mac_timer.live_id = phy_tmr_start(MAC_PKT_LIVE_US, mac_rdy_kbuf_live_cb);
+			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);
 			OSEL_EXIT_CRITICAL();
 			break;
 		}
@@ -132,8 +132,8 @@ static void mac_of_tx_handler(void)
 		DBG_PRINTF("*");
 		OSEL_ENTER_CRITICAL();
 		mac_timer.csma_type = MAC_CSMA_DIFS;
-		mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US, mac_csma_cb);
 		OSEL_EXIT_CRITICAL();
+		phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);		
 		mac_timer.csma_difs_cnt = 1;
 		return;
 	}
@@ -142,8 +142,8 @@ static void mac_of_tx_handler(void)
 		//DBG_PRINTF("L");
 		OSEL_ENTER_CRITICAL();
         mac_timer.csma_type = MAC_CSMA_SLOT;
-		mac_timer.csma_id = phy_tmr_start(MAC_PKT_SLOT_UNIT_US, mac_csma_cb);
 		OSEL_EXIT_CRITICAL();
+		phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US);		
 		mac_timer.csma_slot_cnt = 1;
 		return;
 	}
@@ -164,8 +164,8 @@ void mac_csma_handler(void)
 				DBG_PRINTF("*");
 				OSEL_ENTER_CRITICAL();
 				mac_timer.csma_type = MAC_CSMA_DIFS;
-				phy_tmr_add(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);				
 				OSEL_EXIT_CRITICAL();
+				phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);				
 			}
 			else
 			{
@@ -173,8 +173,8 @@ void mac_csma_handler(void)
 				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;
 				OSEL_ENTER_CRITICAL();
 				mac_timer.csma_type = MAC_CSMA_SLOT;
-				phy_tmr_add(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);				
 				OSEL_EXIT_CRITICAL();
+				phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);				
 			}
 			mac_timer.csma_difs_cnt++;
 			break;
@@ -185,26 +185,25 @@ void mac_csma_handler(void)
 				DBG_PRINTF("*");
 				OSEL_ENTER_CRITICAL();
                 mac_timer.csma_type = MAC_CSMA_DIFS;
-				phy_tmr_add(mac_timer.csma_id, +rand()%MAC_PKT_DIFS_US);
 				OSEL_EXIT_CRITICAL();
+				phy_tmr_start(mac_timer.csma_id, +rand()%MAC_PKT_DIFS_US);				
 				mac_timer.csma_difs_cnt++;
 			}
 			else
 			{
 				phy_ofdm_idle();
 				OSEL_ENTER_CRITICAL();
-                mac_timer.csma_type = MAC_CSMA_RDY;				
-				phy_tmr_add(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);
+                mac_timer.csma_type = MAC_CSMA_RDY;
 				OSEL_EXIT_CRITICAL();
+				phy_tmr_start(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);				
 			}
 			break;
 		case MAC_CSMA_RDY:
 			//DBG_PRINTF("S");
 			phy_ofdm_send();
-			OSEL_ENTER_CRITICAL();
 			phy_tmr_stop(mac_timer.csma_id);
+			OSEL_ENTER_CRITICAL();
 			mac_timer.csma_type = MAC_CSMA_FREE;
-			mac_timer.csma_id = 0;
 			OSEL_EXIT_CRITICAL();
 			break;
 		default:

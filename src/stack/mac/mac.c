@@ -39,6 +39,10 @@ void mac_deinit(void)
 	osel_task_delete(mac_task_h);
 	mac_event_h = PLAT_NULL;
 	mac_task_h = PLAT_NULL;
+
+	phy_tmr_free(mac_timer.send_id);
+	phy_tmr_free(mac_timer.csma_id);
+	phy_tmr_free(mac_timer.live_id);
 }
 
 OSEL_DECLARE_TASK(MAC_TASK, param)
@@ -68,7 +72,11 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 	phy_ofdm_init(mac_ofdm_send_cb, mac_ofdm_recv_cb);
 	phy_tmr_init();
 
-	mac_timer.send_id = phy_tmr_start(MAC_SEND_INTERVAL_US, mac_tx_cb);
+	mac_timer.send_id = phy_tmr_alloc(mac_tx_cb);
+	mac_timer.csma_id = phy_tmr_alloc(mac_csma_cb);
+	mac_timer.live_id = phy_tmr_alloc(mac_rdy_kbuf_live_cb);
+
+	phy_tmr_start(mac_timer.send_id, MAC_SEND_INTERVAL_US);
 	
 	while(1)
 	{
@@ -143,11 +151,8 @@ void mac_ofdm_send_cb(void)
 		mac_rdy_snd_kbuf = PLAT_NULL;		
 	}
 	
-	if (mac_timer.live_id)
-	{
-		phy_tmr_stop(mac_timer.live_id);
-		mac_timer.live_id = 0;
-	}
+	phy_tmr_stop(mac_timer.live_id);		
+	
     DBG_PRINTF("&");
 	//进入接收状态
 	phy_ofdm_recv();
@@ -162,7 +167,7 @@ void mac_rdy_kbuf_live_cb(void)
 	if (state == HAL_RF_OF_SEND_M)
 	{
 		//如果状态还在发送阶段，则等待1ms后
-		phy_tmr_add(mac_timer.live_id, 1000);
+		phy_tmr_start(mac_timer.live_id, 1000);
 		return;
 	}
 	
@@ -171,19 +176,11 @@ void mac_rdy_kbuf_live_cb(void)
 		kbuf_free(mac_rdy_snd_kbuf);
 		mac_rdy_snd_kbuf = PLAT_NULL;
 	}
-
-	if (mac_timer.live_id)
-	{
-		phy_tmr_stop(mac_timer.live_id);
-		mac_timer.live_id = 0;
-	}
-
-	if (mac_timer.csma_id)
-	{		
-		phy_tmr_stop(mac_timer.csma_id);
-		mac_timer.csma_id = 0;
-        mac_timer.csma_type = MAC_CSMA_FREE;
-	}
+	
+	phy_tmr_stop(mac_timer.live_id);		
+		
+	phy_tmr_stop(mac_timer.csma_id);		
+    
     DBG_PRINTF("-");
 	phy_ofdm_recv();
 }

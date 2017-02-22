@@ -34,27 +34,73 @@ void phy_tmr_init(void)
 		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);		
 		phy_tmr_array[index].count = 0;
+		phy_tmr_array[index].used = PLAT_FALSE;
 	}
 }
 
-uint8_t phy_tmr_start(uint32_t delay_us, fpv_t func)
+uint8_t phy_tmr_alloc(fpv_t func)
 {
 	uint8_t index;
 	
 	for(index=0; index<MAX_PHY_TMR_NUM; index++)
 	{
-		if (phy_tmr_array[index].count == 0)
+		if (phy_tmr_array[index].used == PLAT_FALSE)
 		{
-			phy_tmr_array[index].count = delay_us;
+			phy_tmr_array[index].count = 0;
+			phy_tmr_array[index].used = PLAT_TRUE;
 			hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, func);
-			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
-			hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
-			hal_rf_misc_set_timer(index, delay_us);
+			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);						
 			return index+1;
 		}
 	}
 
 	return 0;
+}
+
+bool_t phy_tmr_free(uint8_t id)
+{
+	uint8_t index;
+
+	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
+
+	index = id-1;
+	
+	if (phy_tmr_array[index].used)
+	{
+		hal_rf_misc_set_timer(index, 0);
+		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
+		phy_tmr_array[index].count = 0;
+		phy_tmr_array[index].used = PLAT_FALSE;
+		return PLAT_TRUE;
+	}
+	else
+	{
+		return PLAT_FALSE;
+	}
+}
+
+bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
+{
+	uint8_t index;
+
+	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
+
+	index = id-1;
+
+	if (phy_tmr_array[index].used && delay_us)
+	{
+		phy_tmr_array[index].count = delay_us;
+		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
+		return PLAT_TRUE;
+	}
+	else
+	{
+		return PLAT_FALSE;
+	}
+	
 }
 
 bool_t phy_tmr_stop(uint8_t id)
@@ -64,21 +110,18 @@ bool_t phy_tmr_stop(uint8_t id)
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
 
 	index = id-1;
-	
-	if (phy_tmr_array[index].count)
+	if (phy_tmr_array[index].used)
 	{
 		hal_rf_misc_set_timer(index, 0);
 		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
+		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);		
 		phy_tmr_array[index].count = 0;
 		return PLAT_TRUE;
 	}
 	else
 	{
 		return PLAT_FALSE;
-	}
-		
+	}	
 }
 
 bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
@@ -90,11 +133,19 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 
 	index = id-1;
 
-	cur_us = hal_rf_misc_get_timer(index);
-	phy_tmr_array[index].count = delay_us+cur_us;
-	hal_rf_misc_set_timer(index, delay_us+cur_us);
-    
-	return PLAT_TRUE;
+	if (phy_tmr_array[index].used && delay_us)
+	{
+		cur_us = hal_rf_misc_get_timer(index);
+		phy_tmr_array[index].count = delay_us+cur_us;
+		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_set_timer(index, delay_us+cur_us);
+		return PLAT_TRUE;
+	}
+	else
+	{
+		return PLAT_FALSE;
+	}
 }
 
 bool_t phy_tmr_repeat(uint8_t id)
@@ -105,14 +156,15 @@ bool_t phy_tmr_repeat(uint8_t id)
 
 	index = id-1;
 
-	if (phy_tmr_array[index].count)
+	if (phy_tmr_array[index].used && phy_tmr_array[index].count)
 	{
+		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);		
 		return PLAT_TRUE;
 	}
 	else
 	{
-		DBG_PRINTF("O");
 		return PLAT_FALSE;
 	}
 }
