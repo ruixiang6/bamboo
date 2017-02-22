@@ -89,6 +89,9 @@ void device_info_init(void)
 				pg_device_info->local_netmask_addr[1],
 				pg_device_info->local_netmask_addr[2],
 				pg_device_info->local_netmask_addr[3]);
+
+	
+	srand(GET_DEV_ID(pg_device_info->id));
 }
 
 device_info_t *device_info_get(bool_t flag)

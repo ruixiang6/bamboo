@@ -48,8 +48,6 @@ void app_init(void)
 
 	//
 	list_init(&app_recv_list);
-
-	//srand(p_device_info->id);
 }
 
 OSEL_DECLARE_TASK(APP_TASK, param)

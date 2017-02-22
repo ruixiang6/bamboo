@@ -96,7 +96,7 @@ static void mac_of_rx_handler(void)
 
 static void mac_of_tx_handler(void)
 {
-	OSEL_DECL_CRITICAL();	
+	OSEL_DECL_CRITICAL();
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t loop;	
 	int8_t cca;
@@ -113,10 +113,12 @@ static void mac_of_tx_handler(void)
 		OSEL_EXIT_CRITICAL();
 		if (kbuf)
 		{
-			//DBG_PRINTF("-");
+			//DBG_PRINTF("+");
 			mac_rdy_snd_kbuf = kbuf;				
 			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);
+			OSEL_ENTER_CRITICAL();
 			mac_timer.live_id = phy_tmr_start(MAC_PKT_LIVE_US, mac_rdy_kbuf_live_cb);
+			OSEL_EXIT_CRITICAL();
 			break;
 		}
 	}
@@ -128,16 +130,20 @@ static void mac_of_tx_handler(void)
 	if (cca>MAC_CCA_THREDHOLD)
 	{
 		DBG_PRINTF("*");
-        mac_timer.csma_type = MAC_CSMA_DIFS;
-		mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);		
+		OSEL_ENTER_CRITICAL();
+		mac_timer.csma_type = MAC_CSMA_DIFS;
+		mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US, mac_csma_cb);
+		OSEL_EXIT_CRITICAL();
 		mac_timer.csma_difs_cnt = 1;
 		return;
 	}
 	else
 	{
-		DBG_PRINTF("L");
+		//DBG_PRINTF("L");
+		OSEL_ENTER_CRITICAL();
         mac_timer.csma_type = MAC_CSMA_SLOT;
 		mac_timer.csma_id = phy_tmr_start(MAC_PKT_SLOT_UNIT_US, mac_csma_cb);
+		OSEL_EXIT_CRITICAL();
 		mac_timer.csma_slot_cnt = 1;
 		return;
 	}
@@ -145,24 +151,30 @@ static void mac_of_tx_handler(void)
 
 void mac_csma_handler(void)
 {
+	OSEL_DECL_CRITICAL();
 	int8_t cca;
 
 	switch(mac_timer.csma_type)
 	{
 		case MAC_CSMA_DIFS:
-            DBG_PRINTF("D");
+            //DBG_PRINTF("D");
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
 			{
-				phy_tmr_add(mac_timer.csma_id, MAC_PKT_DIFS_US);
-				mac_timer.csma_type = MAC_CSMA_DIFS;				
+				DBG_PRINTF("*");
+				OSEL_ENTER_CRITICAL();
+				mac_timer.csma_type = MAC_CSMA_DIFS;
+				phy_tmr_add(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);				
+				OSEL_EXIT_CRITICAL();
 			}
 			else
 			{
 				mac_timer.csma_slot_cnt = pow(2, mac_timer.csma_difs_cnt);
 				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;
-				phy_tmr_add(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);
+				OSEL_ENTER_CRITICAL();
 				mac_timer.csma_type = MAC_CSMA_SLOT;
+				phy_tmr_add(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);				
+				OSEL_EXIT_CRITICAL();
 			}
 			mac_timer.csma_difs_cnt++;
 			break;
@@ -170,23 +182,30 @@ void mac_csma_handler(void)
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
 			{
+				DBG_PRINTF("*");
+				OSEL_ENTER_CRITICAL();
                 mac_timer.csma_type = MAC_CSMA_DIFS;
-				phy_tmr_add(mac_timer.csma_id, MAC_PKT_DIFS_US);				
+				phy_tmr_add(mac_timer.csma_id, +rand()%MAC_PKT_DIFS_US);
+				OSEL_EXIT_CRITICAL();
 				mac_timer.csma_difs_cnt++;
 			}
 			else
 			{
 				phy_ofdm_idle();
+				OSEL_ENTER_CRITICAL();
                 mac_timer.csma_type = MAC_CSMA_RDY;				
-				phy_tmr_add(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);				
+				phy_tmr_add(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);
+				OSEL_EXIT_CRITICAL();
 			}
 			break;
 		case MAC_CSMA_RDY:
-			DBG_PRINTF("S");
+			//DBG_PRINTF("S");
 			phy_ofdm_send();
+			OSEL_ENTER_CRITICAL();
 			phy_tmr_stop(mac_timer.csma_id);
 			mac_timer.csma_type = MAC_CSMA_FREE;
 			mac_timer.csma_id = 0;
+			OSEL_EXIT_CRITICAL();
 			break;
 		default:
 			DBG_TRACE("mac_timer.csma_type=%d\r\n", mac_timer.csma_type);
@@ -233,7 +252,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			OSEL_EXIT_CRITICAL();
 			//ÉÏÖÁNWK
 			osel_event_set(nwk_event_h, &object);
-			DBG_PRINTF("R");
+			//DBG_PRINTF("R");
 		}
 		else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
 		{
