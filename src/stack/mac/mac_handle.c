@@ -127,15 +127,17 @@ static void mac_of_tx_handler(void)
 
 	if (cca>MAC_CCA_THREDHOLD)
 	{
-		mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);
-		mac_timer.csma_type = MAC_CSMA_DIFS;
+		DBG_PRINTF("*");
+        mac_timer.csma_type = MAC_CSMA_DIFS;
+		mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);		
 		mac_timer.csma_difs_cnt = 1;
 		return;
 	}
 	else
 	{
+		DBG_PRINTF("L");
+        mac_timer.csma_type = MAC_CSMA_SLOT;
 		mac_timer.csma_id = phy_tmr_start(MAC_PKT_SLOT_UNIT_US, mac_csma_cb);
-		mac_timer.csma_type = MAC_CSMA_SLOT;
 		mac_timer.csma_slot_cnt = 1;
 		return;
 	}
@@ -148,40 +150,39 @@ void mac_csma_handler(void)
 	switch(mac_timer.csma_type)
 	{
 		case MAC_CSMA_DIFS:
-            DBG_PRINTF("*");
+            DBG_PRINTF("D");
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
 			{
-				mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);
+				phy_tmr_add(mac_timer.csma_id, MAC_PKT_DIFS_US);
 				mac_timer.csma_type = MAC_CSMA_DIFS;				
 			}
 			else
 			{
 				mac_timer.csma_slot_cnt = pow(2, mac_timer.csma_difs_cnt);
 				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;
-				mac_timer.csma_id = phy_tmr_start(MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt, mac_csma_cb);
+				phy_tmr_add(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);
 				mac_timer.csma_type = MAC_CSMA_SLOT;
 			}
 			mac_timer.csma_difs_cnt++;
 			break;
-		case MAC_CSMA_SLOT:
-            DBG_PRINTF("^");
+		case MAC_CSMA_SLOT:            
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
 			{
-				mac_timer.csma_id = phy_tmr_start(MAC_PKT_DIFS_US, mac_csma_cb);
-				mac_timer.csma_type = MAC_CSMA_DIFS;
+                mac_timer.csma_type = MAC_CSMA_DIFS;
+				phy_tmr_add(mac_timer.csma_id, MAC_PKT_DIFS_US);				
 				mac_timer.csma_difs_cnt++;
 			}
 			else
 			{
 				phy_ofdm_idle();
-				mac_timer.csma_id = phy_tmr_start(MAC_IDLE_TO_SEND_US, mac_csma_cb);
-				mac_timer.csma_type = MAC_CSMA_RDY;
+                mac_timer.csma_type = MAC_CSMA_RDY;				
+				phy_tmr_add(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);				
 			}
 			break;
 		case MAC_CSMA_RDY:
-            DBG_PRINTF("@");
+			DBG_PRINTF("S");
 			phy_ofdm_send();
 			phy_tmr_stop(mac_timer.csma_id);
 			mac_timer.csma_type = MAC_CSMA_FREE;

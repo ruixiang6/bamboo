@@ -30,10 +30,11 @@
 #define MAC_FRM_CTS_STYPE		12
 #define MAC_FRM_ACK_STYPE		13
 
-#define MAC_PKT_LIVE_US			100000
+#define MAC_PKT_LIVE_US			200000
 #define MAC_PKT_DIFS_US			20000
 #define MAC_PKT_SLOT_UNIT_US	50
 #define MAC_IDLE_TO_SEND_US		100
+#define MAC_SEND_INTERVAL_US	12000
 
 
 #pragma pack(1)

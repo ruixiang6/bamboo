@@ -68,7 +68,7 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 	phy_ofdm_init(mac_ofdm_send_cb, mac_ofdm_recv_cb);
 	phy_tmr_init();
 
-	mac_timer.send_id = phy_tmr_start(2000, mac_tx_cb);
+	mac_timer.send_id = phy_tmr_start(MAC_SEND_INTERVAL_US, mac_tx_cb);
 	
 	while(1)
 	{
@@ -91,8 +91,6 @@ void mac_tx_cb(void)
 void mac_csma_cb(void)
 {
 	uint16_t object = MAC_EVENT_CSMA;
-	
-	phy_tmr_stop(mac_timer.csma_id);
 
 	osel_event_set(mac_event_h, &object);	
 }
@@ -157,6 +155,17 @@ void mac_ofdm_send_cb(void)
 
 void mac_rdy_kbuf_live_cb(void)
 {
+	uint8_t state;
+
+	state = hal_rf_of_get_state();
+
+	if (state == HAL_RF_OF_SEND_M)
+	{
+		//如果状态还在发送阶段，则等待1ms后
+		phy_tmr_add(mac_timer.live_id, 1000);
+		return;
+	}
+	
 	if (mac_rdy_snd_kbuf)
 	{		
 		kbuf_free(mac_rdy_snd_kbuf);
@@ -169,10 +178,13 @@ void mac_rdy_kbuf_live_cb(void)
 		mac_timer.live_id = 0;
 	}
 
-	if (mac_timer.csma_type != MAC_CSMA_FREE || mac_timer.csma_id)
-	{
-		mac_timer.csma_type = MAC_CSMA_FREE;
+	if (mac_timer.csma_id)
+	{		
 		phy_tmr_stop(mac_timer.csma_id);
+		mac_timer.csma_id = 0;
+        mac_timer.csma_type = MAC_CSMA_FREE;
 	}
+    DBG_PRINTF("-");
+	phy_ofdm_recv();
 }
 

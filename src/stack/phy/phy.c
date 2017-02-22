@@ -70,6 +70,7 @@ bool_t phy_tmr_stop(uint8_t id)
 		hal_rf_misc_set_timer(index, 0);
 		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);
+		hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
 		phy_tmr_array[index].count = 0;
 		return PLAT_TRUE;
 	}
@@ -89,16 +90,11 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 
 	index = id-1;
 
-	if (phy_tmr_array[index].count)
-	{
-		cur_us = hal_rf_misc_get_timer(index);
-		hal_rf_misc_set_timer(index, delay_us+cur_us);		
-		return PLAT_TRUE;
-	}
-	else
-	{
-		return PLAT_FALSE;
-	}
+	cur_us = hal_rf_misc_get_timer(index);
+	phy_tmr_array[index].count = delay_us+cur_us;
+	hal_rf_misc_set_timer(index, delay_us+cur_us);
+    
+	return PLAT_TRUE;
 }
 
 bool_t phy_tmr_repeat(uint8_t id)
@@ -202,6 +198,8 @@ uint16_t phy_ofdm_snr(void)
 	//将信噪比传给帧头
 	snr = (uint16_t)(hal_rf_ofdm_cal_sn(s_pow, n_pow)*10);
 	if (snr>255) snr = 255;
+    
+    return snr;
 }
 
 void phy_init(void)
