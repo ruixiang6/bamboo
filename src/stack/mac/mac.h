@@ -33,8 +33,8 @@
 #define MAC_PKT_LIVE_US			300000
 #define MAC_PKT_DIFS_US			5000
 #define MAC_PKT_SLOT_UNIT_US	50
-#define MAC_IDLE_TO_SEND_US		150
-#define MAC_SEND_INTERVAL_US	12000
+#define MAC_IDLE_TO_SEND_US		80
+#define MAC_SEND_INTERVAL_US	10000
 
 
 #pragma pack(1)

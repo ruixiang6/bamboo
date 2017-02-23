@@ -91,8 +91,10 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 void mac_tx_cb(void)
 {
 	uint16_t object = MAC_EVENT_OF_TX;
-
+    DBG_PRINTF("{");
+	
 	phy_tmr_repeat(mac_timer.send_id);
+	
 	osel_event_set(mac_event_h, &object);
 }
 

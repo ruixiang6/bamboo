@@ -847,14 +847,16 @@ void FabricIrq2_IRQHandler(void)
 	
 	for(index=0; index<8; index++)
 	{
-		if (int_status>>index & 1u)
-		{			
-			if (misc_handler.tmr_handler[index])
+		if (int_status & (1u<<index))
+		{
+			HAL_RF_MISC->int_clr |= (1u<<index);
+			DBG_PRINTF("%d", int_status);
+			if (misc_handler.tmr_handler[index] != PLAT_NULL)
 			{
 				(*(misc_handler.tmr_handler[index]))();
+				DBG_PRINTF("}", int_status);
 			}
-
-			HAL_RF_MISC->int_clr |= 1u<<index;
+			HAL_RF_MISC->int_clr |= (1u<<index);
 		}
 	}
 }
