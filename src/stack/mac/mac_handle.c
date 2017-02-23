@@ -101,7 +101,7 @@ static void mac_of_tx_handler(void)
 	uint8_t loop;	
 	int8_t cca;
     
-    DBG_PRINTF(")");
+    phy_tmr_repeat(mac_timer.send_id);	
 	
 	if (mac_rdy_snd_kbuf != PLAT_NULL)
 	{
@@ -115,7 +115,7 @@ static void mac_of_tx_handler(void)
 		OSEL_EXIT_CRITICAL();
 		if (kbuf)
 		{
-			DBG_PRINTF("N");
+			//DBG_PRINTF("N");
 			mac_rdy_snd_kbuf = kbuf;				
 			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);			
 			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);			
@@ -129,7 +129,7 @@ static void mac_of_tx_handler(void)
 
 	if (cca>MAC_CCA_THREDHOLD)
 	{
-		DBG_PRINTF("*");		
+		DBG_PRINTF("!");		
 		mac_timer.csma_type = MAC_CSMA_DIFS;
 		phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);		
 		mac_timer.csma_difs_cnt = 1;
@@ -156,7 +156,7 @@ void mac_csma_handler(void)
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
 			{
-				DBG_PRINTF("*");				
+				DBG_PRINTF("@");				
 				mac_timer.csma_type = MAC_CSMA_DIFS;
 				phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);								
 			}

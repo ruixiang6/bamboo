@@ -91,10 +91,7 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 void mac_tx_cb(void)
 {
 	uint16_t object = MAC_EVENT_OF_TX;
-    DBG_PRINTF("{");
-	
-	phy_tmr_repeat(mac_timer.send_id);
-	
+    
 	osel_event_set(mac_event_h, &object);
 }
 
@@ -155,7 +152,7 @@ void mac_ofdm_send_cb(void)
 	
 	phy_tmr_stop(mac_timer.live_id);		
 	
-    DBG_PRINTF("&");
+    //DBG_PRINTF("&");
 	//进入接收状态
 	phy_ofdm_recv();
 }
