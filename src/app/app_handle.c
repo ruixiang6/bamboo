@@ -3,6 +3,7 @@
 #include <app.h>
 #include <device.h>
 #include <test.h>
+#include <mac.h>
 
 #define APP_RECV_TIMEOUT	0xFF
 
@@ -15,6 +16,13 @@ static void app_audio_handler(void);
 static void app_audio_out_proc(void);
 static void app_audio_in_proc(void);
 static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type);
+
+static void app_test_cb(void);
+static void app_test_handler(void);
+static void app_test_mac_handler(void);
+
+static uint16_t app_test_id = 0;
+
 
 void app_handler(uint16_t event_type)
 {
@@ -37,6 +45,18 @@ void app_handler(uint16_t event_type)
 		object = APP_EVENT_AUDIO;
 		osel_event_clear(app_event_h, &object);
 		app_audio_handler();		
+	}
+	else if (event_type & APP_EVENT_TEST)
+	{
+		object = APP_EVENT_TEST;
+		osel_event_clear(app_event_h, &object);
+		app_test_handler();
+	}
+	else if (event_type & APP_EVENT_TEST_MAC)
+	{
+		object = APP_EVENT_TEST_MAC;
+		osel_event_clear(app_event_h, &object);
+		app_test_mac_handler();
 	}
 }
 
@@ -116,11 +136,16 @@ static void app_gps_handler(void)
     actual_size = 0;
 }
 
+
+static uint32_t value = 1000000;
+static uint32_t seq = 0;
+
 static void app_uart_handler(void)
 {
 	uint8_t temp_buf[18];	
 	uint32_t size;
-	char_t *p_start = PLAT_NULL;
+	char_t *p_start = PLAT_NULL;	
+	char_t *p_stop = PLAT_NULL;
 	
 	mem_set(temp_buf, 0, 18);
 
@@ -141,7 +166,28 @@ static void app_uart_handler(void)
 		p_start =  strstr((char_t*)temp_buf, "send");
 		if (p_start)
 		{
+			value = 1000000;
 			
+			p_stop = strstr(p_start, ";");
+			if (p_stop)
+			{
+				p_start = p_start + strlen("send=");
+				*p_stop = '\0';
+				sscanf(p_start, "%d", &value);
+			}
+			
+			app_test_id = hal_timer_free(app_test_id);
+			app_test_id = hal_timer_alloc(value, app_test_cb);
+			seq = 0;
+			return;
+		}
+
+		p_start =  strstr((char_t*)temp_buf, "over");
+		if (p_start)
+		{			
+			app_test_id = hal_timer_free(app_test_id);
+			DBG_PRINTF("Send=%d\r\n", seq);
+			return;
 		}
 	}
 }
@@ -515,3 +561,68 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 		update_rtc_flag++;
 	}
 }
+
+static void app_test_cb(void)
+{
+	uint16_t object = APP_EVENT_TEST;
+	
+	osel_event_set(app_event_h, &object);
+
+	app_test_id = hal_timer_free(app_test_id);
+	app_test_id = hal_timer_alloc(value, app_test_cb);
+}
+
+static void app_test_handler(void)
+{
+	kbuf_t *kbuf;
+	mac_frm_head_t *p_mac_frm_head;	
+
+	kbuf = kbuf_alloc(KBUF_BIG_TYPE);
+
+	if (kbuf)
+	{
+		kbuf->valid_len = 1514;
+		
+		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+		//填充长度
+		p_mac_frm_head->frm_len = kbuf->valid_len;
+		//填充目的地址
+		p_mac_frm_head->dest_dev_id = BROADCAST_ID;
+		//帧类型
+		p_mac_frm_head->frm_ctrl.type = MAC_FRM_TEST_TYPE;
+		//序号
+		p_mac_frm_head->seq_ctrl.seq_num = seq++;
+		//发送给mac层
+		mac_send(kbuf);
+
+		//DBG_PRINTF("Q=%d\r\n", seq);
+	}
+	else
+	{
+		DBG_TRACE("kbuf is free\r\n");
+	}
+}
+
+static void app_test_mac_handler(void)
+{
+	kbuf_t *kbuf = PLAT_NULL;
+	mac_frm_head_t *p_mac_frm_head;
+	
+	OSEL_DECL_CRITICAL();
+
+	do
+	{
+		OSEL_ENTER_CRITICAL();
+		kbuf = (kbuf_t *)list_front_get(&app_recv_list);
+		OSEL_EXIT_CRITICAL();
+
+		if (kbuf)
+		{
+			p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+			DBG_PRINTF("Q=%d\r\n", p_mac_frm_head->seq_ctrl.seq_num);
+			kbuf_free(kbuf);
+		}
+	}while(kbuf);
+}
+
+

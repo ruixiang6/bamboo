@@ -1,198 +1,174 @@
 #include <platform.h>
 #include <kbuf.h>
 #include <nwk.h>
+#include <nwk_eth.h>
+#include <nwk_mesh.h>
+#include <mac.h>
+#include <device.h>
 
 
-void nwk_eth_send_cb(void *arg)
+
+//return 1:send to mesh
+//return 2:send to local_ip
+//return 4:send to eth
+uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf)
 {
-	kbuf_t *kbuf = (kbuf_t *)arg;
-	
-	uint16_t object = NWK_EVENT_ETH_TX;
-	
-	kbuf_free(kbuf);
-	
-	osel_event_set(nwk_event_h, &object);
-}
+	eth_hdr_t *p_eth_hdr = PLAT_NULL;
+	etharp_hdr_t *p_etharp_hdr = PLAT_NULL;
+	ip_hdr_t *p_ip_hdr = PLAT_NULL;
+	ip_addr_t ipaddr, netmask;
+    uint16_t ipaddr2_0, ipaddr2_1;
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
-
-void nwk_eth_recv_cb(void *arg)
-{
-	uint16_t object = NWK_EVENT_ETH_RX;
-	
-	osel_event_set(nwk_event_h, &object);
-}
-
-
-static void nwk_eth_send_asyn(kbuf_t* kbuf)
-{
-	uint16_t object = NWK_EVENT_ETH_TX;	
-
-	OSEL_DECL_CRITICAL();
-
-	if (kbuf)
+	if (src_type == SRC_ETH)
 	{
-		OSEL_ENTER_CRITICAL();
-		list_behind_put(&kbuf->list, &nwk_eth_tx_list);
-		OSEL_EXIT_CRITICAL();
-		
-		osel_event_set(nwk_event_h, &object);
-	}
-}
+		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
+		if (p_eth_hdr->dest.addr[0] == p_device_info->local_eth_mac_addr[0]
+			&& p_eth_hdr->dest.addr[1] == p_device_info->local_eth_mac_addr[1]
+			&& p_eth_hdr->dest.addr[2] == p_device_info->local_eth_mac_addr[2]
+			&& p_eth_hdr->dest.addr[3] == p_device_info->local_eth_mac_addr[3]
+			&& p_eth_hdr->dest.addr[4] == p_device_info->local_eth_mac_addr[4]
+			&& p_eth_hdr->dest.addr[5] == p_device_info->local_eth_mac_addr[5])
 
-
-static NWK_SEND_ETH_RES_T nwk_eth_send(bool_t flush_flag)
-{
-	static kbuf_t *skbuf = PLAT_NULL;
-	NWK_SEND_ETH_RES_T res;
-
-	OSEL_DECL_CRITICAL();
-
-	if (flush_flag && skbuf)
-	{
-		kbuf_free(skbuf);
-		skbuf = PLAT_NULL;
-	}
-
-	if (skbuf == PLAT_NULL)
-	{
-		OSEL_ENTER_CRITICAL();
-		skbuf = (kbuf_t *)list_front_get(&nwk_eth_tx_list);
-		OSEL_EXIT_CRITICAL();
-	}
-
-	if (skbuf)
-	{
-		if (hal_eth_send(skbuf))
 		{
-			res = ETH_SEND_SUCCES;
-			skbuf = PLAT_NULL;
+			return DEST_IP;
+		}
+		else if (p_eth_hdr->dest.addr[0] == 0xFF
+			&& p_eth_hdr->dest.addr[1] == 0xFF
+			&& p_eth_hdr->dest.addr[2] == 0xFF
+			&& p_eth_hdr->dest.addr[3] == 0xFF
+			&& p_eth_hdr->dest.addr[4] == 0xFF
+			&& p_eth_hdr->dest.addr[5] == 0xFF)
+		{
+			switch(htons(p_eth_hdr->type))
+			{
+				case ETHTYPE_ARP:
+					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
+                    ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
+                    ipaddr2_1 = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
+					if (p_etharp_hdr->dipaddr.addrw[0] == ipaddr2_0
+						&& p_etharp_hdr->dipaddr.addrw[1] == ipaddr2_1)
+					{
+						return DEST_IP;
+					}
+					else
+					{
+						return DEST_MESH;
+					}
+					break;
+				case ETHTYPE_IP:
+					p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
+					if (IPH_V(p_ip_hdr) != 4) return 0;
+					IP4_ADDR(&ipaddr, 
+							p_device_info->local_ip_addr[0],
+							p_device_info->local_ip_addr[1],
+							p_device_info->local_ip_addr[2],
+							p_device_info->local_ip_addr[3]);
+					IP4_ADDR(&netmask, 
+				             p_device_info->local_netmask_addr[0], 
+				             p_device_info->local_netmask_addr[1], 
+				             p_device_info->local_netmask_addr[2], 
+				             p_device_info->local_netmask_addr[3]);
+					//IP¹ã²¥°ü
+					if ((p_ip_hdr->dest.addr & ~netmask.addr) == (IPADDR_BROADCAST & ~netmask.addr))
+					{
+						return DEST_IP|DEST_MESH;
+					}
+					else if (p_ip_hdr->dest.addr == ipaddr.addr)
+					{
+						return DEST_MESH;
+					}
+					else
+					{
+						return 0;
+					}
+					break;
+				default: return 0;
+			}
 		}
 		else
 		{
-			res = ETH_SEND_FAILED;
+			return DEST_MESH;
+		}
+	}
+	else if (src_type == SRC_IP)
+	{
+		return DEST_MESH|DEST_ETH;
+	}
+	else if (src_type == SRC_MESH)
+	{
+		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
+		if (p_eth_hdr->dest.addr[0] == p_device_info->local_eth_mac_addr[0]
+			&& p_eth_hdr->dest.addr[1] == p_device_info->local_eth_mac_addr[1]
+			&& p_eth_hdr->dest.addr[2] == p_device_info->local_eth_mac_addr[2]
+			&& p_eth_hdr->dest.addr[3] == p_device_info->local_eth_mac_addr[3]
+			&& p_eth_hdr->dest.addr[4] == p_device_info->local_eth_mac_addr[4]
+			&& p_eth_hdr->dest.addr[5] == p_device_info->local_eth_mac_addr[5])
+
+		{
+			return DEST_IP;
+		}
+		else if (p_eth_hdr->dest.addr[0] == 0xFF
+			&& p_eth_hdr->dest.addr[1] == 0xFF
+			&& p_eth_hdr->dest.addr[2] == 0xFF
+			&& p_eth_hdr->dest.addr[3] == 0xFF
+			&& p_eth_hdr->dest.addr[4] == 0xFF
+			&& p_eth_hdr->dest.addr[5] == 0xFF)
+		{
+			switch(htons(p_eth_hdr->type))
+			{
+				case ETHTYPE_ARP:
+					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
+                    ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
+                    ipaddr2_1 = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
+					if (p_etharp_hdr->dipaddr.addrw[0] == ipaddr2_0
+						&& p_etharp_hdr->dipaddr.addrw[1] == ipaddr2_1)
+					{
+						return DEST_IP;
+					}
+					else
+					{
+						return DEST_ETH;
+					}
+					break;
+				case ETHTYPE_IP:
+					p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
+					if (IPH_V(p_ip_hdr) != 4) return 0;
+					IP4_ADDR(&ipaddr, 
+							p_device_info->local_ip_addr[0],
+							p_device_info->local_ip_addr[1],
+							p_device_info->local_ip_addr[2],
+							p_device_info->local_ip_addr[3]);
+					//IP¹ã²¥°ü
+					if ((p_ip_hdr->dest.addr & ~netmask.addr) == (IPADDR_BROADCAST & ~netmask.addr))
+					{
+						return DEST_ETH|DEST_IP;
+					}
+					else if (p_ip_hdr->dest.addr == ipaddr.addr)
+					{
+						return DEST_IP;
+					}
+					else
+					{
+						return DEST_ETH;
+					}
+					break;
+				default: return 0;				
+			}
+		}
+		else
+		{
+			return DEST_ETH;
 		}
 	}
 	else
 	{
-		res = ETH_SEND_EMPTY;
+		return 0;
 	}
-
-	return res;
 }
 
 
-static kbuf_t *nwk_eth_recv_asyn(void)
-{
-	kbuf_t *kbuf = PLAT_NULL;
-	
-	OSEL_DECL_CRITICAL();
-
-	OSEL_ENTER_CRITICAL();
-	kbuf = (kbuf_t *)list_front_get(&nwk_eth_rx_list);
-	OSEL_EXIT_CRITICAL();
-
-	return kbuf;
-}
-
-
-//tcpipĞ­ÒéÕ»µÄ³ö¿Ú
-err_t nwk_tcpip_output(nwk_tcpip_t *nwk_tcpip, pbuf_t *p)
-{
-    pbuf_t *q;
-    uint16_t pckt_length = 0u;
-    uint32_t kbuf_chain_end = 0u;    
-	kbuf_t *kbuf = PLAT_NULL;
-
-	if (nwk_tcpip == PLAT_NULL || p == PLAT_NULL)
-	{
-		return ERR_BUF;
-	}
-	
-	kbuf = kbuf_alloc(KBUF_BIG_TYPE);
-	if (kbuf == PLAT_NULL)
-	{
-		DBG_TRACE("kbuf_alloc failed \r\n");
-		return ERR_BUF;
-	}
-
-	kbuf->offset = kbuf->base + 8;
-
-    q = p;
-	
-    do {
-        mem_cpy(kbuf->offset + pckt_length, q->payload, q->len);
-        pckt_length += q->len;
-        if (q->len == q->tot_len)
-        {
-            kbuf_chain_end = 1u;
-			kbuf->valid_len = pckt_length;
-        }
-        else
-        {
-            q = q->next;
-        }
-    } while (0u == kbuf_chain_end);
-	//Òì²½·¢ËÍ¸øNWKµÄeth
-	nwk_eth_send_asyn(kbuf);
-
-    return ERR_OK;
-}
-
-
-//tcpipĞ­ÒéÕ»µÄÈë¿Ú
-static bool_t nwk_tcpip_input(nwk_tcpip_t *nwk_tcpip, uint8_t *buf, uint32_t size)
-{
-    eth_hdr_t *ethhdr;
-    pbuf_t *p, *q;
-	uint16_t length = 0;
-	uint16_t len = size;
-
-	if (nwk_tcpip == PLAT_NULL || buf == PLAT_NULL)
-	{
-		return PLAT_FALSE;
-	}
-
-	p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-	if (p != PLAT_NULL)
-	{
-		for (q = p; q != PLAT_NULL; q = q->next)
-		{
-			mem_cpy((uint8_t *)q->payload, buf + length, q->len);
-			length += q->len;
-		}
-	}
-	else
-	{
-		DBG_TRACE("pbuf_alloc failed \r\n");
-		return PLAT_FALSE;
-	}
-
-    ethhdr = p->payload;
-
-    switch (htons(ethhdr->type))
-	{
-    case ETHTYPE_IP:
-    case ETHTYPE_ARP:
-        if (nwk_tcpip->input(p, nwk_tcpip) != ERR_OK)
-        {
-           pbuf_free(p);
-           p = PLAT_NULL;
-		   return PLAT_FALSE;
-        }
-		else
-		{			
-			return PLAT_TRUE;
-		}
-    default:
-		//DBG_TRACE("no ethhdr type\r\n");
-        pbuf_free(p);
-        p = PLAT_NULL;
-        return PLAT_FALSE;
-    }	
-}
-
-
-//tcpipĞ­ÒéÕ»µ×²ã»òÊÇÎŞÏß¶ËÊÕµ½Êı¾İºóµÄ´¦Àí£¬×ªÖÁÎŞÏßÍøÂçĞ­ÒéÕ»»òÊÇ±¾µØÍø¿¨
+//tcpipåè®®æ ˆæ”¶åˆ°æ•°æ®åçš„å¤„ç†ï¼Œè½¬ç½®ç½‘å¡
 static void nwk_eth_tx_handler(void)
 {
 	NWK_SEND_ETH_RES_T res = ETH_SEND_EMPTY;
@@ -204,7 +180,7 @@ static void nwk_eth_tx_handler(void)
 		res = nwk_eth_send(flush_flag);
 		if (res == ETH_SEND_FAILED)
 		{
-			//ÑÓÊ±1ms
+			//å»¶æ—¶1ms
 			osel_systick_delay(1);
 			repeat_cnt++;
 			if (repeat_cnt > 3)
@@ -216,29 +192,88 @@ static void nwk_eth_tx_handler(void)
 		{
 			flush_flag = PLAT_FALSE;
 		}
-	}while(res != ETH_SEND_EMPTY);
+	} while(res != ETH_SEND_EMPTY);
 }
 
 
-//±¾µØÍø¿¨ÊÕµ½Êı¾İºóµÄ´¦Àí£¬×ªÖÁÎŞÏßÍøÂçĞ­ÒéÕ»»òÊÇ±¾µØtcpipĞ­ÒéÕ»
+//æœ¬åœ°ç½‘å¡æ”¶åˆ°æ•°æ®åçš„å¤„ç†
 static void nwk_eth_rx_handler(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
+	uint8_t output_type;
+	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
 	
 	while (1)
 	{
 		kbuf = nwk_eth_recv_asyn();
 		if (kbuf)
 		{
-			//¾­¹ıÅĞ¶Ï´¦Àíºó£¬È·¶¨Ìá½»±¾µØtcpipĞ­ÒéÕ»
-			nwk_tcpip_input(&nwk_tcpip, kbuf->offset, kbuf->valid_len);
-			kbuf_free(kbuf);			
+			output_type = nwk_pkt_transfer(SRC_ETH, kbuf);
+			if (output_type & DEST_IP)
+			{
+				//ç»è¿‡åˆ¤æ–­å¤„ç†åï¼Œæäº¤åˆ°æœ¬åœ°tcpipåè®®æ ˆ
+				nwk_tcpip_input(kbuf->offset, kbuf->valid_len);
+				//è¿™é‡Œæ²¡æœ‰åˆ é™¤kbufæ˜¯å› ä¸ºä¸‹é¢meshè¦
+			}
+
+			if (output_type & DEST_MESH)
+			{
+				p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+				//å¡«å……é•¿åº¦
+				p_mac_frm_head->frm_len = kbuf->valid_len;
+				//å¡«å……ç›®çš„åœ°å€
+				p_mac_frm_head->dest_dev_id = BROADCAST_ID;
+				//å¡«å……ç±»å‹
+				p_mac_frm_head->frm_ctrl.type = MAC_FRM_DATA_TYPE;
+				//å‘é€ç»™macå±‚
+				mac_send(kbuf);
+			}
+			else
+			{
+				kbuf_free(kbuf);
+			}
 		}
 		else
 		{
 			return;
 		}
 	}
+}
+
+
+//meshç«¯æ”¶åˆ°æ•°æ®åçš„å¤„ç†
+static void nwk_mesh_rx_handler(void)
+{
+	kbuf_t *kbuf = PLAT_NULL;	
+	uint8_t output_type;
+		
+	do
+	{		
+		kbuf = nwk_mesh_recv_get();		
+		if (kbuf)
+		{
+			output_type = nwk_pkt_transfer(SRC_MESH, kbuf);
+			
+			if (output_type & DEST_IP)
+			{
+				DBG_PRINTF("P");
+				//ç»è¿‡åˆ¤æ–­å¤„ç†åï¼Œæäº¤åˆ°æœ¬åœ°tcpipåè®®æ ˆ
+				nwk_tcpip_input(kbuf->offset, kbuf->valid_len);
+				//è¿™é‡Œæ²¡æœ‰åˆ é™¤kbufæ˜¯å› ä¸ºä¸‹é¢ethè¦
+			}
+			
+			if (output_type & DEST_ETH)
+			{
+				DBG_PRINTF("E");
+				//å¼‚æ­¥å‘é€ç»™nwkçš„eth
+				nwk_eth_send_asyn(kbuf);
+			}
+			else
+			{
+				kbuf_free(kbuf);
+			}
+		}
+	}while(kbuf != PLAT_NULL);
 }
 
 
@@ -257,6 +292,12 @@ void nwk_handler(uint16_t event_type)
 		object = NWK_EVENT_ETH_RX;
 		osel_event_clear(nwk_event_h, &object);
 		nwk_eth_rx_handler();
+	}
+	else if (event_type & NWK_EVENT_MESH_RX)
+	{
+		object = NWK_EVENT_MESH_RX;
+		osel_event_clear(nwk_event_h, &object);
+		nwk_mesh_rx_handler();
 	}
 }
 

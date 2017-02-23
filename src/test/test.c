@@ -392,15 +392,15 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 						hal_rf_of_set_state(HAL_RF_OF_CCA_M);
 						delay_us(150);
 						clean_cca_cnt = 0;
-#define THRED	-70
+#define THREDHOLD	-68
 						do
 						{
 							agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)>>8;
 							cca = hal_rf_ofdm_cal_agc(agc_value, 28);
-							if (cca<=-THRED)
+							if (cca<=THREDHOLD)
 							{
 								clean_cca_cnt++;
-								if (clean_cca_cnt>20)
+								if (clean_cca_cnt>10)
 								{
 									hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
 									break;

@@ -33,10 +33,27 @@
 #define HAL_RF_MISC_AGC_GAIN 				(HAL_RF_MISC_BASE_ADDR+0x64)
 #define HAL_RF_MISC_AGC_CTRL 				(HAL_RF_MISC_BASE_ADDR+0x68)
 #define HAL_RF_MISC_AGC_CFG2				(HAL_RF_MISC_BASE_ADDR+0x6C)
+/////////////////////Timer///////////////////////////
+#define HAL_RF_MISC_TMR0_VAR				(HAL_RF_MISC_BASE_ADDR+0x70)
+#define HAL_RF_MISC_TMR1_VAR				(HAL_RF_MISC_BASE_ADDR+0x74)
+#define HAL_RF_MISC_TMR2_VAR				(HAL_RF_MISC_BASE_ADDR+0x78)
+#define HAL_RF_MISC_TMR3_VAR				(HAL_RF_MISC_BASE_ADDR+0x7c)
+#define HAL_RF_MISC_TMR4_VAR				(HAL_RF_MISC_BASE_ADDR+0x80)
+#define HAL_RF_MISC_TMR5_VAR				(HAL_RF_MISC_BASE_ADDR+0x84)
+#define HAL_RF_MISC_TMR6_VAR				(HAL_RF_MISC_BASE_ADDR+0x88)
+#define HAL_RF_MISC_TMR7_VAR				(HAL_RF_MISC_BASE_ADDR+0x8c)
 /////////////////////IQ///////////////////////////
 #define HAL_RF_MISC_RX_I_BUF				(HAL_RF_MISC_BASE_ADDR+0x4000)
 #define HAL_RF_MISC_RX_Q_BUF				(HAL_RF_MISC_BASE_ADDR+0x8000)
-
+////////////////////MISC INT///////////////////////////////
+#define HAL_RF_MISC_TMR7_INT				(1u<<7)
+#define HAL_RF_MISC_TMR6_INT				(1u<<6)
+#define HAL_RF_MISC_TMR5_INT				(1u<<5)
+#define HAL_RF_MISC_TMR4_INT				(1u<<4)
+#define HAL_RF_MISC_TMR3_INT				(1u<<3)
+#define HAL_RF_MISC_TMR2_INT				(1u<<2)
+#define HAL_RF_MISC_TMR1_INT				(1u<<1)
+#define HAL_RF_MISC_TMR0_INT				(1u<<0)
 /////////////////////////OFDM/////////////////////////////////////////
 #define HAL_RF_OF_REG_ID				(HAL_RF_OF_BASE_ADDR+0x00)
 #define HAL_RF_OF_REG_VERSION			(HAL_RF_OF_BASE_ADDR+0x04)
@@ -163,14 +180,20 @@ typedef struct
 	__RW uint32_t rf_tx_pow;
 	__RW uint32_t rf_switch;
 	__RW uint32_t lms_bw_cfg;
-	uint32_t  RESERVED1[11];
+	uint32_t  RESERVED1[6];
+	__RW uint32_t int_mask;
+	__RO uint32_t int_raw_status;
+	__RO uint32_t int_mask_status;
+	__WO uint32_t int_clr;
+	uint32_t  RESERVED2;
 	__RW uint32_t lo_leakage_en;
 	__RW uint32_t erf_calc_en;
 	__RW uint32_t erf_result;
 	__RW uint32_t agc_cfg;
 	__RW uint32_t agc_gain;
 	__RW uint32_t agc_ctrl;
-	__RW uint32_t agc_cfg2;
+	__RW uint32_t agc_cfg2;//0x006c
+	__RW uint32_t tmr_var[8];
 }hal_rf_misc_t;
 
 #pragma pack(1)
@@ -245,6 +268,18 @@ fp32_t hal_rf_ofdm_cal_dbfs(uint32_t value);
 fp32_t hal_rf_ofdm_cal_sn(uint16_t s_pow, uint16_t n_pow);
 
 ///////////////////////////////////////////////////////////////////
+//使能时隙中断
+void hal_rf_misc_int_enable(uint32_t int_type);
+//关闭时隙中断
+void hal_rf_misc_int_disable(uint32_t int_type);
+//清除时隙中断
+void hal_rf_misc_int_clear(uint32_t int_type);
+//注册中断函数
+void hal_rf_misc_int_reg_handler(uint32_t int_type, fpv_t handler);
+//设置定时器
+void hal_rf_misc_set_timer(uint8_t index, uint32_t value);
+//读取定时器
+uint32_t hal_rf_misc_get_timer(uint8_t index);
 //设置PA状态
 void hal_rf_misc_set_pa_ctrl(uint8_t state);
 //获得PA状态

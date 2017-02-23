@@ -4,12 +4,10 @@
 #include <platform.h>
 #include <nwk.h>
 
-#define GET_NWK_ID(a)				(a[0])
+#define GET_DEV_ID(a)				(a[0])
 #define GET_MESH_ID(a)				(a[1])
-#define GET_DEV_ID(a)				(a[2]|(a[3]<<8)|(a[4]<<16))
-#define SET_NWK_ID(a, b)			{a[0] = b;}
+#define SET_DEV_ID(a, b)			{a[0] = b;}
 #define SET_MESH_ID(a, b)			{a[1] = b;}
-#define SET_DEV_ID(a, b)			{a[2] = b&0xFF; a[3] = (b>>8)&0xFF; a[4] = (b>>16)&0xFF;}
 
 #pragma pack(1)
 
@@ -49,7 +47,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t id[5];
+    uint8_t id[4];
 	char_t version[10];
 	uint8_t local_eth_mac_addr[6];
 	uint8_t local_ip_addr[4];

@@ -22,18 +22,17 @@ void device_info_init(void)
     //莫名必须赋值，不然flash的数据判断问题
     mem_cpy(pg_device_info->id, p_flash_device_info->id, 5);
 
-	if (GET_NWK_ID(pg_device_info->id) == 0xff || GET_NWK_ID(pg_device_info->id) == 0 || 1)
-	{		
-		SET_NWK_ID(pg_device_info->id, 0x01);
-		SET_MESH_ID(pg_device_info->id, 0x01);
-		SET_DEV_ID(pg_device_info->id, 0x010101);
+	if (GET_DEV_ID(pg_device_info->id) == 0xff || GET_DEV_ID(pg_device_info->id) == 0 || 1)
+	{
+		SET_MESH_ID(pg_device_info->id, 0x12);
+		SET_DEV_ID(pg_device_info->id, 0x05);
 		
 		strcpy(pg_device_info->version, VERSION);
 		
 		pg_device_info->local_ip_addr[0] = 192;
 		pg_device_info->local_ip_addr[1] = 168;
 		pg_device_info->local_ip_addr[2] = 12;
-		pg_device_info->local_ip_addr[3] = 66;
+		pg_device_info->local_ip_addr[3] = 208;
 
 		pg_device_info->local_gateway_addr[0] = 192;
 		pg_device_info->local_gateway_addr[1] = 168;
@@ -61,10 +60,9 @@ void device_info_init(void)
 	}	
 	DBG_PRINTF("Device Software Version=%s\r\n", pg_device_info->version);
 
-	DBG_PRINTF("Device ID=0x%x\r\nMesh ID=0x%x\r\nNWK ID=0x%x\r\n", 
-				GET_DEV_ID(pg_device_info->id), 
-				GET_MESH_ID(pg_device_info->id),
-				GET_NWK_ID(pg_device_info->id));
+	DBG_PRINTF("Device ID=0x%x\r\nMesh ID=0x%x\r\n", 
+				GET_DEV_ID(pg_device_info->id),
+				GET_MESH_ID(pg_device_info->id));
 
 	DBG_PRINTF("Ethernet MAC Addr=%x:%x:%x:%x:%x:%x\r\n", 
 				pg_device_info->local_eth_mac_addr[0],
@@ -91,6 +89,9 @@ void device_info_init(void)
 				pg_device_info->local_netmask_addr[1],
 				pg_device_info->local_netmask_addr[2],
 				pg_device_info->local_netmask_addr[3]);
+
+	
+	srand(GET_DEV_ID(pg_device_info->id));
 }
 
 device_info_t *device_info_get(bool_t flag)
