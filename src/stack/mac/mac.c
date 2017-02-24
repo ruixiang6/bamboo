@@ -12,12 +12,6 @@ osel_event_t *mac_event_h;
 mac_timer_t mac_timer;
 kbuf_t *mac_rdy_snd_kbuf = PLAT_NULL;
 
-static list_t mac_ofdm_send_q0_list;
-static list_t mac_ofdm_send_q1_list;
-static list_t mac_ofdm_send_q2_list;
-static list_t mac_ofdm_send_q3_list;
-static list_t mac_ofdm_send_q4_list;
-
 void mac_init(void)
 {
   	/*创建 MAC 任务 */   
@@ -53,19 +47,15 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 	DBG_TRACE("MAC_TASK!\r\n");
 
 	list_init(&mac_ofdm_recv_list);
-	list_init(&mac_ofdm_send_list);
-
-	mem_set(&mac_timer, 0, sizeof(mac_timer_t));
 	
-	mac_ofdm_send_multi_list[0] = &mac_ofdm_send_q0_list;
-	mac_ofdm_send_multi_list[1] = &mac_ofdm_send_q1_list;
-	mac_ofdm_send_multi_list[2] = &mac_ofdm_send_q2_list;
-	mac_ofdm_send_multi_list[3] = &mac_ofdm_send_q3_list;
-	mac_ofdm_send_multi_list[4] = &mac_ofdm_send_q4_list;
+	mem_set(&mac_timer, 0, sizeof(mac_timer_t));
 
 	for (uint8_t i=0; i<MAC_QOS_LIST_MAX_NUM; i++)
 	{
-		list_init(mac_ofdm_send_multi_list[i]);
+		list_init(&mac_send_entity[i].tx_list);		
+		mac_send_entity[i].total_num = 0;
+		mac_send_entity[i].total_size = 0;
+		mac_send_entity[i].next_size = 0;
 	}
 
 	phy_init();
@@ -75,6 +65,9 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 	mac_timer.send_id = phy_tmr_alloc(mac_tx_cb);
 	mac_timer.csma_id = phy_tmr_alloc(mac_csma_cb);
 	mac_timer.live_id = phy_tmr_alloc(mac_rdy_kbuf_live_cb);
+	mac_timer.idle_id = phy_tmr_alloc(mac_idle_cb);
+
+	mac_timer.idle_state = PLAT_FALSE;
 
 	phy_tmr_start(mac_timer.send_id, MAC_SEND_INTERVAL_US);
 	
@@ -94,6 +87,14 @@ void mac_tx_cb(void)
     
 	osel_event_set(mac_event_h, &object);
 }
+
+void mac_idle_cb(void)
+{
+	uint16_t object = MAC_EVENT_OF_IDLE;
+    
+	osel_event_set(mac_event_h, &object);
+}
+
 
 void mac_csma_cb(void)
 {

@@ -3,9 +3,8 @@
 #include <device.h>
 #include <app.h>
 
-list_t *mac_ofdm_send_multi_list[MAC_QOS_LIST_MAX_NUM];
+mac_send_t mac_send_entity[MAC_QOS_LIST_MAX_NUM];
 list_t mac_ofdm_recv_list;
-list_t mac_ofdm_send_list;
 
 static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf);
 
@@ -36,7 +35,8 @@ bool_t mac_send(kbuf_t *kbuf)
 	//最大的长度倍数
 	p_mac_frm_head->phy = (kbuf->valid_len-1)/HAL_RF_OF_REG_MAX_RAM_SIZE;
 	//前导码+发射时间+切换时间+offset
-	p_mac_frm_head->duration = 360+720*(p_mac_frm_head->phy+1)+100+200;
+	//p_mac_frm_head->duration = 360+720*(p_mac_frm_head->phy+1)+100+200;
+	p_mac_frm_head->duration = 0;
 	//计算CRC32
 	p_mac_frm_head->crc32 = 0;
 	p_mac_frm_head->crc32 = crc32_tab(kbuf->base, 0, sizeof(mac_frm_head_t)-sizeof(uint32_t));
@@ -46,20 +46,25 @@ bool_t mac_send(kbuf_t *kbuf)
 	if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
 	{
 		OSEL_ENTER_CRITICAL();
-		list_behind_put(&kbuf->list, mac_ofdm_send_multi_list[0]);
+		list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
+		mac_send_entity[0].total_size += kbuf->valid_len;
+		mac_send_entity[0].total_num++;
 		OSEL_EXIT_CRITICAL();
 	}
 	else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_DATA_TYPE)
 	{
 		OSEL_ENTER_CRITICAL();
-		list_behind_put(&kbuf->list, mac_ofdm_send_multi_list[1]);
+		list_behind_put(&kbuf->list, &mac_send_entity[1].tx_list);
+		mac_send_entity[1].total_size += kbuf->valid_len;
+		mac_send_entity[1].total_num++;
 		OSEL_EXIT_CRITICAL();
-		//DBG_PRINTF("+");
 	}
 	else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
 	{
 		OSEL_ENTER_CRITICAL();
-		list_behind_put(&kbuf->list, mac_ofdm_send_multi_list[2]);
+		list_behind_put(&kbuf->list, &mac_send_entity[2].tx_list);
+		mac_send_entity[2].total_size += kbuf->valid_len;
+		mac_send_entity[2].total_num++;
 		OSEL_EXIT_CRITICAL();
 	}
 	else
@@ -67,8 +72,10 @@ bool_t mac_send(kbuf_t *kbuf)
 		return PLAT_FALSE;
 	}
 
-	osel_event_set(mac_event_h, &object);
-	
+	if (mac_timer.idle_state == PLAT_FALSE)
+	{
+		osel_event_set(mac_event_h, &object);
+	}
 	return PLAT_TRUE;
 }
 
@@ -96,12 +103,16 @@ static void mac_of_rx_handler(void)
 
 static void mac_of_tx_handler(void)
 {
-	OSEL_DECL_CRITICAL();
+	OSEL_DECL_CRITICAL();	
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t loop;	
 	int8_t cca;
-    
-    phy_tmr_repeat(mac_timer.send_id);	
+	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+
+	if (mac_timer.idle_state == PLAT_FALSE)
+	{
+    	phy_tmr_repeat(mac_timer.send_id);
+	}
 	
 	if (mac_rdy_snd_kbuf != PLAT_NULL)
 	{
@@ -111,16 +122,24 @@ static void mac_of_tx_handler(void)
 	for (loop=0; loop<MAC_QOS_LIST_MAX_NUM; loop++)
 	{
 		OSEL_ENTER_CRITICAL();
-		kbuf = (kbuf_t *)list_front_get(mac_ofdm_send_multi_list[loop]);
-		OSEL_EXIT_CRITICAL();
+		kbuf = (kbuf_t *)list_front_get(&mac_send_entity[loop].tx_list);			
 		if (kbuf)
 		{
-			//DBG_PRINTF("N");
+			mac_send_entity[loop].total_size -= kbuf->valid_len;
+			mac_send_entity[loop].total_num--;			
+			OSEL_EXIT_CRITICAL();
+			if (mac_send_entity[loop].total_size>MAX_PHY_OFDM_FRM_LEN)
+			{
+				p_mac_frm_head = (mac_frm_head_t *)mac_rdy_snd_kbuf->base;
+				p_mac_frm_head->duration = 3340;
+			}
+			//DBG_PRINTF("N");			
 			mac_rdy_snd_kbuf = kbuf;				
 			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);			
 			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);			
 			break;
 		}
+		OSEL_EXIT_CRITICAL();
 	}
 	
 	if (kbuf == PLAT_NULL) return;
@@ -148,6 +167,8 @@ static void mac_of_tx_handler(void)
 void mac_csma_handler(void)
 {
 	int8_t cca;
+	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+	OSEL_DECL_CRITICAL();
 
 	switch(mac_timer.csma_type)
 	{
@@ -187,6 +208,18 @@ void mac_csma_handler(void)
 			break;
 		case MAC_CSMA_RDY:
 			//DBG_PRINTF("S");
+			//开启idle态
+			OSEL_ENTER_CRITICAL();
+			if (mac_rdy_snd_kbuf && mac_timer.idle_state == PLAT_FALSE)
+			{
+				p_mac_frm_head = (mac_frm_head_t *)mac_rdy_snd_kbuf->base;
+				if (p_mac_frm_head->duration)
+				{
+					phy_tmr_start(mac_timer.idle_id, p_mac_frm_head->duration);
+					mac_timer.idle_us = p_mac_frm_head->duration;
+				}
+			}
+			OSEL_EXIT_CRITICAL();			
 			phy_ofdm_send();			
 			phy_tmr_stop(mac_timer.csma_id);
 			mac_timer.csma_type = MAC_CSMA_FREE;			
@@ -196,6 +229,23 @@ void mac_csma_handler(void)
 			break;
 	}
 }
+
+static void mac_of_idle_handler(void)
+{
+	uint16_t object = MAC_EVENT_OF_TX;
+	
+	if (mac_timer.idle_state == PLAT_FALSE)
+	{
+		mac_timer.idle_state = PLAT_TRUE;
+		phy_tmr_start(mac_timer.idle_id, mac_timer.idle_us);
+	}
+	else
+	{
+		mac_timer.idle_state = PLAT_FALSE;
+		osel_event_set(mac_event_h, &object);
+	}
+}
+
 
 static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 {
@@ -212,7 +262,14 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 	p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
 
 	//找到NAV位置
-	//TODO
+	if (p_mac_frm_head->duration && mac_timer.idle_state == PLAT_FALSE)
+	{
+		phy_tmr_start(mac_timer.idle_id, p_mac_frm_head->duration);
+		OSEL_ENTER_CRITICAL();
+		mac_timer.idle_us = p_mac_frm_head->duration;
+		mac_timer.idle_state = PLAT_TRUE;
+		OSEL_EXIT_CRITICAL();
+	}
 	
 	if (p_mac_frm_head->mesh_id != GET_MESH_ID(p_device_info->id))
 	{
@@ -284,5 +341,11 @@ void mac_handler(uint16_t event_type)
 		object = MAC_EVENT_CSMA;
 		osel_event_clear(mac_event_h, &object);		
 		mac_csma_handler();
+	}
+	else if (event_type & MAC_EVENT_OF_IDLE)
+	{
+		object = MAC_EVENT_OF_IDLE;
+		osel_event_clear(mac_event_h, &object);		
+		mac_of_idle_handler();
 	}
 }

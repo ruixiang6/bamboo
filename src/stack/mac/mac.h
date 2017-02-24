@@ -7,6 +7,7 @@
 #define MAC_EVENT_OF_RX			(1u<<0)
 #define MAC_EVENT_OF_TX			(1u<<1)
 #define MAC_EVENT_CSMA			(1u<<2)
+#define MAC_EVENT_OF_IDLE		(1u<<3)
 
 #define MAC_CSMA_RTS			1
 #define MAC_CSMA_CTS			2
@@ -31,12 +32,11 @@
 #define MAC_FRM_ACK_STYPE		13
 
 #define MAC_PKT_LIVE_US			300000
-#define MAC_PKT_DIFS_US			5000
+#define MAC_PKT_DIFS_US			3340
 #define MAC_PKT_SLOT_UNIT_US	50
 #define MAC_IDLE_TO_SEND_US		80
-#define MAC_SEND_INTERVAL_US	8000
+#define MAC_SEND_INTERVAL_US	1000//8000
 #define MAC_PKT_LIVE_AVOID_US	1000
-
 
 #pragma pack(1)
 
@@ -87,15 +87,25 @@ typedef struct
 	uint8_t csma_id;
 	uint8_t send_id;	
 	uint8_t live_id;
+	uint8_t idle_id;
+	bool_t idle_state;
+	uint16_t idle_us;
 }mac_timer_t;
+
+typedef struct
+{
+	list_t tx_list;
+	uint32_t total_num;
+	uint64_t total_size;
+	uint32_t next_size;
+}mac_send_t;
 
 #pragma pack()
 
 #define MAC_QOS_LIST_MAX_NUM	5	
 
-extern list_t *mac_ofdm_send_multi_list[MAC_QOS_LIST_MAX_NUM];
+extern mac_send_t mac_send_entity[MAC_QOS_LIST_MAX_NUM];
 extern list_t mac_ofdm_recv_list;
-extern list_t mac_ofdm_send_list;
 
 extern osel_task_t *mac_task_h;
 extern osel_event_t *mac_event_h;
@@ -108,6 +118,7 @@ void mac_init(void);
 void mac_deinit(void);
 
 void mac_tx_cb(void);
+void mac_idle_cb(void);
 void mac_csma_cb(void);
 void mac_ofdm_recv_cb(void);
 void mac_ofdm_send_cb(void);
