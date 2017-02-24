@@ -6,8 +6,13 @@
 
 #define GET_DEV_ID(a)				(a[0])
 #define GET_MESH_ID(a)				(a[1])
+#define GET_MODE_ID(a)				(a[2])
+#define GET_TYPE_ID(a)				(a[3])
+
 #define SET_DEV_ID(a, b)			{a[0] = b;}
 #define SET_MESH_ID(a, b)			{a[1] = b;}
+#define SET_MODE_ID(a, b)			{a[2] = b;}
+#define SET_TYPE_ID(a, b)			{a[3] = b;}
 
 #pragma pack(1)
 
@@ -53,6 +58,8 @@ typedef struct
 	uint8_t local_ip_addr[4];
 	uint8_t local_gateway_addr[4];
 	uint8_t local_netmask_addr[4];
+	//Ô¶¶Ë¹ýÂËmacµØÖ·
+	uint8_t remote_eth_mac_addr[6];
 	//dont save
 	dev_pos_t pos;
 	dev_time_t time;	

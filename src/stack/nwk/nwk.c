@@ -130,8 +130,6 @@ void nwk_init(void)
 	nwk_tcpip_init();
 
 	list_init(&nwk_mesh_rx_list);
-
-	DBG_TRACE("nwk_init ok\r\n");
 }
 
 

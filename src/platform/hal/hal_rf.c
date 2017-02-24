@@ -6,10 +6,30 @@
 #include <hal_rf.h>
 #include <hal_gpio.h>
 
+const int8_t OFDM_CAL_ARRAY_1400[] =
+{-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-10,-11,-12,-13,-14,-15,-16,
+-17,-18,-19,-20,-21,-22,-23,-24,-25,-27,-28,-29,-30,-31,-32,-33,-34,-35,-36,-37,
+-38,-39,-40,-41,-42,-43,-44,-45,-46,-47,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,
+-57,-58,-59,-60,-62,-63,-64,-65,-66,-67,-68,-69,-70,-71,-72,-73,-74,-75,-76,-77,
+-78,-78,-79,-80,-81,-82,-83,-84,-85,-86,-87,-88,-89,-90,-91,-92,-93,-95,-96,-97,
+-98,-99,-100,-101,-102,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,
+-103,-103,-103,-103,-103,-103,-103};
+
+const int8_t OFDM_CAL_ARRAY_1300[] =
+{-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-15,-17,-18,-19,
+-20,-21,-22,-23,-24,-25,-26,-27,-28,-29,-30,-31,-32,-33,-34,-35,-36,-37,-38,-38,
+-39,-40,-41,-42,-44,-45,-46,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,-57,-58,-59,
+-60,-61,-62,-63,-64,-65,-66,-67,-69,-71,-72,-73,-74,-75,-76,-77,-78,-78,-79,-80,
+-81,-82,-83,-84,-85,-86,-87,-88,-89,-90,-91,-92,-93,-94,-95,-96,-97,-98,-99,
+-100,-101,-102,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,
+-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103};
+
 #define HAL_RF_PARAM_SAVE_ADDR	(HAL_FLASH_BASE_ADDR+HAL_FLASH_SIZE)
 #define HAL_RF_PARAM_MAX_SIZE	HAL_FLASH_SIZE
 
 static hal_rf_param_t rf_param;
+static int8_t *OFDM_CAL_ARRAY[HAL_RF_PARA_NUM];
+
 
 #define LMS_6002_PWR_EN		{\
 							hal_gpio_output(GPIO_RF_MODULE, 1);\
@@ -314,63 +334,60 @@ void hal_rf_param_init(void)
 			rf_param.ofdm_rssi_offset[index] = 0;
 			rf_param.ofdm_lms_power[index] = 0x121e;
 		}
+		//ÅÐ¶ÏÆµÂÊ·¶Î§
+		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 		hal_flash_write(HAL_RF_PARAM_SAVE_ADDR, (uint8_t *)&rf_param, sizeof(hal_rf_param_t));
 	}
 	else
 	{
 		mem_cpy(&rf_param, p_flash_rf_param, sizeof(hal_rf_param_t));
-		
-		if (rf_param.freq_cal.lo<=232.5 
-				|| rf_param.freq_cal.lo>=3720)
+		//ÅÐ¶ÏÆµÂÊ·¶Î§
+		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
+
+		if (rf_param.use_level = 0xFF)
 		{
 			rf_param.freq_cal.lo = 1445.0;
 			rf_param.freq_cal.ref = 40;
 	    	hal_rf_misc_calib_freq(&rf_param.freq_cal);
+			rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 			hal_flash_write(HAL_RF_PARAM_SAVE_ADDR, (uint8_t *)&rf_param, sizeof(hal_rf_param_t));
 		}
 	}
-	//ÅÐ¶ÏÆµÂÊ·¶Î§
-	if (rf_param.freq_cal.lo>=1300 && rf_param.freq_cal.lo<=1330)
-	{
-		rf_param.use_level = 0;
-	}
-	else if (rf_param.freq_cal.lo>=1430 && rf_param.freq_cal.lo<=1460)
-	{
-		rf_param.use_level = 1;
-	}
-	else
-	{
-		rf_param.use_level = 1;
-	}    
+
+	OFDM_CAL_ARRAY[0] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[1] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[2] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[3] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[4] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[5] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[6] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[7] = (int8_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[8] = (int8_t *)OFDM_CAL_ARRAY_1400;
+	OFDM_CAL_ARRAY[9] = (int8_t *)OFDM_CAL_ARRAY_1400;
 	
-    DBG_TRACE("Freq LO = %f\r\n", rf_param.freq_cal.lo);
-	DBG_TRACE("Freq PLL = 0x%X\r\n", rf_param.freq_cal.pll);
-	DBG_TRACE("Freq Set1 = 0x%X\r\n", rf_param.freq_cal.set1);
-	DBG_TRACE("Freq Set2 = 0x%X\r\n", rf_param.freq_cal.set2);
-	DBG_TRACE("Freq Set3 = 0x%X\r\n", rf_param.freq_cal.set3);
-	DBG_TRACE("Freq Set4 = 0x%X\r\n", rf_param.freq_cal.set4);			
-	DBG_TRACE("PA Power = 0x%X\r\n", rf_param.pa_power[rf_param.use_level]);
-	DBG_TRACE("SCL Power = 0x%X\r\n", rf_param.ofdm_scl_power[rf_param.use_level]);
-	DBG_TRACE("LMS Power = 0x%X\r\n", rf_param.ofdm_lms_power[rf_param.use_level]);
-	DBG_TRACE("RSSI Offset= 0x%X\r\n", rf_param.ofdm_rssi_offset[rf_param.use_level]);
+    DBG_PRINTF("rf_lo(dec)=%f\r\n", rf_param.freq_cal.lo);
+	DBG_PRINTF("rf_pll(hex)=%x\r\n", rf_param.freq_cal.pll);
+	DBG_PRINTF("rf_set1(hex)=%x\r\n", rf_param.freq_cal.set1);
+	DBG_PRINTF("rf_set2(hex)=%x\r\n", rf_param.freq_cal.set2);
+	DBG_PRINTF("rf_set3(hex)=%x\r\n", rf_param.freq_cal.set3);
+	DBG_PRINTF("rf_set4(hex)=%x\r\n", rf_param.freq_cal.set4);
+	DBG_PRINTF("rf_use_level(dec)=%d\r\n", rf_param.use_level);
+	DBG_PRINTF("rf_pa_power(hex)=%x\r\n", rf_param.pa_power[rf_param.use_level]);
+	DBG_PRINTF("rf_ofdm_scl_power(hex)=%x\r\n", rf_param.ofdm_scl_power[rf_param.use_level]);
+	DBG_PRINTF("rf_ofdm_lms_power(hex)=%x\r\n", rf_param.ofdm_lms_power[rf_param.use_level]);
+	DBG_PRINTF("rf_ofdm_rssi_offset(dec)=%d\r\n", rf_param.ofdm_rssi_offset[rf_param.use_level]);
 }
 
 hal_rf_param_t *hal_rf_param_get(void)
 {
-	//ÅÐ¶ÏÆµÂÊ·¶Î§
-	if (rf_param.freq_cal.lo>=1300 && rf_param.freq_cal.lo<=1330)
+	rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
+	if (rf_param.use_level = 0xFF)
 	{
-		rf_param.use_level = 0;
+		rf_param.freq_cal.lo = 1445.0;
+		rf_param.freq_cal.ref = 40;
+    	hal_rf_misc_calib_freq(&rf_param.freq_cal);
+		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 	}
-	else if (rf_param.freq_cal.lo>=1430 && rf_param.freq_cal.lo<=1460)
-	{
-		rf_param.use_level = 1;
-	}
-	else
-	{
-		rf_param.use_level = 1;
-	}
-	
 	return &rf_param;
 }
 
@@ -381,6 +398,58 @@ bool_t hal_rf_param_set(hal_rf_param_t *p_rf_param)
 	hal_flash_write(HAL_RF_PARAM_SAVE_ADDR, (uint8_t *)p_rf_param, sizeof(hal_rf_param_t));
 
 	return PLAT_TRUE;
+}
+
+uint8_t hal_rf_param_level(fp64_t rf_lo)
+{
+	uint8_t level;
+	//ÅÐ¶ÏÆµÂÊ·¶Î§
+	if (rf_lo>=300 && rf_lo<400)
+	{
+		level = 0;
+	}
+	else if (rf_lo>=400 && rf_lo<500)
+	{
+		level = 1;
+	}
+	else if (rf_lo>=500 && rf_lo<600)
+	{
+		level = 2;
+	}
+	else if (rf_lo>=600 && rf_lo<700)
+	{
+		level = 3;
+	}
+	else if (rf_lo>=700 && rf_lo<800)
+	{
+		level = 4;
+	}	
+	else if (rf_lo>=1000 && rf_lo<1100)
+	{
+		level = 5;
+	}
+	else if (rf_lo>=1100 && rf_lo<1200)
+	{
+		level = 6;
+	}
+	else if (rf_lo>=1200 && rf_lo<1300)
+	{
+		level = 7;
+	}
+	else if (rf_lo>=1400 && rf_lo<1500)
+	{
+		level = 8;
+	}
+	else if (rf_lo>=1500 && rf_lo<1600)
+	{
+		level = 9;
+	}
+	else
+	{
+		level = 0xff;
+	}
+
+	return level;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -718,40 +787,11 @@ uint32_t hal_rf_misc_get_timer(uint8_t index)
 	return misc_handler.hw->tmr_var[index];
 }
 
-const int8_t OFDM_CAL_ARRAY_1445[] =
-{-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-10,-11,-12,-13,-14,-15,-16,
--17,-18,-19,-20,-21,-22,-23,-24,-25,-27,-28,-29,-30,-31,-32,-33,-34,-35,-36,-37,
--38,-39,-40,-41,-42,-43,-44,-45,-46,-47,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,
--57,-58,-59,-60,-62,-63,-64,-65,-66,-67,-68,-69,-70,-71,-72,-73,-74,-75,-76,-77,
--78,-78,-79,-80,-81,-82,-83,-84,-85,-86,-87,-88,-89,-90,-91,-92,-93,-95,-96,-97,
--98,-99,-100,-101,-102,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,
--103,-103,-103,-103,-103,-103,-103};//1445
-
-const int8_t OFDM_CAL_ARRAY_1315[] =
-{-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-15,-17,-18,-19,
--20,-21,-22,-23,-24,-25,-26,-27,-28,-29,-30,-31,-32,-33,-34,-35,-36,-37,-38,-38,
--39,-40,-41,-42,-44,-45,-46,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,-57,-58,-59,
--60,-61,-62,-63,-64,-65,-66,-67,-69,-71,-72,-73,-74,-75,-76,-77,-78,-78,-79,-80,
--81,-82,-83,-84,-85,-86,-87,-88,-89,-90,-91,-92,-93,-94,-95,-96,-97,-98,-99,
--100,-101,-102,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,
--103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103};//1315
-
 int8_t hal_rf_ofdm_cal_agc(uint8_t value, int8_t offset)
 {
 	int8_t cal_value;
 		
-	if (rf_param.freq_cal.lo>=1300 && rf_param.freq_cal.lo<=1330)
-	{
-		cal_value = OFDM_CAL_ARRAY_1315[value];
-	}
-	else if (rf_param.freq_cal.lo>=1430 && rf_param.freq_cal.lo<=1460)
-	{
-		cal_value = OFDM_CAL_ARRAY_1445[value];
-	}
-	else
-	{
-		cal_value = OFDM_CAL_ARRAY_1445[value];
-	}
+	cal_value = OFDM_CAL_ARRAY[rf_param.use_level][value];
 
 	return cal_value+offset;
 }
@@ -760,7 +800,6 @@ int8_t hal_rf_ofdm_cal_pow(uint8_t value, int8_t offset)
 {
 	return value+offset;
 }
-
 
 fp32_t hal_rf_ofdm_cal_dbfs(uint32_t value)
 {

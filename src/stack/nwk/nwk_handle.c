@@ -361,6 +361,25 @@ static uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf)
 	if (src_type == SRC_ETH)
 	{
 		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
+		//先过滤，如果远端mac需要过滤的
+		if (p_device_info->remote_eth_mac_addr[0] != 0xFF
+			&& p_device_info->remote_eth_mac_addr[1] != 0xFF
+			&& p_device_info->remote_eth_mac_addr[2] != 0xFF
+			&& p_device_info->remote_eth_mac_addr[3] != 0xFF
+			&& p_device_info->remote_eth_mac_addr[4] != 0xFF
+			&& p_device_info->remote_eth_mac_addr[5] != 0xFF)
+		{
+			if (p_eth_hdr->src.addr[0] != p_device_info->remote_eth_mac_addr[0]
+				|| p_eth_hdr->src.addr[1] != p_device_info->remote_eth_mac_addr[1]
+				|| p_eth_hdr->src.addr[2] != p_device_info->remote_eth_mac_addr[2]
+				|| p_eth_hdr->src.addr[3] != p_device_info->remote_eth_mac_addr[3]
+				|| p_eth_hdr->src.addr[4] != p_device_info->remote_eth_mac_addr[4]
+				|| p_eth_hdr->src.addr[5] != p_device_info->remote_eth_mac_addr[5])
+			{
+				return 0;
+			}			
+		}
+		///////////////////////////////////////
 		if (p_eth_hdr->dest.addr[0] == p_device_info->local_eth_mac_addr[0]
 			&& p_eth_hdr->dest.addr[1] == p_device_info->local_eth_mac_addr[1]
 			&& p_eth_hdr->dest.addr[2] == p_device_info->local_eth_mac_addr[2]

@@ -186,7 +186,7 @@ void mac_csma_handler(void)
 			}
 			break;
 		case MAC_CSMA_RDY:
-			DBG_PRINTF("S");
+			//DBG_PRINTF("S");
 			phy_ofdm_send();			
 			phy_tmr_stop(mac_timer.csma_id);
 			mac_timer.csma_type = MAC_CSMA_FREE;			
