@@ -54,7 +54,7 @@ bool_t mac_send(kbuf_t *kbuf)
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, mac_ofdm_send_multi_list[1]);
 		OSEL_EXIT_CRITICAL();
-		DBG_PRINTF("+");
+		//DBG_PRINTF("+");
 	}
 	else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
 	{
@@ -100,6 +100,8 @@ static void mac_of_tx_handler(void)
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t loop;	
 	int8_t cca;
+    
+    phy_tmr_repeat(mac_timer.send_id);	
 	
 	if (mac_rdy_snd_kbuf != PLAT_NULL)
 	{
@@ -113,12 +115,10 @@ static void mac_of_tx_handler(void)
 		OSEL_EXIT_CRITICAL();
 		if (kbuf)
 		{
-			DBG_PRINTF("N");
+			//DBG_PRINTF("N");
 			mac_rdy_snd_kbuf = kbuf;				
-			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);
-			OSEL_ENTER_CRITICAL();
-			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);
-			OSEL_EXIT_CRITICAL();
+			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);			
+			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);			
 			break;
 		}
 	}
@@ -129,20 +129,16 @@ static void mac_of_tx_handler(void)
 
 	if (cca>MAC_CCA_THREDHOLD)
 	{
-		DBG_PRINTF("*");
-		OSEL_ENTER_CRITICAL();
+		DBG_PRINTF("!");		
 		mac_timer.csma_type = MAC_CSMA_DIFS;
-		OSEL_EXIT_CRITICAL();
 		phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);		
 		mac_timer.csma_difs_cnt = 1;
 		return;
 	}
 	else
 	{
-		//DBG_PRINTF("L");
-		OSEL_ENTER_CRITICAL();
+		//DBG_PRINTF("L");		
         mac_timer.csma_type = MAC_CSMA_SLOT;
-		OSEL_EXIT_CRITICAL();
 		phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US);		
 		mac_timer.csma_slot_cnt = 1;
 		return;
@@ -151,7 +147,6 @@ static void mac_of_tx_handler(void)
 
 void mac_csma_handler(void)
 {
-	OSEL_DECL_CRITICAL();
 	int8_t cca;
 
 	switch(mac_timer.csma_type)
@@ -161,20 +156,16 @@ void mac_csma_handler(void)
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
 			{
-				DBG_PRINTF("*");
-				OSEL_ENTER_CRITICAL();
+				DBG_PRINTF("@");				
 				mac_timer.csma_type = MAC_CSMA_DIFS;
-				OSEL_EXIT_CRITICAL();
-				phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);				
+				phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);								
 			}
 			else
 			{
 				mac_timer.csma_slot_cnt = pow(2, mac_timer.csma_difs_cnt);
-				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;
-				OSEL_ENTER_CRITICAL();
+				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;				
 				mac_timer.csma_type = MAC_CSMA_SLOT;
-				OSEL_EXIT_CRITICAL();
-				phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);				
+				phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);										
 			}
 			mac_timer.csma_difs_cnt++;
 			break;
@@ -182,29 +173,23 @@ void mac_csma_handler(void)
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
 			{
-				DBG_PRINTF("*");
-				OSEL_ENTER_CRITICAL();
+				DBG_PRINTF("#");				
                 mac_timer.csma_type = MAC_CSMA_DIFS;
-				OSEL_EXIT_CRITICAL();
-				phy_tmr_start(mac_timer.csma_id, +rand()%MAC_PKT_DIFS_US);				
+				phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);											
 				mac_timer.csma_difs_cnt++;
 			}
 			else
 			{
-				phy_ofdm_idle();
-				OSEL_ENTER_CRITICAL();
+				phy_ofdm_idle();				
                 mac_timer.csma_type = MAC_CSMA_RDY;
-				OSEL_EXIT_CRITICAL();
-				phy_tmr_start(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);				
+				phy_tmr_start(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);								
 			}
 			break;
 		case MAC_CSMA_RDY:
-			//DBG_PRINTF("S");
-			phy_ofdm_send();
+			DBG_PRINTF("S");
+			phy_ofdm_send();			
 			phy_tmr_stop(mac_timer.csma_id);
-			OSEL_ENTER_CRITICAL();
-			mac_timer.csma_type = MAC_CSMA_FREE;
-			OSEL_EXIT_CRITICAL();
+			mac_timer.csma_type = MAC_CSMA_FREE;			
 			break;
 		default:
 			DBG_TRACE("mac_timer.csma_type=%d\r\n", mac_timer.csma_type);
@@ -241,14 +226,17 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_DATA_TYPE
 			|| p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
 		{
+			object = NWK_EVENT_MESH_RX;
 			//把数据偏移到网络层
 			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 			//kbuf的长度为网络层的长度
 			kbuf->valid_len = p_mac_frm_head->frm_len;
-
-			nwk_mesh_recv_put(kbuf);
-
-			DBG_PRINTF("R");
+			OSEL_ENTER_CRITICAL();
+			list_behind_put(&kbuf->list, &nwk_mesh_rx_list);
+			OSEL_EXIT_CRITICAL();
+			//上至NWK
+			osel_event_set(nwk_event_h, &object);
+			//DBG_PRINTF("R");
 		}
 		else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
 		{
@@ -258,7 +246,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			OSEL_EXIT_CRITICAL();
 			//上至APP
 			osel_event_set(app_event_h, &object);
-			DBG_PRINTF("R");
+			//DBG_PRINTF("R");
 		}
 		else
 		{

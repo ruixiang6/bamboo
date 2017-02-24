@@ -25,14 +25,14 @@ void device_info_init(void)
 	if (GET_DEV_ID(pg_device_info->id) == 0xff || GET_DEV_ID(pg_device_info->id) == 0 || 1)
 	{
 		SET_MESH_ID(pg_device_info->id, 0x12);
-		SET_DEV_ID(pg_device_info->id, 0x05);
+		SET_DEV_ID(pg_device_info->id, 0x01);
 		
 		strcpy(pg_device_info->version, VERSION);
 		
 		pg_device_info->local_ip_addr[0] = 192;
 		pg_device_info->local_ip_addr[1] = 168;
 		pg_device_info->local_ip_addr[2] = 12;
-		pg_device_info->local_ip_addr[3] = 208;
+		pg_device_info->local_ip_addr[3] = 66;
 
 		pg_device_info->local_gateway_addr[0] = 192;
 		pg_device_info->local_gateway_addr[1] = 168;

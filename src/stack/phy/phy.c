@@ -83,21 +83,25 @@ bool_t phy_tmr_free(uint8_t id)
 
 bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 {
+	OSEL_DECL_CRITICAL();
 	uint8_t index;
 
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
 
 	index = id-1;
 
+	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used && delay_us)
 	{
 		phy_tmr_array[index].count = delay_us;
 		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
+		OSEL_EXIT_CRITICAL();
 		return PLAT_TRUE;
 	}
 	else
 	{
+		OSEL_EXIT_CRITICAL();
 		return PLAT_FALSE;
 	}
 	
@@ -105,27 +109,33 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 
 bool_t phy_tmr_stop(uint8_t id)
 {
+	OSEL_DECL_CRITICAL();
 	uint8_t index;
 
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
 
 	index = id-1;
+
+	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used)
 	{
 		hal_rf_misc_set_timer(index, 0);
 		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);		
 		phy_tmr_array[index].count = 0;
+		OSEL_EXIT_CRITICAL();
 		return PLAT_TRUE;
 	}
 	else
 	{
+		OSEL_EXIT_CRITICAL();
 		return PLAT_FALSE;
 	}	
 }
 
 bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
-{	
+{
+	OSEL_DECL_CRITICAL();
 	uint32_t cur_us;
 	uint8_t index;
 
@@ -133,6 +143,7 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 
 	index = id-1;
 
+	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used && delay_us)
 	{
 		cur_us = hal_rf_misc_get_timer(index);
@@ -140,31 +151,37 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_set_timer(index, delay_us+cur_us);
+		OSEL_EXIT_CRITICAL();
 		return PLAT_TRUE;
 	}
 	else
 	{
+		OSEL_EXIT_CRITICAL();
 		return PLAT_FALSE;
 	}
 }
 
 bool_t phy_tmr_repeat(uint8_t id)
 {
+	OSEL_DECL_CRITICAL();
 	uint8_t index;
-	
+   
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
 
 	index = id-1;
 
+	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used && phy_tmr_array[index].count)
 	{
 		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);		
-		return PLAT_TRUE;
+		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);        
+		OSEL_EXIT_CRITICAL();
+       	return PLAT_TRUE;
 	}
 	else
 	{
+		OSEL_EXIT_CRITICAL();
 		return PLAT_FALSE;
 	}
 }

@@ -91,8 +91,7 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 void mac_tx_cb(void)
 {
 	uint16_t object = MAC_EVENT_OF_TX;
-
-	phy_tmr_repeat(mac_timer.send_id);
+    
 	osel_event_set(mac_event_h, &object);
 }
 
@@ -153,7 +152,6 @@ void mac_ofdm_send_cb(void)
 	
 	phy_tmr_stop(mac_timer.live_id);		
 	
-    DBG_PRINTF("&");
 	//进入接收状态
 	phy_ofdm_recv();
 }
@@ -166,8 +164,8 @@ void mac_rdy_kbuf_live_cb(void)
 
 	if (state == HAL_RF_OF_SEND_M)
 	{
-		//如果状态还在发送阶段，则等待1ms后
-		phy_tmr_start(mac_timer.live_id, 1000);
+		//如果状态还在发送阶段，则等待后
+		phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_AVOID_US);
 		return;
 	}
 	

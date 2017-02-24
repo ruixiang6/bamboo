@@ -106,7 +106,7 @@ uint8_t crc8_tab(uint8_t* uc_ptr, uint8_t crc8, uint16_t uc_len)
 }
 
 
-uint32_t crc32_tab (uint8_t* uc_ptr, uint32_t crc8, uint16_t uc_len)  
+uint32_t crc32_tab (uint8_t* uc_ptr, uint32_t crc32, uint16_t uc_len)  
 {  
     #define INIT  0xffffffffL  
     #define XOROT 0xffffffffL  
@@ -114,7 +114,7 @@ uint32_t crc32_tab (uint8_t* uc_ptr, uint32_t crc8, uint16_t uc_len)
     uint32_t uCRCValue;  
     uint8_t *pData;  
   
-    uCRCValue = crc8;//INIT
+    uCRCValue = crc32;//INIT
     pData = uc_ptr;
   
     while (uc_len --)
