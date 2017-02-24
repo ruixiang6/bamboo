@@ -325,7 +325,7 @@ static void nwk_mesh_rx_handler(void)
 			
 			if (output_type & DEST_IP)
 			{
-				DBG_PRINTF("P");
+				//DBG_PRINTF("P");
 				//经过判断处理后，确定提交本地tcpip协议栈
 				nwk_tcpip_input(&nwk_tcpip, kbuf->offset, kbuf->valid_len);
 				//这里没有删除kbuf是下面eth要使用
@@ -333,7 +333,7 @@ static void nwk_mesh_rx_handler(void)
 			
 			if (output_type & DEST_ETH)
 			{
-				DBG_PRINTF("E");
+				//DBG_PRINTF("E");
 				//异步发送给NWK的eth
 				nwk_eth_send_asyn(kbuf);
 			}
