@@ -100,6 +100,8 @@ void mac_csma_cb(void)
 	uint16_t object = MAC_EVENT_CSMA;
 
 	osel_event_set(mac_event_h, &object);
+
+	//DBG_PRINTF("-");
 }
 
 void mac_ofdm_recv_cb(void)
@@ -171,7 +173,7 @@ void mac_live_cb(void)
 		mac_rdy_snd_kbuf = PLAT_NULL;
 	}
 
-	DBG_PRINTF("A%dB", mac_timer.csma_difs_cnt);
+	//DBG_PRINTF("[%d]", mac_timer.csma_difs_cnt);
 	osel_event_set(mac_event_h, &object);
 }
 

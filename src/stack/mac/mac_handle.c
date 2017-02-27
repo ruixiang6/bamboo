@@ -147,7 +147,8 @@ static void mac_of_tx_handler(void)
 		mac_timer.csma_type = MAC_CSMA_DIFS;
 		tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
 		//DBG_PRINTF("!=%d,", tmp);
-		phy_tmr_start(mac_timer.csma_id, tmp);		
+		phy_tmr_start(mac_timer.csma_id, tmp);
+		//DBG_PRINTF("+");
 		mac_timer.csma_difs_cnt = 1;
 		mac_timer.csma_slot_cnt = 0;
 		return;
@@ -156,6 +157,7 @@ static void mac_of_tx_handler(void)
 	{ 
         mac_timer.csma_type = MAC_CSMA_SLOT;
 		phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US);
+		//DBG_PRINTF("+");
 		mac_timer.csma_difs_cnt = 0;
 		mac_timer.csma_slot_cnt = 1;
 		return;
@@ -178,15 +180,17 @@ void mac_csma_handler(void)
 				tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
 				//DBG_PRINTF("@=%d,", tmp);
 				phy_tmr_start(mac_timer.csma_id, tmp);
+				//DBG_PRINTF("+");
 			}
 			else
 			{
-				mac_timer.csma_slot_cnt = pow(2, mac_timer.csma_difs_cnt);
-				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;				
+                tmp = pow(2, mac_timer.csma_difs_cnt);
+				mac_timer.csma_slot_cnt = rand() % tmp;
 				mac_timer.csma_type = MAC_CSMA_SLOT;
 				tmp = MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt+MAC_PKT_SLOT_UNIT_US;
-				//DBG_PRINTF("$=%d,", tmp);
-				phy_tmr_start(mac_timer.csma_id, tmp);										
+				//DBG_PRINTF("$=%d", tmp);
+				phy_tmr_start(mac_timer.csma_id, tmp);
+				//DBG_PRINTF("+");
 			}
 			mac_timer.csma_difs_cnt++;
 			break;
@@ -197,14 +201,16 @@ void mac_csma_handler(void)
                 mac_timer.csma_type = MAC_CSMA_DIFS;
 				tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
 				//DBG_PRINTF("#=%d", tmp);		
-				phy_tmr_start(mac_timer.csma_id, tmp);											
+				phy_tmr_start(mac_timer.csma_id, tmp);
+				//DBG_PRINTF("+");
 				mac_timer.csma_difs_cnt++;
 			}
 			else
 			{
 				phy_ofdm_idle();				
                 mac_timer.csma_type = MAC_CSMA_RDY;
-				phy_tmr_start(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);								
+				phy_tmr_start(mac_timer.csma_id, MAC_IDLE_TO_SEND_US);
+				//DBG_PRINTF("+");
 			}
 			break;
 		case MAC_CSMA_RDY:
@@ -224,7 +230,7 @@ void mac_csma_handler(void)
 			phy_tmr_stop(mac_timer.live_id);
 			phy_ofdm_send();			
 			phy_tmr_stop(mac_timer.csma_id);
-			DBG_PRINTF("S%d", mac_timer.csma_difs_cnt);
+			//DBG_PRINTF("S%d", mac_timer.csma_difs_cnt);
 			mac_timer.csma_type = MAC_CSMA_FREE;			
 			break;
 		default:
