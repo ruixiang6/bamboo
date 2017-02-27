@@ -15,7 +15,7 @@ const uint8_t slience_enforce_2400bps_voice[] =
 const uint8_t TEST_INTERFACE[] = 
 "\r\n\
 <***********************************************>\r\n\
-Test Software Version 4.2(Burst RF) (by qhw)\r\n\
+Test Software Version 4.3(Burst RF) (by qhw)\r\n\
 1.RF DSSS Test\r\n\
 2.RF OFDM Test\r\n\
 3.Misc Test\r\n\
@@ -1010,16 +1010,13 @@ static void config_set_rf_param(void)
 	fp64_t freq_lo = 0;	
 	uint32_t value = 0;
 	int32_t rssi_offset = 0;
-	bool_t update_flag = PLAT_FALSE;	
+	bool_t update_flag = PLAT_FALSE;
+	uint8_t level;
 	hal_rf_param_t *p_rf_param = hal_rf_param_get();
 
-	DBG_PRINTF("rf_lo=%lf\r\n", p_rf_param->freq_cal.lo);	
-	DBG_PRINTF("rf_pa_power=%x\r\n", p_rf_param->pa_power[p_rf_param->use_level]);
-	DBG_PRINTF("rf_ofdm_lms_power=%x\r\n", p_rf_param->ofdm_lms_power[p_rf_param->use_level]);
-	DBG_PRINTF("rf_ofdm_scl_power=%x\r\n", p_rf_param->ofdm_scl_power[p_rf_param->use_level]);
-	DBG_PRINTF("rf_ofdm_rssi_offset=%d\r\n", p_rf_param->ofdm_rssi_offset[p_rf_param->use_level]);
+	hal_rf_param_init();
 	
-	DBG_PRINTF("Input Parameter(rf_lo,rf_ofdm_lms_power,rf_pa_power,rf_ofdm_scl_power,rf_ofdm_rssi_offset)\r\n");
+	DBG_PRINTF("Input Parameter(rf_lo,rf_ofdm_lms_power,rf_pa_power,rf_ofdm_scl_power,rf_ofdm_rssi_offset,rf_default)\r\n");
 	DBG_PRINTF("Example:rf_lo=XXXX.XXXXXX(Unit:MHz)\r\n");	
 	test_cb.uart_recv_date = PLAT_FALSE;
 	while(!test_cb.uart_recv_date);
@@ -1031,7 +1028,8 @@ static void config_set_rf_param(void)
 		DBG_PRINTF("\r\n");
 		str = str + strlen("rf_lo=");
 		sscanf(str, "%lf", &freq_lo);
-		if (freq_lo>=300 && freq_lo<=2200)
+		level = hal_rf_param_level(freq_lo);
+		if (level != 0xFF)
 	    {
 	        p_rf_param->freq_cal.lo = freq_lo;
 			hal_rf_misc_calib_freq(&p_rf_param->freq_cal);
@@ -1101,6 +1099,16 @@ static void config_set_rf_param(void)
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set OFDM SCL Power OK!=[0x%x]\r\n", p_rf_param->ofdm_scl_power[p_rf_param->use_level]);
 	}
+	////////设置rf_default////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "rf_default");
+	if (str)
+	{
+		p_rf_param->freq_cal.pll = 0xff;
+		hal_rf_param_set(p_rf_param);
+		hal_rf_param_init();
+		DBG_PRINTF("Set RF Param Default OK!\r\n");
+	}
 	//////////////////////////////////////////
 	if (update_flag == PLAT_TRUE)
 	{		
@@ -1111,7 +1119,192 @@ static void config_set_rf_param(void)
 
 static void config_set_param()
 {
+	char_t *str = PLAT_NULL;
+	char_t *stop_str = PLAT_NULL;
+	uint32_t value = 0;
+	bool_t update_flag = PLAT_FALSE;	
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
+	device_info_init();
+	
+	DBG_PRINTF("Input Parameter(type,mode,mesh_id,dev_id,local_mac,ip,gateway,netmask,remote_mac)\r\n");
+	DBG_PRINTF("Example:type=XX(Hex or Dec)\r\n");	
+	test_cb.uart_recv_date = PLAT_FALSE;
+	while(!test_cb.uart_recv_date);
+	/////////设置type///////////////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "type=");
+	if (str)
+	{
+		DBG_PRINTF("\r\n");
+		str = str + strlen("type=");
+		sscanf(str, "%d", &value);
+	    SET_TYPE_ID(p_device_info->id, value);
+		update_flag = PLAT_TRUE;
+        DBG_PRINTF("Set Type OK!=[%d]\r\n", value);		
+	}	
+	////////设置mode//////////////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "mode=");
+	if (str)
+	{
+		str = str + strlen("mode=");
+        DBG_PRINTF("\r\n");
+		sscanf(str, "%d", &value);
+		SET_MODE_ID(p_device_info->id, value);
+        update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Mode OK!=[%d]\r\n", value);
+	}
+	////////设置mesh_id//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "mesh_id=");
+	if (str)
+	{
+		str = str + strlen("mesh_id=");
+        DBG_PRINTF("\r\n");
+		sscanf(str, "%x", &value);
+		SET_MESH_ID(p_device_info->id, value);
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Mesh ID OK!=[%d]\r\n", value);
+	}
+	////////设置dev_id//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "dev_id=");
+	if (str)
+	{
+		str = str + strlen("dev_id=");
+        DBG_PRINTF("\r\n");
+		sscanf(str, "%x", &value);
+		SET_DEV_ID(p_device_info->id, value);
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Dev ID OK!=[%d]\r\n", value);
+	}
+	////////设置local_mac//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "local_mac=");
+	if (str)
+	{
+		str = str + strlen("local_mac=");
+		DBG_PRINTF("\r\n");
+		
+		for (uint8_t index=0; index<6; index++)
+		{
+			stop_str = strstr((char_t *)str, ":");
+			if (stop_str) stop_str[0] = '\0';
+			sscanf(str, "%x", &value);
+			p_device_info->local_eth_mac_addr[index] = value;
+			str = &stop_str[1];
+		}				
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Mac OK!=%x:%x:%x:%x:%x:%x\r\n", 
+				p_device_info->local_eth_mac_addr[0],
+				p_device_info->local_eth_mac_addr[1],
+				p_device_info->local_eth_mac_addr[2],
+				p_device_info->local_eth_mac_addr[3],
+				p_device_info->local_eth_mac_addr[4],
+				p_device_info->local_eth_mac_addr[5]);
+	}
+	////////设置ip//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "ip=");
+	if (str)
+	{
+		str = str + strlen("ip=");
+		DBG_PRINTF("\r\n");
+		
+		for (uint8_t index=0; index<4; index++)
+		{
+			stop_str = strstr((char_t *)str, ":");
+			if (stop_str) stop_str[0] = '\0';
+			sscanf(str, "%d", &value);
+			p_device_info->local_ip_addr[index] = value;
+			str = &stop_str[1];
+		}				
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set IP OK!=%d:%d:%d:%d\r\n", 
+				p_device_info->local_ip_addr[0],
+				p_device_info->local_ip_addr[1],
+				p_device_info->local_ip_addr[2],
+				p_device_info->local_ip_addr[3]);
+	}
+	////////设置gateway//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "gateway=");
+	if (str)
+	{
+		str = str + strlen("gateway=");
+		DBG_PRINTF("\r\n");
+		
+		for (uint8_t index=0; index<4; index++)
+		{
+			stop_str = strstr((char_t *)str, ":");
+			if (stop_str) stop_str[0] = '\0';
+			sscanf(str, "%d", &value);
+			p_device_info->local_ip_addr[index] = value;
+			str = &stop_str[1];
+		}				
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Gateway OK!=%d:%d:%d:%d\r\n", 
+				p_device_info->local_gateway_addr[0],
+				p_device_info->local_gateway_addr[1],
+				p_device_info->local_gateway_addr[2],
+				p_device_info->local_gateway_addr[3]);
+	}
+	////////设置netmask//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "netmask=");
+	if (str)
+	{
+		str = str + strlen("netmask=");
+		DBG_PRINTF("\r\n");
+		
+		for (uint8_t index=0; index<4; index++)
+		{
+			stop_str = strstr((char_t *)str, ":");
+			if (stop_str) stop_str[0] = '\0';
+			sscanf(str, "%d", &value);
+			p_device_info->local_ip_addr[index] = value;
+			str = &stop_str[1];
+		}				
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Netmask OK!=%d:%d:%d:%d\r\n", 
+				p_device_info->local_netmask_addr[0],
+				p_device_info->local_netmask_addr[1],
+				p_device_info->local_netmask_addr[2],
+				p_device_info->local_netmask_addr[3]);
+	}
+	////////设置remote mac//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "remote_mac=");
+	if (str)
+	{
+		str = str + strlen("remote_mac=");
+		DBG_PRINTF("\r\n");
+		
+		for (uint8_t index=0; index<6; index++)
+		{
+			stop_str = strstr((char_t *)str, ":");
+			if (stop_str) stop_str[0] = '\0';
+			sscanf(str, "%x", &value);
+			p_device_info->remote_eth_mac_addr[index] = value;
+			str = &stop_str[1];
+		}				
+		update_flag = PLAT_TRUE;
+		
+		DBG_PRINTF("Set Remote MAC OK!=%x:%x:%x:%x:%x:%x\r\n", 
+				p_device_info->remote_eth_mac_addr[0],
+				p_device_info->remote_eth_mac_addr[1],
+				p_device_info->remote_eth_mac_addr[2],
+				p_device_info->remote_eth_mac_addr[3],
+				p_device_info->remote_eth_mac_addr[4],
+				p_device_info->remote_eth_mac_addr[5]);
+	}
+	//////////////////////////////////////////
+	if (update_flag == PLAT_TRUE)
+	{		
+		device_info_set(p_device_info, PLAT_TRUE);
+		DBG_PRINTF("Save parameter!\r\n");
+	}
 }
 
 static void test_misc_handler(void)

@@ -301,4 +301,5 @@ hal_rf_param_t *hal_rf_param_get(void);
 
 bool_t hal_rf_param_set(hal_rf_param_t *rf_param);
 
+uint8_t hal_rf_param_level(fp64_t rf_lo);
 #endif

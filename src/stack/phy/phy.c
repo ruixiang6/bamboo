@@ -86,7 +86,11 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 	OSEL_DECL_CRITICAL();
 	uint8_t index;
 
-	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
+	if (id>MAX_PHY_TMR_NUM || id==0) 
+	{
+		DBG_PRINTF("F");
+		return PLAT_FALSE;
+	}
 
 	index = id-1;
 
@@ -96,12 +100,13 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 		phy_tmr_array[index].count = delay_us;
 		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
 		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
-		OSEL_EXIT_CRITICAL();
+		OSEL_EXIT_CRITICAL();		
 		return PLAT_TRUE;
 	}
 	else
 	{
 		OSEL_EXIT_CRITICAL();
+		DBG_PRINTF("L");
 		return PLAT_FALSE;
 	}
 	
