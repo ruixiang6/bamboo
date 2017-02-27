@@ -157,7 +157,7 @@ void mac_ofdm_send_cb(void)
 
 void mac_live_cb(void)
 {
-	uint16_t object = MAC_EVENT_OF_LIVE;
+	//uint16_t object = MAC_EVENT_OF_LIVE;
 	uint8_t state;
 	
 	state = hal_rf_of_get_state();
@@ -173,7 +173,15 @@ void mac_live_cb(void)
 		mac_rdy_snd_kbuf = PLAT_NULL;
 	}
 
-	//DBG_PRINTF("[%d]", mac_timer.csma_difs_cnt);
-	osel_event_set(mac_event_h, &object);
+	DBG_PRINTF("[%d]", mac_timer.csma_difs_cnt);
+
+	mac_timer.csma_difs_cnt = 0;
+	mac_timer.csma_slot_cnt = 0;
+	phy_tmr_stop(mac_timer.csma_id);
+    mac_timer.csma_type = MAC_CSMA_FREE;
+
+	phy_ofdm_recv();
+	
+	//osel_event_set(mac_event_h, &object);
 }
 
