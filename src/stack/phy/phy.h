@@ -20,7 +20,7 @@ typedef struct
 void phy_ofdm_recv(void);
 void phy_ofdm_send(void);
 void phy_ofdm_idle(void);
-int8_t phy_ofdm_cca(void);
+bool_t phy_ofdm_cca(void);
 uint16_t phy_ofdm_snr(void);
 
 bool_t phy_ofdm_write(uint8_t *buf, uint32_t size);

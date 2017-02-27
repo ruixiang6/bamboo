@@ -392,12 +392,11 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 						hal_rf_of_set_state(HAL_RF_OF_CCA_M);
 						delay_us(150);
 						clean_cca_cnt = 0;
-#define THREDHOLD	-68
+                        bool_t flag;
 						do
 						{
-							agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)>>8;
-							cca = hal_rf_ofdm_cal_agc(agc_value, 28);
-							if (cca<=THREDHOLD)
+							hal_rf_ofdm_cal_rssi(PLAT_TRUE, &flag);
+							if (flag == PLAT_TRUE)
 							{
 								clean_cca_cnt++;
 								if (clean_cca_cnt>10)
@@ -485,8 +484,7 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 	volatile int16_t prev_seq_num = 0;
 
 	uint16_t frame_len;
-	fp32_t snr;
-	uint32_t s_pow, n_pow;
+	fp32_t snr,rssi;	
 
 	switch (p_test_ofdm->mode)
 	{
@@ -537,9 +535,8 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 		
 		test_cb.rf_time_out = PLAT_FALSE;
 
-		s_pow = hal_rf_of_get_reg(HAL_RF_OF_SIG_POW);
-		n_pow = hal_rf_of_get_reg(HAL_RF_OF_NOI_POW);
-		snr = hal_rf_ofdm_cal_sn((uint16_t)s_pow, (uint16_t)n_pow);
+		snr = hal_rf_ofdm_cal_sn();
+		hal_rf_ofdm_cal_rssi(PLAT_FALSE, PLAT_NULL);
 		
 		switch (p_test_ofdm->mode)
 		{
@@ -579,8 +576,8 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
                             loss_frame_count += seq_num + TEST_OFDM_INSIDE_MAX_FRAME_SEQ - 1 - prev_seq_num;
                         }
                     	DBG_PRINTF("LO\r\n");
-                    }					
-					DBG_PRINTF("R=%u-Sq=%u-SNR=%0.1f\r\n", recv_frame_count, seq_num, snr);
+                    }
+					DBG_PRINTF("R%u|Sq%u|SNR%0.1f|\r\n", recv_frame_count, seq_num, snr);
 					prev_seq_num = seq_num;
 					recv_frame_count++;
 					test_cb.rf_recv_inside_first = PLAT_FALSE;
@@ -589,7 +586,7 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 ERROR_INSIDE_RECV:
 				if (test_cb.rf_recv_inside_first == PLAT_FALSE)
 				{
-                	DBG_PRINTF("E-SNR=%0.1f\r\n", snr);
+                	DBG_PRINTF("E-SNR%0.1f|\r\n", snr);
 					err_frame_count++;
 				}
 				break;
@@ -615,11 +612,11 @@ ERROR_INSIDE_RECV:
 						}
 					}
 					seq_num = p_of_frm->head.seq_num;
-					DBG_PRINTF("R=%u-L=%u-SNR=%0.1f\r\n", seq_num, frame_len, snr);				
+					DBG_PRINTF("Sq%u|L%u|SNR%0.1f|\r\n", seq_num, frame_len, snr);				
 					if((seq_num - prev_seq_num)>1)
 					{
 						loss_frame_count += seq_num - prev_seq_num - 1;
-						DBG_PRINTF("LO=%u!\r\n", loss_frame_count);							
+						DBG_PRINTF("LO%u!\r\n", loss_frame_count);							
 					}
 					prev_seq_num = seq_num;
 					if (prev_seq_num == p_of_frm->head.seq_total_num)
@@ -630,7 +627,7 @@ ERROR_INSIDE_RECV:
 				}				
 ERROR_OUTSIDE_RECV:
 				err_frame_count++;
-				DBG_PRINTF("E=%u-SNR=%0.1f\r\n", err_frame_count, snr);
+				DBG_PRINTF("E%u|SNR%0.1f|\r\n", err_frame_count, snr);
 				break;
 			case TEST_OFDM_RECV_DISP://接收显示
 				hal_uart_send_string(UART_DEBUG, (uint8_t *)p_of_frm, p_test_ofdm->frm_disp);
@@ -768,10 +765,7 @@ static void test_ofdm_handler(void)
 
 void test_rf_timeout_cb(void)
 {
-	uint32_t cur_pow = 0;
-	uint32_t agc_value = 0;
-	int8_t cca = 0;
-    uint8_t mode = 0;
+    fp32_t rssi = 0;
 	hal_rf_param_t *p_rf_param = hal_rf_param_get();
 	
 	test_rf_timeout_id = hal_timer_free(test_rf_timeout_id);
@@ -786,29 +780,9 @@ void test_rf_timeout_cb(void)
 	{
 		test_cb.rf_time_out = PLAT_TRUE;
 	}
-
-	mode = HAL_RF_OFDM->trc_cmd;
 	
-    if (mode <= HAL_RF_OF_RECV_TRAIN_SHORT_S)
-    {
-    	cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW)>>8;
-		DBG_PRINTF("P-");
-		cca = hal_rf_ofdm_cal_pow(cur_pow, -72);
-	}
-	else
-	{
-		if (mode == HAL_RF_OF_CCA_S)
-		{
-			agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)>>8;
-		}
-		else
-		{
-			agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL) & 0xFF;
-		}
-		DBG_PRINTF("A-");
-		cca = hal_rf_ofdm_cal_agc(agc_value, 28);		
-	}
-	DBG_PRINTF("CCA=%d\r\n", cca);
+	rssi = hal_rf_ofdm_cal_rssi(PLAT_TRUE, PLAT_NULL);
+	DBG_PRINTF("RS%0.1f|\r\n", rssi);
 	//创建超时位
 	test_cb.rf_time_out = PLAT_TRUE;
 }
@@ -1098,6 +1072,18 @@ static void config_set_rf_param(void)
 		hal_rf_of_set_reg(HAL_RF_OF_SCL_TX_POW, p_rf_param->ofdm_scl_power[p_rf_param->use_level]);
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set OFDM SCL Power OK!=[0x%x]\r\n", p_rf_param->ofdm_scl_power[p_rf_param->use_level]);
+	}
+	////////设置rf_ofdm_rssi_thred////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "rf_ofdm_rssi_thred=");
+	if (str)
+	{
+		str = str + strlen("rf_ofdm_rssi_thred=");
+		DBG_PRINTF("\r\n");
+		sscanf(str, "%lf", &value);
+		p_rf_param->ofdm_rssi_thred = value;		
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set OFDM RSSI THRED = [%f]\r\n", p_rf_param->ofdm_rssi_thred);
 	}
 	////////设置rf_default////////////
 	str = (char_t *)uart_buf;

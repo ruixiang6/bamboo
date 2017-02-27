@@ -6,29 +6,27 @@
 #include <hal_rf.h>
 #include <hal_gpio.h>
 
-const int8_t OFDM_CAL_ARRAY_1400[] =
-{-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-10,-11,-12,-13,-14,-15,-16,
--17,-18,-19,-20,-21,-22,-23,-24,-25,-27,-28,-29,-30,-31,-32,-33,-34,-35,-36,-37,
--38,-39,-40,-41,-42,-43,-44,-45,-46,-47,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,
--57,-58,-59,-60,-62,-63,-64,-65,-66,-67,-68,-69,-70,-71,-72,-73,-74,-75,-76,-77,
--78,-78,-79,-80,-81,-82,-83,-84,-85,-86,-87,-88,-89,-90,-91,-92,-93,-95,-96,-97,
--98,-99,-100,-101,-102,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,
--103,-103,-103,-103,-103,-103,-103};
+const fp32_t OFDM_CAL_ARRAY_1400[] = {
+30.6, 29.6, 28.6, 27.6, 26.6, 25.6, 24.6, 23.6, 22.6, 21.6, 20.6, 19.6, 18.6, 17.6, 16.6, 15.6, 14.6, 13.6, 12.6, 11.6, 
+10.6, 9.6, 8.6, 7.6, 6.6, 5.6, 4.6, 3.6, 2.6, 1.6, 0.6, -0.4, -1.4, -2.4, -3.4, -4.4, -5.4, -6.4, -7.4, -7.4, -8.4, -9.4, -10.4,
+-11.4, -12.4, -13.4, -14.4, -15.4, -16.4, -17.4, -18.4, -19.4, -20.4, -21.4, -22.4, -23.4, -24.4, -25.4, -26.4, -27.4,
+-28.4, -29.4, -30.4, -31.4, -32.4, -33.4, -34.4, -35.4, -36.4, -37.4, -38.4, -39.4, -39.4, -40.4, -41.4, -42.4, -43.4, -44.4,
+-45.4, -46.4, -47.4, -48.4, -49.4, -50.4, -51.4, -52.4, -53.4, -54.4, -55.4, -56.4, -57.4, -58.4, -59.4, -60.4, -61.4,
+-62.4, -63.4, -64.4, -65.4, -66.4, -67.4, -68.4, -69.4, -70.4, -71.4, -72.4};
 
-const int8_t OFDM_CAL_ARRAY_1300[] =
-{-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-13,-15,-17,-18,-19,
--20,-21,-22,-23,-24,-25,-26,-27,-28,-29,-30,-31,-32,-33,-34,-35,-36,-37,-38,-38,
--39,-40,-41,-42,-44,-45,-46,-47,-48,-49,-50,-51,-52,-53,-54,-55,-56,-57,-58,-59,
--60,-61,-62,-63,-64,-65,-66,-67,-69,-71,-72,-73,-74,-75,-76,-77,-78,-78,-79,-80,
--81,-82,-83,-84,-85,-86,-87,-88,-89,-90,-91,-92,-93,-94,-95,-96,-97,-98,-99,
--100,-101,-102,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,
--103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103,-103};
+const fp32_t OFDM_CAL_ARRAY_1300[] = {
+28.6, 27.6, 26.6, 25.6, 24.6, 23.6, 22.6, 21.6, 20.6, 19.6, 18.6, 17.6, 16.6, 15.6, 14.6, 13.6, 12.6, 11.6, 10.6, 9.6, 
+8.6, 7.6, 6.6, 5.6, 4.6, 3.6, 2.6, 1.6, 0.6, -0.4, -1.4, -2.4, -3.4, -4.4, -5.4, -6.4, -7.4, -8.4, -8.4, -9.4, -10.4, -11.4,
+-12.4, -13.4, -14.4, -15.4, -16.4, -17.4, -18.4, -19.4, -20.4, -21.4, -22.4, -23.4, -24.4, -25.4, -26.4, -27.4, -28.4, 
+-29.4, -30.4, -31.4, -32.4, -33.4, -34.4, -35.4, -36.4, -37.4, -38.4, -39.4, -40.4, -41.4, -42.4, -43.4, -44.4, -45.4,
+-46.4, -47.4, -48.4, -49.4, -50.4, -51.4, -52.4, -53.4, -54.4, -55.4, -56.4, -57.4, -58.4, -59.4, -60.4, -61.4, -62.4,
+-63.4, -64.4, -65.4, -66.4, -67.4, -68.4, -69.4, -70.4, -71.4, -72.4, -73.4, -74.4, -75.4};
 
 #define HAL_RF_PARAM_SAVE_ADDR	(HAL_FLASH_BASE_ADDR+HAL_FLASH_SIZE)
 #define HAL_RF_PARAM_MAX_SIZE	HAL_FLASH_SIZE
 
 static hal_rf_param_t rf_param;
-static int8_t *OFDM_CAL_ARRAY[HAL_RF_PARA_NUM];
+static fp32_t *OFDM_CAL_ARRAY[HAL_RF_PARA_NUM];
 
 
 #define LMS_6002_PWR_EN		{\
@@ -264,6 +262,8 @@ void hal_rf_init(void)
 		  	hal_board_reset();
 		}
 	};
+	DBG_PRINTF("Baseband Version = 0x%X\r\n", hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION));
+	
 	//获得基带控制6002的spi控制权	
 	HAL_RF_MISC->spi_ctrl |= (1u<<1);
     config_lms6002_init();
@@ -334,6 +334,7 @@ void hal_rf_param_init(void)
 			rf_param.ofdm_rssi_offset[index] = 0;
 			rf_param.ofdm_lms_power[index] = 0x121e;
 		}
+		rf_param.ofdm_rssi_thred = -68;
 		//判断频率范围
 		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 		hal_flash_write(HAL_RF_PARAM_SAVE_ADDR, (uint8_t *)&rf_param, sizeof(hal_rf_param_t));
@@ -344,7 +345,7 @@ void hal_rf_param_init(void)
 		//判断频率范围
 		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 
-		if (rf_param.use_level = 0xFF)
+		if (rf_param.use_level == 0xFF)
 		{
 			rf_param.freq_cal.lo = 1445.0;
 			rf_param.freq_cal.ref = 40;
@@ -354,16 +355,16 @@ void hal_rf_param_init(void)
 		}
 	}
 
-	OFDM_CAL_ARRAY[0] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[1] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[2] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[3] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[4] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[5] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[6] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[7] = (int8_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[8] = (int8_t *)OFDM_CAL_ARRAY_1400;
-	OFDM_CAL_ARRAY[9] = (int8_t *)OFDM_CAL_ARRAY_1400;
+	OFDM_CAL_ARRAY[0] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[1] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[2] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[3] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[4] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[5] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[6] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[7] = (fp32_t *)OFDM_CAL_ARRAY_1300;
+	OFDM_CAL_ARRAY[8] = (fp32_t *)OFDM_CAL_ARRAY_1400;
+	OFDM_CAL_ARRAY[9] = (fp32_t *)OFDM_CAL_ARRAY_1400;
 	
     DBG_PRINTF("rf_lo(dec)=%f\r\n", rf_param.freq_cal.lo);
 	DBG_PRINTF("rf_pll(hex)=%x\r\n", rf_param.freq_cal.pll);
@@ -376,6 +377,7 @@ void hal_rf_param_init(void)
 	DBG_PRINTF("rf_ofdm_scl_power(hex)=%x\r\n", rf_param.ofdm_scl_power[rf_param.use_level]);
 	DBG_PRINTF("rf_ofdm_lms_power(hex)=%x\r\n", rf_param.ofdm_lms_power[rf_param.use_level]);
 	DBG_PRINTF("rf_ofdm_rssi_offset(dec)=%d\r\n", rf_param.ofdm_rssi_offset[rf_param.use_level]);
+	DBG_PRINTF("rf_ofdm_rssi_thred(dec)=%f\r\n", rf_param.ofdm_rssi_thred);
 }
 
 hal_rf_param_t *hal_rf_param_get(void)
@@ -491,6 +493,7 @@ uint32_t hal_rf_of_get_reg(uint32_t addr)
 	//检查地址的合法性和可写性
 	switch (addr)
 	{
+		case HAL_RF_OF_REG_VERSION:
 		case HAL_RF_OF_SCL_FCTR:
 		case HAL_RF_OF_COARSE_THRED:
 		case HAL_RF_OF_FINE_THRED:
@@ -787,33 +790,91 @@ uint32_t hal_rf_misc_get_timer(uint8_t index)
 	return misc_handler.hw->tmr_var[index];
 }
 
-int8_t hal_rf_ofdm_cal_agc(uint8_t value, int8_t offset)
-{
-	int8_t cal_value;
-		
-	cal_value = OFDM_CAL_ARRAY[rf_param.use_level][value];
-
-	return cal_value+offset;
-}
-
-int8_t hal_rf_ofdm_cal_pow(uint8_t value, int8_t offset)
-{
-	return value+offset;
-}
-
-fp32_t hal_rf_ofdm_cal_dbfs(uint32_t value)
+fp32_t hal_rf_ofdm_cal_agc(bool_t realtime)
 {
 	fp32_t cal_value;
+	uint32_t agc_value = 0;
 
-	cal_value = 10*log10((fp32_t)((fp32_t)(value/1024)/1024));
+	if (realtime)
+	{
+		agc_value =	hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)>>8;
+	}
+	else
+	{
+		agc_value =	hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)&0xFF;
+		DBG_PRINTF("A%d|", agc_value);
+	}
+    
+    if (agc_value>=sizeof(OFDM_CAL_ARRAY_1400)/sizeof(fp32_t))
+	{
+		agc_value = sizeof(OFDM_CAL_ARRAY_1400)/sizeof(fp32_t) - 1;
+    }
 	
+	cal_value = OFDM_CAL_ARRAY[rf_param.use_level][agc_value];
+
 	return cal_value;
 }
 
-fp32_t hal_rf_ofdm_cal_sn(uint16_t s_pow, uint16_t n_pow)
+uint32_t hal_rf_ofdm_cal_pow(bool_t realtime)
+{
+	uint32_t cur_pow = 0;
+
+	if (realtime)
+	{
+		cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW)>>8;
+	}
+	else
+	{
+		cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW)&0xFF;
+	}
+	
+	return cur_pow;
+}
+
+fp32_t hal_rf_ofdm_cal_rssi(bool_t realtime, bool_t *flag)
+{
+	fp32_t rssi;
+	fp32_t cal_value;
+	uint32_t dbfs_value;
+
+	cal_value = hal_rf_ofdm_cal_agc(realtime);
+	dbfs_value = hal_rf_ofdm_cal_pow(realtime);
+
+	if (realtime == PLAT_FALSE)
+	{
+		DBG_PRINTF("C%0.1f|D%d|", cal_value, dbfs_value);
+	}
+	//计算公式
+	rssi = cal_value + dbfs_value - 43 + rf_param.ofdm_rssi_offset[rf_param.use_level];
+
+	if (realtime == PLAT_FALSE)
+	{
+		DBG_PRINTF("RS%0.1f|", rssi);
+	}
+
+	if (flag)
+	{
+		if (rssi<rf_param.ofdm_rssi_thred)
+		{
+			*flag = PLAT_TRUE;
+		}
+		else
+		{
+			*flag = PLAT_FALSE;
+		}
+	}
+	
+	return rssi;
+}
+
+fp32_t hal_rf_ofdm_cal_sn(void)
 {
 	fp32_t lqi_dB = 0; 
 	fp32_t snr=0;
+	uint32_t s_pow, n_pow;
+
+	s_pow = hal_rf_of_get_reg(HAL_RF_OF_SIG_POW);
+	n_pow = hal_rf_of_get_reg(HAL_RF_OF_NOI_POW);
 
 	snr=2.0*(fp32_t)s_pow/((fp32_t)n_pow)-1.0;
 

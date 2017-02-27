@@ -230,48 +230,21 @@ void phy_ofdm_idle(void)
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);		
 }
 
-int8_t phy_ofdm_cca(void)
+bool_t phy_ofdm_cca(void)
 {
-	uint32_t cur_pow = 0;
-	uint32_t agc_value = 0;
-	int8_t cca = 0;
-    uint8_t mode = 0;
-	hal_rf_param_t *p_rf_param = hal_rf_param_get();
-
-	mode = HAL_RF_OFDM->trc_cmd;
+	bool_t flag;
 	
-    if (mode <= HAL_RF_OF_RECV_TRAIN_SHORT_S)
-    {
-    	cur_pow = hal_rf_of_get_reg(HAL_RF_OF_CUR_POW)>>8;
-		//DBG_PRINTF("P-");
-		cca = hal_rf_ofdm_cal_pow(cur_pow, -72);
-	}
-	else
-	{
-		if (mode == HAL_RF_OF_CCA_S)
-		{
-			agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL)>>8;
-		}
-		else
-		{
-			agc_value = hal_rf_of_get_reg(HAL_RF_OF_AGC_VAL) & 0xFF;
-		}
-		//DBG_PRINTF("A-");
-		cca = hal_rf_ofdm_cal_agc(agc_value, 28);		
-	}
-	//DBG_PRINTF("CCA=%d\r\n", cca);
-
-	return cca;
+	hal_rf_ofdm_cal_rssi(PLAT_TRUE, &flag);
+	
+	return flag;
 }
 
 uint16_t phy_ofdm_snr(void)
 {
-	uint16_t s_pow = hal_rf_of_get_reg(HAL_RF_OF_SIG_POW);
-	uint16_t n_pow = hal_rf_of_get_reg(HAL_RF_OF_NOI_POW);
-	uint16_t snr = 0;
-
+	uint16_t snr;
+	
 	//将信噪比传给帧头
-	snr = (uint16_t)(hal_rf_ofdm_cal_sn(s_pow, n_pow)*10);
+	snr = (uint16_t)(hal_rf_ofdm_cal_sn()*10);
 	if (snr>255) snr = 255;
     
     return snr;

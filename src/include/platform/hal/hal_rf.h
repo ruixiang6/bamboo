@@ -215,10 +215,11 @@ typedef struct
 {
 	hal_rf_freq_t freq_cal;
 	uint8_t use_level;
-	uint32_t pa_power[HAL_RF_PARA_NUM];//0@1315 1@1445
-	uint32_t ofdm_lms_power[HAL_RF_PARA_NUM];//0@1315 1@1445
-	uint32_t ofdm_scl_power[HAL_RF_PARA_NUM];//0@1315 1@1445
-	int32_t	ofdm_rssi_offset[HAL_RF_PARA_NUM];//0@1315 1@1445
+	uint32_t pa_power[HAL_RF_PARA_NUM];//0@1300 1@1400
+	uint32_t ofdm_lms_power[HAL_RF_PARA_NUM];//0@1300 1@1400
+	uint32_t ofdm_scl_power[HAL_RF_PARA_NUM];//0@1300 1@1400
+	int32_t	ofdm_rssi_offset[HAL_RF_PARA_NUM];//0@1300 1@1400
+    fp32_t ofdm_rssi_thred;//
 }hal_rf_param_t;
 
 #pragma pack()
@@ -259,13 +260,13 @@ bool_t hal_rf_of_set_state(uint8_t state);
 //查询RF状态
 uint8_t hal_rf_of_get_state(void);
 //获得OFDM状态
-int8_t hal_rf_ofdm_cal_agc(uint8_t value, int8_t offset);
+fp32_t hal_rf_ofdm_cal_agc(bool_t realtime);
 //获得OFDM状态
-int8_t hal_rf_ofdm_cal_pow(uint8_t value, int8_t offset);
+uint32_t hal_rf_ofdm_cal_pow(bool_t realtime);
 //获得OFDM状态
-fp32_t hal_rf_ofdm_cal_dbfs(uint32_t value);
+fp32_t hal_rf_ofdm_cal_rssi(bool_t realtime, bool_t *flag);
 //获得OFDM状态
-fp32_t hal_rf_ofdm_cal_sn(uint16_t s_pow, uint16_t n_pow);
+fp32_t hal_rf_ofdm_cal_sn(void);
 
 ///////////////////////////////////////////////////////////////////
 //使能时隙中断
