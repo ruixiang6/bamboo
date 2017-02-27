@@ -164,6 +164,8 @@ void addr_table_query(uint8_t *paddr, uint8_t *p_id)
 {
 	uint8_t i = 0;
 
+	*p_id = 0;
+
 	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++)
 	{
 		if ((addr_table.item[i].addr[0] == paddr[0]) && (addr_table.item[i].addr[1] == paddr[1]) 
@@ -176,7 +178,7 @@ void addr_table_query(uint8_t *paddr, uint8_t *p_id)
 		}
 	}
 
-	DBG_PRINTF("addr_table_query error\r\n");
+	//DBG_PRINTF("addr_table_query error\r\n");
 }
 
 #endif

@@ -112,6 +112,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 	kbuf_t *kbuf = PLAT_NULL;
 	kbuf_t *kbuf_copy = PLAT_NULL;
 	uint8_t output_type;
+	uint8_t nwk_dst_id = 0;
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
 
 	if (p_nwk_tcpip == PLAT_NULL || p == PLAT_NULL)
@@ -126,7 +127,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 		return ERR_BUF;
 	}
 
-	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);
 
     q = p;
 	
@@ -144,11 +145,11 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
         }
     } while (0u == kbuf_chain_end);
 
-	output_type = nwk_pkt_transfer(SRC_IP, kbuf);
+	output_type = nwk_pkt_transfer(SRC_IP, kbuf, &nwk_dst_id);
 	kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
 	if (kbuf_copy)
 	{
-		kbuf_copy->offset = kbuf_copy->base + sizeof(mac_frm_head_t);
+		kbuf_copy->offset = kbuf_copy->base + sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);
 		kbuf_copy->valid_len = kbuf->valid_len;
 		mem_cpy(kbuf_copy->offset, kbuf->offset, kbuf->valid_len);
 	}
@@ -297,7 +298,7 @@ static bool_t nwk_eth_hw_init(void)
     mcb.mac[4] = p_device_info->local_eth_mac_addr[4];
     mcb.mac[5] = p_device_info->local_eth_mac_addr[5];
 	//填写偏移量
-	mcb.pkt_offset = sizeof(mac_frm_head_t);	
+	mcb.pkt_offset = sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);	
 	mcb.tx_func = nwk_eth_send_cb;
 	mcb.rx_func = nwk_eth_recv_cb;
 	mcb.rx_list = &nwk_eth_rx_list;

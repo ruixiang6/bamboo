@@ -352,7 +352,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			|| p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
 		{
 			//把数据偏移到网络层
-			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);
 			//kbuf的长度为网络层的长度
 			kbuf->valid_len = p_mac_frm_head->frm_len;
 

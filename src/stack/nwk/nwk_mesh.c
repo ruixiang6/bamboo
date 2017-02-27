@@ -3,11 +3,11 @@
 #include <nwk_mesh.h>
 
 
-
-kbuf_t *ctrl_frame = PLAT_NULL;
-
 //MESH层接口队列
-list_t nwk_mesh_rx_list;
+static list_t nwk_mesh_rx_list;
+
+static kbuf_t *ctrl_frame = PLAT_NULL;
+static uint16_t ctrl_timer_id = 0;
 
 
 void ctrl_timeout_handle(void)
@@ -71,6 +71,17 @@ void ctrl_frame_init(void)
 }
 
 
+static void ctrl_timer_cb(void)
+{
+	uint16_t object = NWK_EVENT_MESH_TIMER;
+	
+	osel_event_set(nwk_event_h, &object);
+
+	ctrl_timer_id = hal_timer_free(ctrl_timer_id);
+	ctrl_timer_id = hal_timer_alloc(NWK_CTRL_TIMEOUT, ctrl_timer_cb);
+}
+
+
 kbuf_t *nwk_mesh_recv_get(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
@@ -115,5 +126,8 @@ void nwk_mesh_init(void)
 	list_init(&nwk_mesh_rx_list);
 	
 	//ctrl_frame_init();
+	
+	ctrl_timer_id = hal_timer_free(ctrl_timer_id);
+	ctrl_timer_id = hal_timer_alloc(NWK_CTRL_TIMEOUT, ctrl_timer_cb);
 }
 
