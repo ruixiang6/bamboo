@@ -8,6 +8,7 @@
 #define MAC_EVENT_OF_TX			(1u<<1)
 #define MAC_EVENT_CSMA			(1u<<2)
 #define MAC_EVENT_OF_IDLE		(1u<<3)
+#define MAC_EVENT_OF_LIVE		(1u<<4)
 
 #define MAC_CSMA_RTS			1
 #define MAC_CSMA_CTS			2
@@ -31,12 +32,11 @@
 #define MAC_FRM_CTS_STYPE		12
 #define MAC_FRM_ACK_STYPE		13
 
-#define MAC_PKT_LIVE_US			300000
-#define MAC_PKT_DIFS_US			3340
+#define MAC_PKT_LIVE_US			150000
+#define MAC_PKT_DIFS_US			1550
 #define MAC_PKT_SLOT_UNIT_US	50
 #define MAC_IDLE_TO_SEND_US		80
-#define MAC_SEND_INTERVAL_US	1000//8000
-#define MAC_PKT_LIVE_AVOID_US	1000
+#define MAC_SEND_INTERVAL_US	3500//
 
 #pragma pack(1)
 
@@ -88,8 +88,8 @@ typedef struct
 	uint8_t send_id;	
 	uint8_t live_id;
 	uint8_t idle_id;
-	bool_t idle_state;
 	uint16_t idle_us;
+	bool_t idle_state;
 }mac_timer_t;
 
 typedef struct
@@ -97,7 +97,6 @@ typedef struct
 	list_t tx_list;
 	uint32_t total_num;
 	uint64_t total_size;
-	uint32_t next_size;
 }mac_send_t;
 
 #pragma pack()
@@ -117,11 +116,11 @@ void mac_handler(uint16_t event_type);
 void mac_init(void);
 void mac_deinit(void);
 
-void mac_tx_cb(void);
+void mac_send_cb(void);
 void mac_idle_cb(void);
 void mac_csma_cb(void);
 void mac_ofdm_recv_cb(void);
 void mac_ofdm_send_cb(void);
-void mac_rdy_kbuf_live_cb(void);
+void mac_live_cb(void);
 
 #endif

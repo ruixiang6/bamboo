@@ -46,30 +46,29 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 	
 	DBG_TRACE("MAC_TASK!\r\n");
 
-	list_init(&mac_ofdm_recv_list);
+	list_init(&mac_ofdm_recv_list);	
 	
-	mem_set(&mac_timer, 0, sizeof(mac_timer_t));
-
 	for (uint8_t i=0; i<MAC_QOS_LIST_MAX_NUM; i++)
 	{
 		list_init(&mac_send_entity[i].tx_list);		
 		mac_send_entity[i].total_num = 0;
-		mac_send_entity[i].total_size = 0;
-		mac_send_entity[i].next_size = 0;
+		mac_send_entity[i].total_size = 0;		
 	}
 
 	phy_init();
 	phy_ofdm_init(mac_ofdm_send_cb, mac_ofdm_recv_cb);
 	phy_tmr_init();
 
-	mac_timer.send_id = phy_tmr_alloc(mac_tx_cb);
+	mem_set(&mac_timer, 0, sizeof(mac_timer_t));
+	mac_timer.send_id = phy_tmr_alloc(mac_send_cb);
 	mac_timer.csma_id = phy_tmr_alloc(mac_csma_cb);
-	mac_timer.live_id = phy_tmr_alloc(mac_rdy_kbuf_live_cb);
+	mac_timer.live_id = phy_tmr_alloc(mac_live_cb);
 	mac_timer.idle_id = phy_tmr_alloc(mac_idle_cb);
-
 	mac_timer.idle_state = PLAT_FALSE;
 
 	phy_tmr_start(mac_timer.send_id, MAC_SEND_INTERVAL_US);
+	//phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);
+	//phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US);
 	
 	while(1)
 	{
@@ -81,7 +80,7 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 	}	
 }
 
-void mac_tx_cb(void)
+void mac_send_cb(void)
 {
 	uint16_t object = MAC_EVENT_OF_TX;
     
@@ -100,7 +99,7 @@ void mac_csma_cb(void)
 {
 	uint16_t object = MAC_EVENT_CSMA;
 
-	osel_event_set(mac_event_h, &object);	
+	osel_event_set(mac_event_h, &object);
 }
 
 void mac_ofdm_recv_cb(void)
@@ -150,23 +149,19 @@ void mac_ofdm_send_cb(void)
 		kbuf_free(mac_rdy_snd_kbuf);
 		mac_rdy_snd_kbuf = PLAT_NULL;		
 	}
-	
-	phy_tmr_stop(mac_timer.live_id);		
-	
 	//进入接收状态
 	phy_ofdm_recv();
 }
 
-void mac_rdy_kbuf_live_cb(void)
+void mac_live_cb(void)
 {
+	uint16_t object = MAC_EVENT_OF_LIVE;
 	uint8_t state;
-
+	
 	state = hal_rf_of_get_state();
 
 	if (state == HAL_RF_OF_SEND_M)
 	{
-		//如果状态还在发送阶段，则等待后
-		phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_AVOID_US);
 		return;
 	}
 	
@@ -175,12 +170,8 @@ void mac_rdy_kbuf_live_cb(void)
 		kbuf_free(mac_rdy_snd_kbuf);
 		mac_rdy_snd_kbuf = PLAT_NULL;
 	}
-	
-	phy_tmr_stop(mac_timer.live_id);		
-		
-	phy_tmr_stop(mac_timer.csma_id);		
-    
-    DBG_PRINTF("-");
-	phy_ofdm_recv();
+
+	DBG_PRINTF("A%dB", mac_timer.csma_difs_cnt);
+	osel_event_set(mac_event_h, &object);
 }
 

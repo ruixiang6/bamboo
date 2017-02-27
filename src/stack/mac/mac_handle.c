@@ -108,6 +108,7 @@ static void mac_of_tx_handler(void)
 	uint8_t loop;	
 	int8_t cca;
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+	uint32_t tmp;
 
 	if (mac_timer.idle_state == PLAT_FALSE)
 	{
@@ -127,16 +128,11 @@ static void mac_of_tx_handler(void)
 		{
 			mac_send_entity[loop].total_size -= kbuf->valid_len;
 			mac_send_entity[loop].total_num--;			
-			OSEL_EXIT_CRITICAL();
-			if (mac_send_entity[loop].total_size>MAX_PHY_OFDM_FRM_LEN)
-			{
-				p_mac_frm_head = (mac_frm_head_t *)mac_rdy_snd_kbuf->base;
-				p_mac_frm_head->duration = 3340;
-			}
-			//DBG_PRINTF("N");			
+			OSEL_EXIT_CRITICAL();				
 			mac_rdy_snd_kbuf = kbuf;				
 			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);			
-			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);			
+			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);
+			//DBG_PRINTF("+");
 			break;
 		}
 		OSEL_EXIT_CRITICAL();
@@ -147,18 +143,20 @@ static void mac_of_tx_handler(void)
 	cca = phy_ofdm_cca();
 
 	if (cca>MAC_CCA_THREDHOLD)
-	{
-		DBG_PRINTF("!");		
+	{				
 		mac_timer.csma_type = MAC_CSMA_DIFS;
-		phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);		
+		tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
+		//DBG_PRINTF("!=%d,", tmp);
+		phy_tmr_start(mac_timer.csma_id, tmp);		
 		mac_timer.csma_difs_cnt = 1;
+		mac_timer.csma_slot_cnt = 0;
 		return;
 	}
 	else
-	{
-		//DBG_PRINTF("L");		
+	{ 
         mac_timer.csma_type = MAC_CSMA_SLOT;
-		phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US);		
+		phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US);
+		mac_timer.csma_difs_cnt = 0;
 		mac_timer.csma_slot_cnt = 1;
 		return;
 	}
@@ -168,35 +166,38 @@ void mac_csma_handler(void)
 {
 	int8_t cca;
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
-	OSEL_DECL_CRITICAL();
-
+	uint32_t tmp;
+	
 	switch(mac_timer.csma_type)
 	{
-		case MAC_CSMA_DIFS:
-            //DBG_PRINTF("D");
+		case MAC_CSMA_DIFS:             
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
-			{
-				DBG_PRINTF("@");				
+			{				
 				mac_timer.csma_type = MAC_CSMA_DIFS;
-				phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);								
+				tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
+				//DBG_PRINTF("@=%d,", tmp);
+				phy_tmr_start(mac_timer.csma_id, tmp);
 			}
 			else
 			{
 				mac_timer.csma_slot_cnt = pow(2, mac_timer.csma_difs_cnt);
 				mac_timer.csma_slot_cnt = rand()%mac_timer.csma_slot_cnt;				
 				mac_timer.csma_type = MAC_CSMA_SLOT;
-				phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt);										
+				tmp = MAC_PKT_SLOT_UNIT_US*mac_timer.csma_slot_cnt+MAC_PKT_SLOT_UNIT_US;
+				//DBG_PRINTF("$=%d,", tmp);
+				phy_tmr_start(mac_timer.csma_id, tmp);										
 			}
 			mac_timer.csma_difs_cnt++;
 			break;
 		case MAC_CSMA_SLOT:            
 			cca = phy_ofdm_cca();
 			if (cca>MAC_CCA_THREDHOLD)
-			{
-				DBG_PRINTF("#");				
+			{						
                 mac_timer.csma_type = MAC_CSMA_DIFS;
-				phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US+rand()%MAC_PKT_DIFS_US);											
+				tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
+				//DBG_PRINTF("#=%d", tmp);		
+				phy_tmr_start(mac_timer.csma_id, tmp);											
 				mac_timer.csma_difs_cnt++;
 			}
 			else
@@ -207,21 +208,23 @@ void mac_csma_handler(void)
 			}
 			break;
 		case MAC_CSMA_RDY:
-			//DBG_PRINTF("S");
-			//开启idle态
-			OSEL_ENTER_CRITICAL();
-			if (mac_rdy_snd_kbuf && mac_timer.idle_state == PLAT_FALSE)
+#if 0
+			//开启idle态			 
+			if (mac_timer.idle_state == PLAT_FALSE && mac_rdy_snd_kbuf)
 			{
 				p_mac_frm_head = (mac_frm_head_t *)mac_rdy_snd_kbuf->base;
 				if (p_mac_frm_head->duration)
 				{
+					//idle时间段内，可发送数据
 					phy_tmr_start(mac_timer.idle_id, p_mac_frm_head->duration);
 					mac_timer.idle_us = p_mac_frm_head->duration;
 				}
 			}
-			OSEL_EXIT_CRITICAL();			
+#endif
+			phy_tmr_stop(mac_timer.live_id);
 			phy_ofdm_send();			
 			phy_tmr_stop(mac_timer.csma_id);
+			DBG_PRINTF("S%d", mac_timer.csma_difs_cnt);
 			mac_timer.csma_type = MAC_CSMA_FREE;			
 			break;
 		default:
@@ -236,14 +239,23 @@ static void mac_of_idle_handler(void)
 	
 	if (mac_timer.idle_state == PLAT_FALSE)
 	{
+		//idle时间段内，不可发送数据
 		mac_timer.idle_state = PLAT_TRUE;
 		phy_tmr_start(mac_timer.idle_id, mac_timer.idle_us);
 	}
 	else
 	{
+		//idle时间段内，可发送数据
 		mac_timer.idle_state = PLAT_FALSE;
 		osel_event_set(mac_event_h, &object);
 	}
+}
+
+static void mac_of_live_handler(void)
+{
+	phy_tmr_stop(mac_timer.csma_id);
+    
+	phy_ofdm_recv();
 }
 
 
@@ -260,7 +272,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 	}
 
 	p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-
+#if 0
 	//找到NAV位置
 	if (p_mac_frm_head->duration && mac_timer.idle_state == PLAT_FALSE)
 	{
@@ -270,7 +282,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		mac_timer.idle_state = PLAT_TRUE;
 		OSEL_EXIT_CRITICAL();
 	}
-	
+#endif
 	if (p_mac_frm_head->mesh_id != GET_MESH_ID(p_device_info->id))
 	{
 		kbuf_free(kbuf);
@@ -347,5 +359,11 @@ void mac_handler(uint16_t event_type)
 		object = MAC_EVENT_OF_IDLE;
 		osel_event_clear(mac_event_h, &object);		
 		mac_of_idle_handler();
+	}
+	else if (event_type & MAC_EVENT_OF_LIVE)
+	{
+		object = MAC_EVENT_OF_LIVE;
+		osel_event_clear(mac_event_h, &object);		
+		mac_of_live_handler();
 	}
 }
