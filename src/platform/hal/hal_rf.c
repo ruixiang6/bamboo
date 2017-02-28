@@ -379,7 +379,7 @@ void hal_rf_param_init(void)
 	DBG_PRINTF("rf_ofdm_scl_power(hex)=%x\r\n", rf_param.ofdm_scl_power[rf_param.use_level]);
 	DBG_PRINTF("rf_ofdm_lms_power(hex)=%x\r\n", rf_param.ofdm_lms_power[rf_param.use_level]);
 	DBG_PRINTF("rf_ofdm_rssi_offset(dec)=%d\r\n", rf_param.ofdm_rssi_offset[rf_param.use_level]);
-	DBG_PRINTF("rf_ofdm_rssi_thred(dec)=%f\r\n", rf_param.ofdm_rssi_thred);
+	DBG_PRINTF("rf_ofdm_rssi_thred(dec)=%0.2f\r\n", rf_param.ofdm_rssi_thred);
 }
 
 hal_rf_param_t *hal_rf_param_get(void)

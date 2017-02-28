@@ -15,7 +15,7 @@ const uint8_t slience_enforce_2400bps_voice[] =
 const uint8_t TEST_INTERFACE[] = 
 "\r\n\
 <***********************************************>\r\n\
-Test Software Version 4.3(Burst RF) (by qhw)\r\n\
+Test Software Version 4.4(Burst RF) (by qhw)\r\n\
 1.RF DSSS Test\r\n\
 2.RF OFDM Test\r\n\
 3.Misc Test\r\n\
@@ -979,7 +979,8 @@ READ_SCRIPT:
 static void config_set_rf_param(void)
 {
 	char_t *str = PLAT_NULL;
-	fp64_t freq_lo = 0;	
+	fp64_t freq_lo = 0;
+    fp32_t thred = 0;
 	uint32_t value = 0;
 	int32_t rssi_offset = 0;
 	bool_t update_flag = PLAT_FALSE;
@@ -1079,10 +1080,10 @@ static void config_set_rf_param(void)
 	{
 		str = str + strlen("rf_ofdm_rssi_thred=");
 		DBG_PRINTF("\r\n");
-		sscanf(str, "%lf", &value);
-		p_rf_param->ofdm_rssi_thred = value;		
+		sscanf(str, "%f", &thred);
+		p_rf_param->ofdm_rssi_thred = thred;		
 		update_flag = PLAT_TRUE;
-		DBG_PRINTF("Set OFDM RSSI THRED = [%f]\r\n", p_rf_param->ofdm_rssi_thred);
+		DBG_PRINTF("Set OFDM RSSI THRED = [%0.1f]\r\n", p_rf_param->ofdm_rssi_thred);
 	}
 	////////…Ë÷√rf_default////////////
 	str = (char_t *)uart_buf;
