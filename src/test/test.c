@@ -334,10 +334,8 @@ static test_rf_ofdm_t *test_ofdm_script(void)
 
 static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 {
-	uint16_t i=0;
-	uint32_t agc_value;
-	hal_rf_param_t *p_rf_param = hal_rf_param_get();
-	int8_t cca;
+	uint16_t i=0;	
+	hal_rf_param_t *p_rf_param = hal_rf_param_get();	
 	uint8_t clean_cca_cnt = 0;
 
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
@@ -484,7 +482,7 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 	volatile int16_t prev_seq_num = 0;
 
 	uint16_t frame_len;
-	fp32_t snr,rssi;	
+	fp32_t snr;	
 
 	switch (p_test_ofdm->mode)
 	{
@@ -990,7 +988,8 @@ static void config_set_rf_param(void)
 
 	hal_rf_param_init();
 	
-	DBG_PRINTF("Input Parameter(rf_lo,rf_ofdm_lms_power,rf_pa_power,rf_ofdm_scl_power,rf_ofdm_rssi_offset,rf_default)\r\n");
+	DBG_PRINTF("Input Parameter(rf_lo,rf_ofdm_lms_power,rf_pa_power\r\n");
+	DBG_PRINTF("rf_ofdm_scl_power,rf_ofdm_rssi_offset,rf_ofdm_rssi_thred,rf_default)\r\n");
 	DBG_PRINTF("Example:rf_lo=XXXX.XXXXXX(Unit:MHz)\r\n");	
 	test_cb.uart_recv_date = PLAT_FALSE;
 	while(!test_cb.uart_recv_date);
@@ -1226,7 +1225,7 @@ static void config_set_param()
 			stop_str = strstr((char_t *)str, ":");
 			if (stop_str) stop_str[0] = '\0';
 			sscanf(str, "%d", &value);
-			p_device_info->local_ip_addr[index] = value;
+			p_device_info->local_gateway_addr[index] = value;
 			str = &stop_str[1];
 		}				
 		update_flag = PLAT_TRUE;
@@ -1249,7 +1248,7 @@ static void config_set_param()
 			stop_str = strstr((char_t *)str, ":");
 			if (stop_str) stop_str[0] = '\0';
 			sscanf(str, "%d", &value);
-			p_device_info->local_ip_addr[index] = value;
+			p_device_info->local_netmask_addr[index] = value;
 			str = &stop_str[1];
 		}				
 		update_flag = PLAT_TRUE;
