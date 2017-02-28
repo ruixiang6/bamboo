@@ -144,7 +144,7 @@ static void mac_of_tx_handler(void)
 	OSEL_DECL_CRITICAL();	
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t loop;	
-	int8_t cca;
+	bool_t cca_flag;
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
 	uint32_t tmp;
 
@@ -191,9 +191,9 @@ static void mac_of_tx_handler(void)
 	
 	if (kbuf == PLAT_NULL) return;
 
-	cca = phy_ofdm_cca();
+	cca_flag = phy_ofdm_cca();
 
-	if (cca>MAC_CCA_THREDHOLD)
+	if (cca_flag == PLAT_FALSE)
 	{				
 		mac_timer.csma_type = MAC_CSMA_DIFS;
 		tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
@@ -217,15 +217,15 @@ static void mac_of_tx_handler(void)
 
 void mac_csma_handler(void)
 {
-	int8_t cca;
+	bool_t cca_flag;
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
 	uint32_t tmp;
 	
 	switch(mac_timer.csma_type)
 	{
 		case MAC_CSMA_DIFS:             
-			cca = phy_ofdm_cca();
-			if (cca>MAC_CCA_THREDHOLD)
+			cca_flag = phy_ofdm_cca();
+			if (cca_flag == PLAT_FALSE)
 			{				
 				mac_timer.csma_type = MAC_CSMA_DIFS;
 				tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
@@ -246,8 +246,8 @@ void mac_csma_handler(void)
 			mac_timer.csma_difs_cnt++;
 			break;
 		case MAC_CSMA_SLOT:            
-			cca = phy_ofdm_cca();
-			if (cca>MAC_CCA_THREDHOLD)
+			cca_flag = phy_ofdm_cca();
+			if (cca_flag == PLAT_FALSE)
 			{						
                 mac_timer.csma_type = MAC_CSMA_DIFS;
 				tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;

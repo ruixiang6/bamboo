@@ -385,7 +385,7 @@ void hal_rf_param_init(void)
 hal_rf_param_t *hal_rf_param_get(void)
 {
 	rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
-	if (rf_param.use_level = 0xFF)
+	if (rf_param.use_level == 0xFF)
 	{
 		rf_param.freq_cal.lo = 1445.0;
 		rf_param.freq_cal.ref = 40;
@@ -856,7 +856,7 @@ fp32_t hal_rf_ofdm_cal_rssi(bool_t realtime, bool_t *flag)
 
 	if (flag)
 	{
-		if (rssi<rf_param.ofdm_rssi_thred)
+		if (rssi<=rf_param.ofdm_rssi_thred)
 		{
 			*flag = PLAT_TRUE;
 		}
