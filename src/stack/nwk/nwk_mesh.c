@@ -3,6 +3,7 @@
 #include <nwk_mesh.h>
 
 
+
 //MESH层接口队列
 static list_t nwk_mesh_rx_list;
 
@@ -39,8 +40,9 @@ void ctrl_frame_parse(ctrl_data_t *p_ctrl_data, uint8_t src_id, uint8_t snr)
 }
 
 
-void ctrl_frame_send(void)
+void ctrl_frame_fill(void)
 {
+	OSEL_DECL_CRITICAL();
 	ctrl_data_t *p_ctrl_data = PLAT_NULL;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	uint8_t my_id = GET_DEV_ID(p_device_info->id);
@@ -48,17 +50,25 @@ void ctrl_frame_send(void)
 	if ((my_id == 0) || (my_id > NODE_MAX_NUM))
 		return;
 
-	p_ctrl_data = (ctrl_data_t *)(ctrl_frame->base + 0);
-
+	OSEL_ENTER_CRITICAL();	
+	
+	p_ctrl_data = (ctrl_data_t *)ctrl_frame->offset;
+	
 	neighbor_field_fill(&p_ctrl_data->nf);
 	route_field_fill(&p_ctrl_data->rf, my_id);
 	//affiliate_field_fill(&p_ctrl_data->af);
-
-	//to mac
+	
+	OSEL_EXIT_CRITICAL();
 }
 
 
-void ctrl_frame_init(void)
+kbuf_t *ctrl_frame_fetch(void)
+{	
+	return ctrl_frame;
+}
+
+
+static void ctrl_frame_init(void)
 {
 	ctrl_frame = kbuf_alloc(KBUF_BIG_TYPE);
 	if (ctrl_frame == PLAT_NULL) 
@@ -68,6 +78,9 @@ void ctrl_frame_init(void)
 	}
 
 	mem_set(ctrl_frame->base, 0, KBUF_BIG_SIZE);
+
+	ctrl_frame->offset = ctrl_frame->base + sizeof(mac_frm_head_t);
+	ctrl_frame->valid_len = sizeof(ctrl_data_t);
 }
 
 
@@ -108,7 +121,6 @@ void nwk_mesh_recv_put(kbuf_t *kbuf)
 }
 
 
-
 void nwk_mesh_deinit(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
@@ -117,15 +129,23 @@ void nwk_mesh_deinit(void)
 	{
 		kbuf = (kbuf_t *)list_front_get(&nwk_mesh_rx_list);
 		if (kbuf) kbuf_free(kbuf);
-	} while(kbuf);	
+	} while(kbuf);
+
+	ctrl_timer_id = hal_timer_free(ctrl_timer_id);
 }
 
 
 void nwk_mesh_init(void)
 {
 	list_init(&nwk_mesh_rx_list);
-	
-	//ctrl_frame_init();
+
+	addr_table_init();
+	broadcast_rcv_table_init();
+	neighbor_table_init();
+	route_table_init();
+	affiliate_table_init();
+		
+	ctrl_frame_init();
 	
 	ctrl_timer_id = hal_timer_free(ctrl_timer_id);
 	ctrl_timer_id = hal_timer_alloc(NWK_CTRL_TIMEOUT, ctrl_timer_cb);

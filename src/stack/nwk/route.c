@@ -128,7 +128,7 @@ uint8_t route_table_query(uint8_t dst_id, uint8_t *p_hop, uint8_t *p_seq)
 	
 	if ((dst_id > 0) && (dst_id <= NODE_MAX_NUM))
 	{
-		if (route_table.item[dst_id-1].hop < NODE_MAX_NUM)
+		if (route_table.item[dst_id-1].hop < ROUTE_HOP_INVALID)
 		{
 			next_id = route_table.item[dst_id-1].next_id;
 			if (p_hop)
@@ -136,7 +136,8 @@ uint8_t route_table_query(uint8_t dst_id, uint8_t *p_hop, uint8_t *p_seq)
 			if (p_seq)
 				*p_seq = route_table.item[dst_id-1].seq;
 		}
-		else if (route_table.item_standby[dst_id-1].hop < NODE_MAX_NUM)
+		/*
+		else if (route_table.item_standby[dst_id-1].hop < ROUTE_HOP_INVALID)
 		{
 			next_id = route_table.item_standby[dst_id-1].next_id;
 			if (p_hop)
@@ -144,6 +145,7 @@ uint8_t route_table_query(uint8_t dst_id, uint8_t *p_hop, uint8_t *p_seq)
 			if (p_seq)
 				*p_seq = route_table.item_standby[dst_id-1].seq;
 		}
+		*/
 	}
 	else
 	{

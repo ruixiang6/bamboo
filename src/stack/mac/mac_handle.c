@@ -10,7 +10,7 @@ list_t mac_ofdm_recv_list;
 
 static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf);
 
-bool_t mac_send(kbuf_t *kbuf)
+bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info)
 {
 	OSEL_DECL_CRITICAL();
 	uint16_t object = MAC_EVENT_OF_TX;
@@ -20,12 +20,12 @@ bool_t mac_send(kbuf_t *kbuf)
 	etharp_hdr_t *p_etharp_hdr = PLAT_NULL;
 	ip_hdr_t *p_ip_hdr = PLAT_NULL;
 	
-	if (kbuf == PLAT_NULL)
+	if (kbuf == PLAT_NULL || p_send_info == PLAT_NULL)
 	{
 		return PLAT_FALSE;
 	}
 
-	if (kbuf->valid_len==0 || kbuf->valid_len>=MAX_PHY_OFDM_FRM_LEN)
+	if (kbuf->valid_len==0 || kbuf->valid_len>=MAX_PHY_OFDM_FRM_LEN-sizeof(mac_frm_head_t))
 	{
 		return PLAT_FALSE;
 	}
@@ -34,7 +34,17 @@ bool_t mac_send(kbuf_t *kbuf)
 	//填写MESH_ID
 	p_mac_frm_head->mesh_id = GET_MESH_ID(p_device_info->id);
 	//填写SRC_DEV_ID
-	p_mac_frm_head->src_dev_id = GET_DEV_ID(p_device_info->id);
+	p_mac_frm_head->src_dev_id = p_send_info->src_id;
+	//填写DST_DEV_ID
+	p_mac_frm_head->dest_dev_id = p_send_info->dest_id;
+	//填写Sender_ID
+	p_mac_frm_head->sender_id = p_send_info->sender_id;
+	//填写Target_ID
+	p_mac_frm_head->target_id = p_send_info->target_id;
+	//填写序号
+	p_mac_frm_head->seq_ctrl.seq_num = p_send_info->seq_num;
+	//填充载荷长度
+	p_mac_frm_head->frm_len = kbuf->valid_len;
 	//kbuf赋予总长度
 	kbuf->valid_len = sizeof(mac_frm_head_t) + p_mac_frm_head->frm_len;
 	//最大的长度倍数
@@ -42,11 +52,13 @@ bool_t mac_send(kbuf_t *kbuf)
 	//前导码+发射时间+切换时间+offset
 	//p_mac_frm_head->duration = 360+720*(p_mac_frm_head->phy+1)+100+200;
 	p_mac_frm_head->duration = 0;
-	//计算CRC32
-	p_mac_frm_head->crc32 = 0;
-	p_mac_frm_head->crc32 = crc32_tab(kbuf->base, 0, sizeof(mac_frm_head_t)-sizeof(uint32_t));
+	//计算checksum
+	p_mac_frm_head->chksum = 0;
+	p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(mac_frm_head_t));
 	//kbuf赋予总长度HAL_RF_OF_REG_MAX_RAM_SIZE倍数
-	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;    
+	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
+	//填写Qos对应的队列和帧类型todo
+	p_mac_frm_head->frm_ctrl.type = p_send_info->qos_level;
     
 	if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
 	{
@@ -352,7 +364,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			|| p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
 		{
 			//把数据偏移到网络层
-			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);
+			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 			//kbuf的长度为网络层的长度
 			kbuf->valid_len = p_mac_frm_head->frm_len;
 

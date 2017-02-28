@@ -2738,9 +2738,6 @@
         <name>$PROJ_DIR$\..\src\stack\nwk\affiliate.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\src\stack\nwk\broadcast.c</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\src\stack\nwk\neighbor.c</name>
       </file>
       <file>

@@ -86,12 +86,12 @@ void addr_table_add(uint8_t *paddr, uint8_t id)
 	p_aqi = addr_queue_alloc();
 	if (p_aqi) 
 	{
-		p_aqi->addr[0] == paddr[0];
-		p_aqi->addr[1] == paddr[1];
-		p_aqi->addr[2] == paddr[2];
-		p_aqi->addr[3] == paddr[3];
-		p_aqi->addr[4] == paddr[4];
-		p_aqi->addr[5] == paddr[5];
+		p_aqi->addr[0] = paddr[0];
+		p_aqi->addr[1] = paddr[1];
+		p_aqi->addr[2] = paddr[2];
+		p_aqi->addr[3] = paddr[3];
+		p_aqi->addr[4] = paddr[4];
+		p_aqi->addr[5] = paddr[5];
 		
 		p_aqi->id = id;
 		
@@ -120,6 +120,13 @@ void addr_table_query(uint8_t *paddr, uint8_t *p_id)
 
 	*p_id = 0;
 }
+
+
+void addr_table_init(void)
+{
+	addr_queue_init();
+	
+}
 #else
 
 static addr_table_t addr_table;
@@ -143,12 +150,12 @@ void addr_table_add(uint8_t *paddr, uint8_t id)
 			&& (addr_table.item[i].addr[2] == 0) && (addr_table.item[i].addr[3] == 0) 
 			&& (addr_table.item[i].addr[4] ==0) && (addr_table.item[i].addr[5] == 0))
 		{
-			addr_table.item[i].addr[0] == paddr[0];
-			addr_table.item[i].addr[1] == paddr[1];
-			addr_table.item[i].addr[2] == paddr[2];
-			addr_table.item[i].addr[3] == paddr[3];
-			addr_table.item[i].addr[4] == paddr[4];
-			addr_table.item[i].addr[5] == paddr[5];	
+			addr_table.item[i].addr[0] = paddr[0];
+			addr_table.item[i].addr[1] = paddr[1];
+			addr_table.item[i].addr[2] = paddr[2];
+			addr_table.item[i].addr[3] = paddr[3];
+			addr_table.item[i].addr[4] = paddr[4];
+			addr_table.item[i].addr[5] = paddr[5];	
 
 			addr_table.item[i].id = id;
 
@@ -181,5 +188,60 @@ void addr_table_query(uint8_t *paddr, uint8_t *p_id)
 	//DBG_PRINTF("addr_table_query error\r\n");
 }
 
+
+void addr_table_init(void)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++)
+	{
+		addr_table.item[i].addr[0] = 0;
+		addr_table.item[i].addr[1] = 0;
+		addr_table.item[i].addr[2] = 0;
+		addr_table.item[i].addr[3] = 0;
+		addr_table.item[i].addr[4] = 0;
+		addr_table.item[i].addr[5] = 0;
+
+		addr_table.item[i].id = 0;
+		addr_table.item[i].timeout = 0;	
+	}
+}
 #endif
 
+
+static broadcast_rcv_table_t broadcast_rcv_table;
+
+
+void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq)
+{
+	broadcast_rcv_table.item[src_id-1].frame_seq = frame_seq;
+}
+
+
+void broadcast_rcv_table_del(uint8_t src_id)
+{
+	broadcast_rcv_table.item[src_id-1].frame_seq = 0;
+}
+
+
+bool_t broadcast_rcv_table_judge(uint8_t src_id, uint8_t frame_seq)
+{
+	if ((broadcast_rcv_table.item[src_id-1].frame_seq == frame_seq) && (broadcast_rcv_table.item[src_id-1].frame_seq != 0))
+		return PLAT_TRUE;
+	else
+		return PLAT_FALSE;
+}
+
+
+void broadcast_rcv_table_init(void)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < NODE_MAX_NUM; i++)
+	{
+		broadcast_rcv_table.item[i].frame_seq = 0;
+		broadcast_rcv_table.item[i].status = 0;
+		broadcast_rcv_table.item[i].timeout = 0;
+		broadcast_rcv_table.item[i].dump = 0;
+	}	
+}

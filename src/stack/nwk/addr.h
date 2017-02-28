@@ -29,14 +29,28 @@ typedef struct _addr_table_item_t {
 typedef struct _addr_table_t {
 	addr_table_item_t item[ADDR_TABLE_MAX_NUM];
 } addr_table_t;
-
 #endif
+
+typedef struct _broadcast_rcv_table_item_t {
+	uint8_t frame_seq;
+	uint8_t status;
+	uint8_t timeout;
+	uint8_t dump;
+} broadcast_rcv_table_item_t;
+
+typedef struct _broadcast_rcv_table_t {
+	broadcast_rcv_table_item_t item[NODE_MAX_NUM];
+} broadcast_rcv_table_t;
 
 #pragma pack()
 
 
 extern void addr_table_add(uint8_t *paddr, uint8_t id);
 extern void addr_table_query(uint8_t *paddr, uint8_t *p_id);
+extern void addr_table_init(void);
+extern void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq);
+extern bool_t broadcast_rcv_table_judge(uint8_t src_id, uint8_t frame_seq);
+extern void broadcast_rcv_table_init(void);
 
 
 #endif

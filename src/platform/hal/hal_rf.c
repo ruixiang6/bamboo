@@ -344,7 +344,7 @@ void hal_rf_param_init(void)
 		//ÅÐ¶ÏÆµÂÊ·¶Î§
 		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 
-		if (rf_param.use_level = 0xFF)
+		if (rf_param.use_level == 0xFF)
 		{
 			rf_param.freq_cal.lo = 1445.0;
 			rf_param.freq_cal.ref = 40;
@@ -381,7 +381,7 @@ void hal_rf_param_init(void)
 hal_rf_param_t *hal_rf_param_get(void)
 {
 	rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
-	if (rf_param.use_level = 0xFF)
+	if (rf_param.use_level == 0xFF)
 	{
 		rf_param.freq_cal.lo = 1445.0;
 		rf_param.freq_cal.ref = 40;

@@ -1240,7 +1240,7 @@ static void config_set_param()
 			stop_str = strstr((char_t *)str, ":");
 			if (stop_str) stop_str[0] = '\0';
 			sscanf(str, "%d", &value);
-			p_device_info->local_ip_addr[index] = value;
+			p_device_info->local_gateway_addr[index] = value;
 			str = &stop_str[1];
 		}				
 		update_flag = PLAT_TRUE;
@@ -1263,7 +1263,7 @@ static void config_set_param()
 			stop_str = strstr((char_t *)str, ":");
 			if (stop_str) stop_str[0] = '\0';
 			sscanf(str, "%d", &value);
-			p_device_info->local_ip_addr[index] = value;
+			p_device_info->local_netmask_addr[index] = value;
 			str = &stop_str[1];
 		}				
 		update_flag = PLAT_TRUE;

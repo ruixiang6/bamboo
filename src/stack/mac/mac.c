@@ -106,7 +106,7 @@ void mac_csma_cb(void)
 
 void mac_ofdm_recv_cb(void)
 {
-	uint32_t crc32 = 0;
+	uint16_t chksum = 0;
 	uint16_t object = MAC_EVENT_OF_RX;
 	mac_frm_head_t *p_mac_head = PLAT_NULL;
 	
@@ -121,10 +121,10 @@ void mac_ofdm_recv_cb(void)
 
 	p_mac_head = (mac_frm_head_t *)kbuf->base;
 
-	crc32 = p_mac_head->crc32;
-	p_mac_head->crc32 = 0;
+	chksum = p_mac_head->chksum;
+	p_mac_head->chksum = 0;
 
-	if (crc32 != crc32_tab((uint8_t *)p_mac_head, 0, sizeof(mac_frm_head_t)-sizeof(uint32_t)))
+	if (chksum != check16_sum((uint8_t *)p_mac_head, sizeof(mac_frm_head_t)))
 	{
 		kbuf_free(kbuf);
 		return;

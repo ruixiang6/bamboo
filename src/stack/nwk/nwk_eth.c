@@ -1,13 +1,14 @@
 #include <device.h>
 #include <nwk.h>
 #include <nwk_eth.h>
+#include <route.h>
 #include <mac.h>
 
 //以太网交互的接口队列
 static list_t nwk_eth_tx_list;
 static list_t nwk_eth_rx_list;
 
-//TCPIP交互的结构
+//TCPIP交互的结�?
 static nwk_tcpip_t nwk_tcpip;
 
 
@@ -112,8 +113,10 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 	kbuf_t *kbuf = PLAT_NULL;
 	kbuf_t *kbuf_copy = PLAT_NULL;
 	uint8_t output_type;
-	uint8_t nwk_dst_id = 0;
-	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+	bool_t ret = PLAT_FALSE;
+	mac_send_info_t send_info;
+    device_info_t *p_device_info = device_info_get(PLAT_FALSE);
+	static uint8_t broadcast_frame_seq = 0;
 
 	if (p_nwk_tcpip == PLAT_NULL || p == PLAT_NULL)
 	{
@@ -127,7 +130,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 		return ERR_BUF;
 	}
 
-	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);
+	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 
     q = p;
 	
@@ -145,36 +148,62 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
         }
     } while (0u == kbuf_chain_end);
 
-	output_type = nwk_pkt_transfer(SRC_IP, kbuf, &nwk_dst_id);
-	kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
-	if (kbuf_copy)
+	output_type = nwk_pkt_transfer(SRC_IP, kbuf, &send_info);
+	//同时需要发给两路，且必定为广播包
+	if ((output_type & DEST_MESH) && (output_type & DEST_ETH) && (send_info.target_id == BROADCAST_ID))
 	{
-		kbuf_copy->offset = kbuf_copy->base + sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);
-		kbuf_copy->valid_len = kbuf->valid_len;
-		mem_cpy(kbuf_copy->offset, kbuf->offset, kbuf->valid_len);
+		kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
+		if (kbuf_copy)
+		{
+			kbuf_copy->offset = kbuf_copy->base + sizeof(mac_frm_head_t);
+			kbuf_copy->valid_len = kbuf->valid_len;
+			mem_cpy(kbuf_copy->offset, kbuf->offset, kbuf->valid_len);
+
+			//异步发送给nwk的eth
+			nwk_eth_send_asyn(kbuf_copy);
+		}
+		
+        send_info.sender_id = GET_DEV_ID(p_device_info->id);
+		send_info.src_id = GET_DEV_ID(p_device_info->id);
+        send_info.seq_num = broadcast_frame_seq++;
+        send_info.qos_level = MAC_FRM_DATA_TYPE;
+        send_info.dest_id = send_info.target_id;
+		
+		ret = mac_send(kbuf, &send_info);
+		if (!ret)
+			kbuf_free(kbuf);
+
+		return ERR_OK;
 	}
 	
 	if (output_type & DEST_MESH)
 	{
-		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-		//填充长度
-		p_mac_frm_head->frm_len = kbuf->valid_len;
-		//填充目的地址
-		p_mac_frm_head->dest_dev_id = BROADCAST_ID;
-		//填充类型
-		p_mac_frm_head->frm_ctrl.type = MAC_FRM_DATA_TYPE;
-		mac_send(kbuf);
+        send_info.sender_id = GET_DEV_ID(p_device_info->id);
+		send_info.src_id = GET_DEV_ID(p_device_info->id);
+        send_info.seq_num = 0;
+        send_info.qos_level = MAC_FRM_DATA_TYPE;
+		//查询路由表，得到下一跳节点ID
+        send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
+		if (send_info.dest_id == 0)
+		{
+			kbuf_free(kbuf);
+			return ERR_VAL;
+		}
+		
+		ret = mac_send(kbuf, &send_info);
+		if (!ret)
+			kbuf_free(kbuf);
 	}
-	
-	if (output_type & DEST_ETH)
+	else if (output_type & DEST_ETH)
 	{
 		//异步发送给nwk的eth
-		nwk_eth_send_asyn(kbuf_copy);
+		nwk_eth_send_asyn(kbuf);
 	}
 	else
 	{
-		kbuf_free(kbuf_copy);
+		kbuf_free(kbuf);
 	}
+	
     return ERR_OK;
 }
 
@@ -297,8 +326,8 @@ static bool_t nwk_eth_hw_init(void)
     mcb.mac[3] = p_device_info->local_eth_mac_addr[3];
     mcb.mac[4] = p_device_info->local_eth_mac_addr[4];
     mcb.mac[5] = p_device_info->local_eth_mac_addr[5];
-	//填写偏移量
-	mcb.pkt_offset = sizeof(mac_frm_head_t) + sizeof(nwk_frm_head_t);	
+	//填写偏移
+	mcb.pkt_offset = sizeof(mac_frm_head_t);	
 	mcb.tx_func = nwk_eth_send_cb;
 	mcb.rx_func = nwk_eth_recv_cb;
 	mcb.rx_list = &nwk_eth_rx_list;
