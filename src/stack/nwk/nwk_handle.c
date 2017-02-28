@@ -115,7 +115,8 @@ err_t nwk_tcpip_output(nwk_tcpip_t *nwk_tcpip, pbuf_t *p)
 	kbuf_t *kbuf = PLAT_NULL;
 	kbuf_t *kbuf_copy = PLAT_NULL;
 	uint8_t output_type;
-	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+	mac_send_info_t send_info;
+    device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
 	if (nwk_tcpip == PLAT_NULL || p == PLAT_NULL)
 	{
@@ -158,14 +159,14 @@ err_t nwk_tcpip_output(nwk_tcpip_t *nwk_tcpip, pbuf_t *p)
 	
 	if (output_type & DEST_MESH)
 	{
-		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-		//填充长度
-		p_mac_frm_head->frm_len = kbuf->valid_len;
-		//填充目的地址
-		p_mac_frm_head->dest_dev_id = BROADCAST_ID;
-		//帧类型
-		p_mac_frm_head->frm_ctrl.type = MAC_FRM_DATA_TYPE;
-		mac_send(kbuf);
+		send_info.src_id = GET_DEV_ID(p_device_info->id);
+        send_info.dest_id = BROADCAST_ID;
+        send_info.sender_id = GET_DEV_ID(p_device_info->id);
+        send_info.target_id = BROADCAST_ID;
+        send_info.seq_num = 0;
+        send_info.qos_level = MAC_FRM_DATA_TYPE;		
+		//发送给mac层
+		mac_send(kbuf, &send_info);
 	}
 	
 	if (output_type & DEST_ETH)
@@ -267,7 +268,8 @@ static void nwk_eth_rx_handler(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t output_type;
-	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+	mac_send_info_t send_info;
+    device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	
 	while (1)
 	{
@@ -284,15 +286,14 @@ static void nwk_eth_rx_handler(void)
 
 			if (output_type & DEST_MESH)
 			{
-				p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-				//填充长度
-				p_mac_frm_head->frm_len = kbuf->valid_len;
-				//填充目的地址
-				p_mac_frm_head->dest_dev_id = BROADCAST_ID;
-				//帧类型
-				p_mac_frm_head->frm_ctrl.type = MAC_FRM_DATA_TYPE;
-				//发送给mac层
-				mac_send(kbuf);
+				send_info.src_id = GET_DEV_ID(p_device_info->id);
+                send_info.dest_id = BROADCAST_ID;
+                send_info.sender_id = GET_DEV_ID(p_device_info->id);
+                send_info.target_id = BROADCAST_ID;
+                send_info.seq_num = 0;
+                send_info.qos_level = MAC_FRM_DATA_TYPE;		
+                //发送给mac层
+                mac_send(kbuf, &send_info);
 			}
 			else
 			{

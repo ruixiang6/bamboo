@@ -74,9 +74,11 @@ typedef struct
 	uint8_t mesh_id;
 	uint8_t src_dev_id;
 	uint8_t dest_dev_id;
+	uint8_t sender_id;
+	uint8_t target_id;
 	mac_frm_seq_t seq_ctrl;
 	uint16_t frm_len;
-	uint32_t crc32;
+	uint16_t chksum;
 } mac_frm_head_t;
 
 typedef struct
@@ -99,6 +101,16 @@ typedef struct
 	uint64_t total_size;
 }mac_send_t;
 
+typedef struct
+{
+	uint8_t src_id;
+	uint8_t dest_id;
+	uint8_t sender_id;
+	uint8_t target_id;
+	uint8_t seq_num;
+	uint8_t qos_level;
+}mac_send_info_t;
+
 #pragma pack()
 
 #define MAC_QOS_LIST_MAX_NUM	5	
@@ -111,7 +123,7 @@ extern osel_event_t *mac_event_h;
 extern mac_timer_t mac_timer;
 extern kbuf_t *mac_rdy_snd_kbuf;
 
-bool_t mac_send(kbuf_t *kbuf);
+bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info);
 void mac_handler(uint16_t event_type);
 void mac_init(void);
 void mac_deinit(void);

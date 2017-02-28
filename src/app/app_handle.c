@@ -574,27 +574,23 @@ static void app_test_cb(void)
 
 static void app_test_handler(void)
 {
-	kbuf_t *kbuf;
-	mac_frm_head_t *p_mac_frm_head;	
+	kbuf_t *kbuf;	
+    mac_send_info_t send_info;
+    device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
 	kbuf = kbuf_alloc(KBUF_BIG_TYPE);
 
 	if (kbuf)
 	{
 		kbuf->valid_len = 1514;
-		
-		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-		//填充长度
-		p_mac_frm_head->frm_len = kbuf->valid_len;
-		//填充目的地址
-		p_mac_frm_head->dest_dev_id = BROADCAST_ID;
-		//帧类型
-		p_mac_frm_head->frm_ctrl.type = MAC_FRM_TEST_TYPE;
-		//序号
-		p_mac_frm_head->seq_ctrl.seq_num = seq++;
+		send_info.src_id = GET_DEV_ID(p_device_info->id);
+        send_info.dest_id = BROADCAST_ID;
+        send_info.sender_id = GET_DEV_ID(p_device_info->id);
+        send_info.target_id = BROADCAST_ID;
+        send_info.seq_num = seq++;
+        send_info.qos_level = MAC_FRM_TEST_TYPE;		
 		//发送给mac层
-		mac_send(kbuf);
-
+		mac_send(kbuf, &send_info);
 		//DBG_PRINTF("Q=%d\r\n", seq);
 	}
 	else
