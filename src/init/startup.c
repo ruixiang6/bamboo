@@ -3,6 +3,7 @@
 #include <device.h>
 #include <test.h>
 #include <nwk.h>
+#include <nwk_eth.h>
 #include <mac.h>
 #include "Control_IO.h"
 

@@ -22,6 +22,6 @@ bool_t hal_eth_deinit(void);
 
 bool_t hal_eth_link_state(void);
 
-uint16_t hal_eth_send(kbuf_t *pbuf);
+uint16_t hal_eth_send(kbuf_t *kbuf);
 
 #endif

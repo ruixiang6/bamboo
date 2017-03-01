@@ -2475,9 +2475,6 @@
         <name>$PROJ_DIR$\..\src\stack\mac\mac.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\src\stack\mac\mac.h</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\src\stack\mac\mac_handle.c</name>
       </file>
     </group>
@@ -2607,22 +2604,37 @@
         </group>
       </group>
       <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\addr.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\affiliate.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\neighbor.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\src\stack\nwk\nwk.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\src\stack\nwk\nwk.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\nwk_eth.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\src\stack\nwk\nwk_handle.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\nwk_mesh.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\nwk\route.c</name>
       </file>
     </group>
     <group>
       <name>phy</name>
       <file>
         <name>$PROJ_DIR$\..\src\stack\phy\phy.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\src\stack\phy\phy.h</name>
       </file>
     </group>
   </group>
