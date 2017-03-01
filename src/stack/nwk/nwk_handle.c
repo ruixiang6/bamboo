@@ -375,7 +375,7 @@ static void nwk_mesh_rx_handler(void)
 			//如果是管理控制包，则解析处理之
 			if (output_type & DEST_MGMT)
 			{
-				ctrl_frame_parse((ctrl_data_t *)kbuf->offset, send_info.src_id, send_info.snr);
+				probe_frame_parse((probe_data_t *)kbuf->offset, send_info.src_id, send_info.snr);
 				continue;
 			}
 						
@@ -440,9 +440,9 @@ static void nwk_mesh_rx_handler(void)
 
 static void nwk_mesh_timer_handler(void)
 {	
-	ctrl_timeout_handle();
+	probe_timeout_handle();
 
-	ctrl_frame_fill();
+	probe_frame_fill();
 }
 
 

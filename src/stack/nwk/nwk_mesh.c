@@ -7,11 +7,11 @@
 //MESH层接口队列
 static list_t nwk_mesh_rx_list;
 
-static kbuf_t *ctrl_frame = PLAT_NULL;
-static uint16_t ctrl_timer_id = 0;
+static kbuf_t *probe_frame = PLAT_NULL;
+static uint16_t probe_timer_id = 0;
 
 
-void ctrl_timeout_handle(void)
+void probe_timeout_handle(void)
 {
 	uint8_t i = 0;
 
@@ -25,7 +25,7 @@ void ctrl_timeout_handle(void)
 }
 
 
-void ctrl_frame_parse(ctrl_data_t *p_ctrl_data, uint8_t src_id, uint8_t snr)
+void probe_frame_parse(probe_data_t *p_probe_data, uint8_t src_id, uint8_t snr)
 {
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	uint8_t my_id = GET_DEV_ID(p_device_info->id);
@@ -33,17 +33,17 @@ void ctrl_frame_parse(ctrl_data_t *p_ctrl_data, uint8_t src_id, uint8_t snr)
 	if ((my_id == 0) || (my_id > NODE_MAX_NUM))
 		return;
 	
-	if (neighbor_table_add(src_id, snr, neighbor_field_get_snrtx(&p_ctrl_data->nf, my_id)))
+	if (neighbor_table_add(src_id, snr, neighbor_field_get_snrtx(&p_probe_data->nf, my_id)))
 	{
-		route_field_handle(&p_ctrl_data->rf, src_id, my_id);
+		route_field_handle(&p_probe_data->rf, src_id, my_id);
 	}
 }
 
 
-void ctrl_frame_fill(void)
+void probe_frame_fill(void)
 {
 	OSEL_DECL_CRITICAL();
-	ctrl_data_t *p_ctrl_data = PLAT_NULL;
+	probe_data_t *p_probe_data = PLAT_NULL;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	uint8_t my_id = GET_DEV_ID(p_device_info->id);
 
@@ -52,46 +52,46 @@ void ctrl_frame_fill(void)
 
 	OSEL_ENTER_CRITICAL();	
 	
-	p_ctrl_data = (ctrl_data_t *)ctrl_frame->offset;
+	p_probe_data = (probe_data_t *)probe_frame->offset;
 	
-	neighbor_field_fill(&p_ctrl_data->nf);
-	route_field_fill(&p_ctrl_data->rf, my_id);
-	//affiliate_field_fill(&p_ctrl_data->af);
+	neighbor_field_fill(&p_probe_data->nf);
+	route_field_fill(&p_probe_data->rf, my_id);
+	//affiliate_field_fill(&p_probe_data->af);
 	
 	OSEL_EXIT_CRITICAL();
 }
 
 
-kbuf_t *ctrl_frame_fetch(void)
+kbuf_t *probe_frame_fetch(void)
 {	
-	return ctrl_frame;
+	return probe_frame;
 }
 
 
-static void ctrl_frame_init(void)
+static void probe_frame_init(void)
 {
-	ctrl_frame = kbuf_alloc(KBUF_BIG_TYPE);
-	if (ctrl_frame == PLAT_NULL) 
+	probe_frame = kbuf_alloc(KBUF_BIG_TYPE);
+	if (probe_frame == PLAT_NULL) 
 	{
 		DBG_ERROR("kbuf_alloc error\r\n");
 		return;
 	}
 
-	mem_set(ctrl_frame->base, 0, KBUF_BIG_SIZE);
+	mem_set(probe_frame->base, 0, KBUF_BIG_SIZE);
 
-	ctrl_frame->offset = ctrl_frame->base + sizeof(mac_frm_head_t);
-	ctrl_frame->valid_len = sizeof(ctrl_data_t);
+	probe_frame->offset = probe_frame->base + sizeof(mac_frm_head_t);
+	probe_frame->valid_len = sizeof(probe_data_t);
 }
 
 
-static void ctrl_timer_cb(void)
+static void probe_timer_cb(void)
 {
 	uint16_t object = NWK_EVENT_MESH_TIMER;
 	
 	osel_event_set(nwk_event_h, &object);
 
-	ctrl_timer_id = hal_timer_free(ctrl_timer_id);
-	ctrl_timer_id = hal_timer_alloc(NWK_CTRL_TIMEOUT, ctrl_timer_cb);
+	probe_timer_id = hal_timer_free(probe_timer_id);
+	probe_timer_id = hal_timer_alloc(NWK_PROBE_TIMEOUT, probe_timer_cb);
 }
 
 
@@ -131,7 +131,7 @@ void nwk_mesh_deinit(void)
 		if (kbuf) kbuf_free(kbuf);
 	} while(kbuf);
 
-	ctrl_timer_id = hal_timer_free(ctrl_timer_id);
+	probe_timer_id = hal_timer_free(probe_timer_id);
 }
 
 
@@ -145,9 +145,9 @@ void nwk_mesh_init(void)
 	route_table_init();
 	affiliate_table_init();
 		
-	ctrl_frame_init();
+	probe_frame_init();
 	
-	ctrl_timer_id = hal_timer_free(ctrl_timer_id);
-	ctrl_timer_id = hal_timer_alloc(NWK_CTRL_TIMEOUT, ctrl_timer_cb);
+	probe_timer_id = hal_timer_free(probe_timer_id);
+	probe_timer_id = hal_timer_alloc(NWK_PROBE_TIMEOUT, probe_timer_cb);
 }
 

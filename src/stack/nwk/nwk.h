@@ -23,7 +23,7 @@
 #define SRC_ETH			(1u<<2)
 
 #define NODE_MAX_NUM		32
-#define NWK_CTRL_TIMEOUT	200000
+#define NWK_PROBE_TIMEOUT	200000
 
 
 #pragma pack(1)
