@@ -334,13 +334,13 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			{
 				p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
 				kbuf_copy->offset = kbuf_copy->base+sizeof(mac_frm_head_t);
-				kbuf_copy->valid_len = sizeof(ctrl_data_t);
+				kbuf_copy->valid_len = sizeof(probe_data_t);
 				
 				mem_cpy(kbuf_copy->base, kbuf->base, sizeof(mac_frm_head_t));
 				//减去
-				p_mac_frm_head->frm_len = p_mac_frm_head->frm_len-sizeof(ctrl_data_t);
+				p_mac_frm_head->frm_len = p_mac_frm_head->frm_len-sizeof(probe_data_t);
 				//copy这ctrl_data_t部分数据 	
-				mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len-1, sizeof(ctrl_data_t));
+				mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len-1, sizeof(probe_data_t));
 				//将帧类型变为纯PROB的数据包
 				p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,PROB,0,0);
 				nwk_mesh_recv_put(kbuf_copy);
@@ -360,7 +360,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 				//将帧类型变为纯QOS的数据包	
 				p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,0,0,qos);
 				//将帧长改为普通数据长度
-				p_mac_frm_head->frm_len -= sizeof(ctrl_data_t);
+				p_mac_frm_head->frm_len -= sizeof(probe_data_t);
 			}
 			//kbuf的长度为网络层的长度
 			kbuf->valid_len = p_mac_frm_head->frm_len;
