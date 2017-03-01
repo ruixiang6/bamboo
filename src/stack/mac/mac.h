@@ -4,47 +4,46 @@
 #include <platform.h>
 #include <kbuf.h>
 
-#define MAC_EVENT_OF_RX			(1u<<0)
-#define MAC_EVENT_OF_TX			(1u<<1)
-#define MAC_EVENT_CSMA			(1u<<2)
-#define MAC_EVENT_OF_IDLE		(1u<<3)
-#define MAC_EVENT_OF_LIVE		(1u<<4)
+#define MAC_EVENT_OF_RX			    (1u<<0)
+#define MAC_EVENT_OF_TX			    (1u<<1)
+#define MAC_EVENT_CSMA			    (1u<<2)
+#define MAC_EVENT_OF_IDLE		    (1u<<3)
+#define MAC_EVENT_OF_LIVE		    (1u<<4)
 
-#define MAC_CSMA_RTS			1
-#define MAC_CSMA_CTS			2
-#define MAC_CSMA_DIFS			3
-#define MAC_CSMA_SIFS			4
-#define MAC_CSMA_SLOT			5
-#define MAC_CSMA_RDY			6
-#define MAC_CSMA_FREE			0
+#define MAC_CSMA_RTS			    1
+#define MAC_CSMA_CTS			    2
+#define MAC_CSMA_DIFS			    3
+#define MAC_CSMA_SIFS			    4
+#define MAC_CSMA_SLOT			    5
+#define MAC_CSMA_RDY			    6
+#define MAC_CSMA_FREE			    0
 
-#define MAC_CCA_THREDHOLD		-68
+#define	BROADCAST_ID			    0xFF
 
-#define	BROADCAST_ID			0xFF
+#define RTS							1
+#define CTS							2
+#define ACK							3
+#define PROB						1
+#define QOS_H						1
+#define QOS_M						2
+#define QOS_L						3
+#define MAC_FRM_TYPE_ASM(c, p, q) 	((q<<4)|(p<<2)|c)
+#define MAC_FRM_TYPE_CTRL(t)		(t&0x3)
+#define MAC_FRM_TYPE_PROB(t)		((t>>2)&0x1)
+#define MAC_FRM_TYPE_QOS(t)			((t>>4)&0x3)
 
-#define MAC_FRM_DATA_TYPE		0
-#define MAC_FRM_CTRL_TYPE		1
-#define MAC_FRM_MGMT_TYPE		2
-#define MAC_FRM_TEST_TYPE		3
-
-#define MAC_FRM_PROBE_STYPE		6
-#define MAC_FRM_RTS_STYPE		11
-#define MAC_FRM_CTS_STYPE		12
-#define MAC_FRM_ACK_STYPE		13
-
-#define MAC_PKT_LIVE_US			100000
-#define MAC_PKT_DIFS_US			1550
-#define MAC_PKT_SLOT_UNIT_US	50
-#define MAC_IDLE_TO_SEND_US		80
-#define MAC_SEND_INTERVAL_US	2500
+#define MAC_PKT_LIVE_US			    100000
+#define MAC_PKT_DIFS_US			    1550
+#define MAC_PKT_SLOT_UNIT_US	    50
+#define MAC_IDLE_TO_SEND_US		    80
+#define MAC_SEND_INTERVAL_US	    2500
 
 #pragma pack(1)
 
 typedef struct
 {
 	uint16_t protocol:	2,
-			 type:		2,
-			 sub_type:	4,
+			 type:		6,
 			 to_ds:		1,
 			 from_ds:	1,
 			 retry:		1,
@@ -108,7 +107,7 @@ typedef struct
 	uint8_t sender_id;
 	uint8_t target_id;
 	uint8_t seq_num;
-	uint8_t qos_level;
+	uint8_t type;
 	uint8_t snr;
 }mac_send_info_t;
 

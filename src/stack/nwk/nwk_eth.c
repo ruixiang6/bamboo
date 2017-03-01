@@ -165,8 +165,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 		
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
 		send_info.src_id = GET_DEV_ID(p_device_info->id);
-        send_info.seq_num = broadcast_frame_seq++;
-        send_info.qos_level = MAC_FRM_DATA_TYPE;
+        send_info.seq_num = broadcast_frame_seq++;        
         send_info.dest_id = send_info.target_id;
 		
 		ret = mac_send(kbuf, &send_info);
@@ -181,7 +180,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
 		send_info.src_id = GET_DEV_ID(p_device_info->id);
         send_info.seq_num = 0;
-        send_info.qos_level = MAC_FRM_DATA_TYPE;
+        send_info.type = MAC_FRM_TYPE_ASM(0,0,QOS_M);
 		//查询路由表，得到下一跳节点ID
         send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
 		if (send_info.dest_id == 0)

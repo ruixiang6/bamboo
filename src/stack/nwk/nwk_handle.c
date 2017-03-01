@@ -166,10 +166,10 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 		p_msi->src_id = p_mac_frm_head->src_dev_id;
 		p_msi->dest_id = p_mac_frm_head->dest_dev_id;
 		p_msi->seq_num = p_mac_frm_head->seq_ctrl.seq_num;
-		p_msi->qos_level = p_mac_frm_head->frm_ctrl.type;
+		p_msi->type = p_mac_frm_head->frm_ctrl.type;
 		p_msi->snr = p_mac_frm_head->phy;
 
-		if (p_msi->qos_level == MAC_FRM_MGMT_TYPE)
+		if (MAC_FRM_TYPE_PROB(p_msi->type) == PROB)
 		{
 			if ((p_msi->sender_id == p_msi->src_id) && (p_msi->target_id == p_msi->dest_id) && (p_msi->target_id == BROADCAST_ID))
 			{
@@ -320,8 +320,7 @@ static void nwk_eth_rx_handler(void)
 			if (output_type & DEST_MESH)
 			{
 				send_info.sender_id = GET_DEV_ID(p_device_info->id);
-				send_info.src_id = GET_DEV_ID(p_device_info->id);
-                send_info.qos_level = MAC_FRM_DATA_TYPE;
+				send_info.src_id = GET_DEV_ID(p_device_info->id);                
 				if (send_info.target_id == BROADCAST_ID)
 				{
 					send_info.seq_num = broadcast_frame_seq++;

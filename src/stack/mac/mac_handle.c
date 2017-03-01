@@ -58,9 +58,9 @@ bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info)
 	//kbuf赋予总长度HAL_RF_OF_REG_MAX_RAM_SIZE倍数
 	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
 	//填写Qos对应的队列和帧类型todo
-	p_mac_frm_head->frm_ctrl.type = p_send_info->qos_level;
+	p_mac_frm_head->frm_ctrl.type = p_send_info->type;
     
-	if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
+	if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_H)
 	{
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
@@ -68,7 +68,7 @@ bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info)
 		mac_send_entity[0].total_num++;
 		OSEL_EXIT_CRITICAL();
 	}
-	else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_DATA_TYPE)
+	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_M)
 	{
         p_eth_hdr = (eth_hdr_t *)kbuf->offset;         
     
@@ -110,7 +110,7 @@ bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info)
 		}
 		
 	}
-	else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
+	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_L)
 	{
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, &mac_send_entity[2].tx_list);
@@ -360,9 +360,10 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 	if (p_mac_frm_head->dest_dev_id == GET_DEV_ID(p_device_info->id)
 		|| p_mac_frm_head->dest_dev_id == BROADCAST_ID)
 	{
-		if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_DATA_TYPE
-			|| p_mac_frm_head->frm_ctrl.type == MAC_FRM_MGMT_TYPE)
+		if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) >= QOS_L
+			&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) <= QOS_H)
 		{
+            //todo
 			//把数据偏移到网络层
 			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 			//kbuf的长度为网络层的长度
@@ -372,7 +373,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 
 			//DBG_PRINTF("R");
 		}
-		else if (p_mac_frm_head->frm_ctrl.type == MAC_FRM_TEST_TYPE)
+		else if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
 		{
 			object = APP_EVENT_TEST_MAC;
 			OSEL_ENTER_CRITICAL();
