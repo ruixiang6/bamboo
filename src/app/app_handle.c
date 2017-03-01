@@ -588,10 +588,13 @@ static void app_test_handler(void)
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
         send_info.target_id = BROADCAST_ID;
         send_info.seq_num = seq++;
-        send_info.type = MAC_FRM_TYPE_ASM(0,0,QOS_L);		
+        send_info.type = MAC_FRM_TYPE_ASM(0,0,TEST,0);		
 		//·¢ËÍ¸ømac²ã
-		mac_send(kbuf, &send_info);
-		//DBG_PRINTF("Q=%d\r\n", seq);
+		if (!mac_send(kbuf, &send_info))
+		{
+			kbuf_free(kbuf);
+		}
+		
 	}
 	else
 	{

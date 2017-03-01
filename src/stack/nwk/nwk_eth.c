@@ -4,13 +4,12 @@
 #include <route.h>
 #include <mac.h>
 
-//ä»¥å¤ªç½‘äº¤äº’çš„æ¥å£é˜Ÿåˆ—
+//ÒÔÌ«Íø½»»¥µÄ½Ó¿Ú¶ÓÁĞ
 static list_t nwk_eth_tx_list;
 static list_t nwk_eth_rx_list;
 
-//TCPIPäº¤äº’çš„ç»“æ?
+//TCPIP½»»¥µÄ½á¹¹
 static nwk_tcpip_t nwk_tcpip;
-
 
 static void nwk_eth_send_cb(void *arg)
 {
@@ -104,7 +103,7 @@ kbuf_t *nwk_eth_recv_asyn(void)
 }
 
 
-//tcpipåè®®æ ˆçš„å‡ºå£
+//tcpipĞ­ÒéÕ»µÄ³ö¿Ú
 err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 {
     pbuf_t *q;
@@ -149,7 +148,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
     } while (0u == kbuf_chain_end);
 
 	output_type = nwk_pkt_transfer(SRC_IP, kbuf, &send_info);
-	//åŒæ—¶éœ€è¦å‘ç»™ä¸¤è·¯ï¼Œä¸”å¿…å®šä¸ºå¹¿æ’­åŒ…
+	//Í¬Ê±ĞèÒª·¢¸øÁ½Â·£¬ÇÒ±Ø¶¨Îª¹ã²¥°ü
 	if ((output_type & DEST_MESH) && (output_type & DEST_ETH) && (send_info.target_id == BROADCAST_ID))
 	{
 		kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
@@ -158,8 +157,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 			kbuf_copy->offset = kbuf_copy->base + sizeof(mac_frm_head_t);
 			kbuf_copy->valid_len = kbuf->valid_len;
 			mem_cpy(kbuf_copy->offset, kbuf->offset, kbuf->valid_len);
-
-			//å¼‚æ­¥å‘é€ç»™nwkçš„eth
+			//Òì²½·¢ËÍ¸ønwkµÄeth
 			nwk_eth_send_asyn(kbuf_copy);
 		}
 		
@@ -180,8 +178,8 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
 		send_info.src_id = GET_DEV_ID(p_device_info->id);
         send_info.seq_num = 0;
-        send_info.type = MAC_FRM_TYPE_ASM(0,0,QOS_M);
-		//æŸ¥è¯¢è·¯ç”±è¡¨ï¼Œå¾—åˆ°ä¸‹ä¸€è·³èŠ‚ç‚¹ID
+        send_info.type = MAC_FRM_TYPE_ASM(0,0,0,QOS_M);
+		//²éÑ¯Â·ÓÉ±í£¬µÃµ½ÏÂÒ»Ìø½ÚµãID
         send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
 		if (send_info.dest_id == 0)
 		{
@@ -195,7 +193,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 	}
 	else if (output_type & DEST_ETH)
 	{
-		//å¼‚æ­¥å‘é€ç»™nwkçš„eth
+		//Òì²½·¢ËÍ¸ønwkµÄeth
 		nwk_eth_send_asyn(kbuf);
 	}
 	else
@@ -206,8 +204,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
     return ERR_OK;
 }
 
-
-//tcpipåè®®æ ˆçš„å…¥å£
+//tcpipĞ­ÒéÕ»µÄÈë¿Ú
 bool_t nwk_tcpip_input(uint8_t *buf, uint32_t size)
 {
     eth_hdr_t *ethhdr;

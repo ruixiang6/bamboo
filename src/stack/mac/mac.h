@@ -24,13 +24,15 @@
 #define CTS							2
 #define ACK							3
 #define PROB						1
+#define TEST						1	
 #define QOS_H						1
 #define QOS_M						2
 #define QOS_L						3
-#define MAC_FRM_TYPE_ASM(c, p, q) 	((q<<4)|(p<<2)|c)
+#define MAC_FRM_TYPE_ASM(c, p, t, q) 	((q<<4)|(p<<2)|(t<<3)|c)
 #define MAC_FRM_TYPE_CTRL(t)		(t&0x3)
 #define MAC_FRM_TYPE_PROB(t)		((t>>2)&0x1)
 #define MAC_FRM_TYPE_QOS(t)			((t>>4)&0x3)
+#define MAC_FRM_TYPE_TEST(t)		((t>>3)&0x1)
 
 #define MAC_PKT_LIVE_US			    100000
 #define MAC_PKT_DIFS_US			    1550

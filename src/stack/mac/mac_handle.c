@@ -1,6 +1,7 @@
 #include <mac.h>
 #include <nwk.h>
 #include <nwk_eth.h>
+#include <nwk_mesh.h>
 #include <phy.h>
 #include <device.h>
 #include <app.h>
@@ -15,10 +16,7 @@ bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info)
 	OSEL_DECL_CRITICAL();
 	uint16_t object = MAC_EVENT_OF_TX;
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;    
-	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
-    eth_hdr_t *p_eth_hdr = PLAT_NULL;
-	etharp_hdr_t *p_etharp_hdr = PLAT_NULL;
-	ip_hdr_t *p_ip_hdr = PLAT_NULL;
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);    
 	
 	if (kbuf == PLAT_NULL || p_send_info == PLAT_NULL)
 	{
@@ -70,45 +68,11 @@ bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info)
 	}
 	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_M)
 	{
-        p_eth_hdr = (eth_hdr_t *)kbuf->offset;         
-    
-        if (htons(p_eth_hdr->type) == ETHTYPE_ARP)
-        {
-            OSEL_ENTER_CRITICAL();
-            list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
-            mac_send_entity[0].total_size += kbuf->valid_len;
-            mac_send_entity[0].total_num++;
-            OSEL_EXIT_CRITICAL();
-        }
-        else if (htons(p_eth_hdr->type) == ETHTYPE_IP)
-        {
-             p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));   
-             if (IPH_PROTO(p_ip_hdr) == IP_PROTO_ICMP || IPH_PROTO(p_ip_hdr) == IP_PROTO_IGMP)
-             {
-				OSEL_ENTER_CRITICAL();
-				list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
-				mac_send_entity[0].total_size += kbuf->valid_len;
-				mac_send_entity[0].total_num++;
-				OSEL_EXIT_CRITICAL();
-             }
-			 else
-			 {
-			 	OSEL_ENTER_CRITICAL();
-				list_behind_put(&kbuf->list, &mac_send_entity[1].tx_list);
-				mac_send_entity[1].total_size += kbuf->valid_len;
-				mac_send_entity[1].total_num++;
-				OSEL_EXIT_CRITICAL();
-			 }
-        }
-        else
-		{
-			OSEL_ENTER_CRITICAL();
-			list_behind_put(&kbuf->list, &mac_send_entity[2].tx_list);
-			mac_send_entity[2].total_size += kbuf->valid_len;
-			mac_send_entity[2].total_num++;
-			OSEL_EXIT_CRITICAL();
-		}
-		
+        OSEL_ENTER_CRITICAL();
+        list_behind_put(&kbuf->list, &mac_send_entity[1].tx_list);
+        mac_send_entity[1].total_size += kbuf->valid_len;
+        mac_send_entity[1].total_num++;
+        OSEL_EXIT_CRITICAL();	
 	}
 	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_L)
 	{
@@ -230,8 +194,7 @@ static void mac_of_tx_handler(void)
 
 void mac_csma_handler(void)
 {
-	bool_t cca_flag;
-	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+	bool_t cca_flag;	
 	uint32_t tmp;
 	
 	switch(mac_timer.csma_type)
@@ -332,6 +295,8 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
 	uint16_t object;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
+	kbuf_t *kbuf_copy = PLAT_NULL;
+	uint8_t qos;
 	OSEL_DECL_CRITICAL();
 	
 	if (kbuf == PLAT_NULL)
@@ -340,6 +305,8 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 	}
 
 	p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+	//把数据偏移到网络层
+	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 #if 0
 	//找到NAV位置
 	if (p_mac_frm_head->duration && mac_timer.idle_state == PLAT_FALSE)
@@ -360,20 +327,46 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 	if (p_mac_frm_head->dest_dev_id == GET_DEV_ID(p_device_info->id)
 		|| p_mac_frm_head->dest_dev_id == BROADCAST_ID)
 	{
+		if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+		{
+			kbuf_copy = kbuf_alloc(KBUF_BIG_NUM);
+			if (kbuf_copy)
+			{
+				p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+				kbuf_copy->offset = kbuf_copy->base+sizeof(mac_frm_head_t);
+				kbuf_copy->valid_len = sizeof(ctrl_data_t);
+				
+				mem_cpy(kbuf_copy->base, kbuf->base, sizeof(mac_frm_head_t));
+				//减去
+				p_mac_frm_head->frm_len = p_mac_frm_head->frm_len-sizeof(ctrl_data_t);
+				//copy这ctrl_data_t部分数据 	
+				mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len-1, sizeof(ctrl_data_t));
+				//将帧类型变为纯PROB的数据包
+				p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,PROB,0,0);
+				nwk_mesh_recv_put(kbuf_copy);
+			}
+		}
+
+		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+		//把数据偏移到网络层
+		kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+		
 		if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) >= QOS_L
 			&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) <= QOS_H)
 		{
-            //todo
-			//把数据偏移到网络层
-			kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+            if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+			{
+				qos = MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type);
+				//将帧类型变为纯QOS的数据包	
+				p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,0,0,qos);
+				//将帧长改为普通数据长度
+				p_mac_frm_head->frm_len -= sizeof(ctrl_data_t);
+			}
 			//kbuf的长度为网络层的长度
 			kbuf->valid_len = p_mac_frm_head->frm_len;
-
 			nwk_mesh_recv_put(kbuf);
-
-			//DBG_PRINTF("R");
 		}
-		else if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+		else if (MAC_FRM_TYPE_TEST(p_mac_frm_head->frm_ctrl.type) == TEST)
 		{
 			object = APP_EVENT_TEST_MAC;
 			OSEL_ENTER_CRITICAL();
@@ -381,7 +374,6 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			OSEL_EXIT_CRITICAL();
 			//上至APP
 			osel_event_set(app_event_h, &object);
-			//DBG_PRINTF("R");
 		}
 		else
 		{
