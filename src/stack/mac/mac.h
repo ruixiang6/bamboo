@@ -35,10 +35,12 @@
 #define MAC_FRM_TYPE_TEST(t)		((t>>3)&0x1)
 
 #define MAC_PKT_LIVE_US			    100000
+#define MAC_PKT_PROBE_LIVE_US	    50000
 #define MAC_PKT_DIFS_US			    1550
 #define MAC_PKT_SLOT_UNIT_US	    50
 #define MAC_IDLE_TO_SEND_US		    80
 #define MAC_SEND_INTERVAL_US	    2500
+#define MAC_SEND_PROBE_US			500000
 
 #pragma pack(1)
 
@@ -111,7 +113,7 @@ typedef struct
 	uint8_t seq_num;
 	uint8_t type;
 	uint8_t snr;
-}mac_send_info_t;
+}packet_info_t;
 
 #pragma pack()
 
@@ -125,7 +127,7 @@ extern osel_event_t *mac_event_h;
 extern mac_timer_t mac_timer;
 extern kbuf_t *mac_rdy_snd_kbuf;
 
-bool_t mac_send(kbuf_t *kbuf, mac_send_info_t *p_send_info);
+bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info);
 void mac_handler(uint16_t event_type);
 void mac_init(void);
 void mac_deinit(void);

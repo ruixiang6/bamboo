@@ -113,7 +113,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 	kbuf_t *kbuf_copy = PLAT_NULL;
 	uint8_t output_type;
 	bool_t ret = PLAT_FALSE;
-	mac_send_info_t send_info;
+	packet_info_t send_info;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	static uint8_t broadcast_frame_seq = 0;
 

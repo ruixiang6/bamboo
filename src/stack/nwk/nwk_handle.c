@@ -12,7 +12,7 @@
 //return 1:send to mesh
 //return 2:send to local_ip
 //return 4:send to eth
-uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
+uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_info)
 {
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
 	eth_hdr_t *p_eth_hdr = PLAT_NULL;
@@ -80,8 +80,8 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 					else
 					{
                          //提高ARP的优先级属性
-                        p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
-						p_msi->target_id = BROADCAST_ID;
+                        pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+						pakcet_info->target_id = BROADCAST_ID;
 						return DEST_MESH;
 					}
 					break;
@@ -101,9 +101,9 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 					//IP广播包
 					if ((p_ip_hdr->dest.addr & ~netmask.addr) == (IPADDR_BROADCAST & ~netmask.addr))
 					{
-						p_msi->target_id = BROADCAST_ID;
+						pakcet_info->target_id = BROADCAST_ID;
                         //优先级较低
-                        p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
+                        pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
 						return DEST_IP|DEST_MESH;
 					}
 					else if (p_ip_hdr->dest.addr == ipaddr.addr)
@@ -121,14 +121,14 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 		else
 		{
 			//如果非广播包需要传输，查询地址表得到目标节点ID
-			addr_table_query(p_eth_hdr->dest.addr, &p_msi->target_id);
-			if ((p_msi->target_id > 0) && (p_msi->target_id <= NODE_MAX_NUM) && (p_msi->target_id != GET_DEV_ID(p_device_info->id)))
+			addr_table_query(p_eth_hdr->dest.addr, &pakcet_info->target_id);
+			if ((pakcet_info->target_id > 0) && (pakcet_info->target_id <= NODE_MAX_NUM) && (pakcet_info->target_id != GET_DEV_ID(p_device_info->id)))
 			{
                 switch(htons(p_eth_hdr->type))
                 {
                     case ETHTYPE_ARP:
                         //高优先级
-                        p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                        pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                         break;
                     case ETHTYPE_IP:
                         p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -136,12 +136,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
                         if (IPH_PROTO(p_ip_hdr) == IP_PROTO_ICMP || IPH_PROTO(p_ip_hdr) == IP_PROTO_IGMP)
                         {
                             //高优先级
-                            p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                            pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                         }
                         else
                         {
                             //中优先级
-                            p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
+                            pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
                         }
                         break;
                     default: return 0;
@@ -169,23 +169,23 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
             if (htons(p_eth_hdr->type) == ETHTYPE_ARP)
             {
                 //高优先级
-                p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
             }
             else
             {
                 //优先级较低
-                p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
+                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
             }
-			p_msi->target_id = BROADCAST_ID;
+			pakcet_info->target_id = BROADCAST_ID;
 			return DEST_MESH | DEST_ETH;
 		}
 		else
 		{
 			//如果非广播包需要传输，查询地址表得到目标节点ID，如果是自己则表明传输给内网，否则则转mesh
-			addr_table_query(p_eth_hdr->dest.addr, &p_msi->target_id);
-			if ((p_msi->target_id > 0) && (p_msi->target_id <= NODE_MAX_NUM))
+			addr_table_query(p_eth_hdr->dest.addr, &pakcet_info->target_id);
+			if ((pakcet_info->target_id > 0) && (pakcet_info->target_id <= NODE_MAX_NUM))
 			{
-				if(p_msi->target_id == GET_DEV_ID(p_device_info->id))
+				if(pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
 				{
                     return DEST_ETH;
 				}
@@ -195,7 +195,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
                     {
                         case ETHTYPE_ARP:
                             //高优先级
-                            p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                            pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                             break;
                         case ETHTYPE_IP:
                             p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -203,12 +203,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
                             if (IPH_PROTO(p_ip_hdr) == IP_PROTO_ICMP || IPH_PROTO(p_ip_hdr) == IP_PROTO_IGMP)
                             {
                                 //高优先级
-                                p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                             }
                             else
                             {
                                 //中优先级
-                                p_msi->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
+                                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
                             }
                             break;
                         default: return 0;
@@ -228,17 +228,17 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
 		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
 
-		p_msi->sender_id = p_mac_frm_head->sender_id;
-		p_msi->target_id = p_mac_frm_head->target_id;
-		p_msi->src_id = p_mac_frm_head->src_dev_id;
-		p_msi->dest_id = p_mac_frm_head->dest_dev_id;
-		p_msi->seq_num = p_mac_frm_head->seq_ctrl.seq_num;
-		p_msi->type = p_mac_frm_head->frm_ctrl.type;
-		p_msi->snr = p_mac_frm_head->phy;
+		pakcet_info->sender_id = p_mac_frm_head->sender_id;
+		pakcet_info->target_id = p_mac_frm_head->target_id;
+		pakcet_info->src_id = p_mac_frm_head->src_dev_id;
+		pakcet_info->dest_id = p_mac_frm_head->dest_dev_id;
+		pakcet_info->seq_num = p_mac_frm_head->seq_ctrl.seq_num;
+		pakcet_info->type = p_mac_frm_head->frm_ctrl.type;
+		pakcet_info->snr = p_mac_frm_head->phy;
 
-		if (MAC_FRM_TYPE_PROB(p_msi->type) == PROB)
+		if (MAC_FRM_TYPE_PROB(pakcet_info->type) == PROB)
 		{
-			if ((p_msi->sender_id == p_msi->src_id) && (p_msi->target_id == p_msi->dest_id) && (p_msi->target_id == BROADCAST_ID))
+			if ((pakcet_info->sender_id == pakcet_info->src_id) && (pakcet_info->target_id == pakcet_info->dest_id) && (pakcet_info->target_id == BROADCAST_ID))
 			{
 				return DEST_MGMT;
 			}
@@ -266,13 +266,13 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 			&& p_eth_hdr->dest.addr[5] == 0xFF)
 		{
 			//如果此广播已经接收过了，则不再处理，避免无限次的转发
-			if (broadcast_rcv_table_judge(p_msi->sender_id, p_msi->seq_num))
+			if (broadcast_rcv_table_judge(pakcet_info->sender_id, pakcet_info->seq_num))
 			{
 				return 0;
 			}
 			else
 			{
-				broadcast_rcv_table_add(p_msi->sender_id, p_msi->seq_num);
+				broadcast_rcv_table_add(pakcet_info->sender_id, pakcet_info->seq_num);
 			}
 			
 			switch(htons(p_eth_hdr->type))
@@ -280,7 +280,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 				case ETHTYPE_ARP:
 					
 					//从mesh外网收到ARP广播数据，记录源mac的pc与其节点，地址表中添加此条对应项
-					addr_table_add(p_eth_hdr->src.addr, p_msi->sender_id);
+					addr_table_add(p_eth_hdr->src.addr, pakcet_info->sender_id);
 					
 					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
                     ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
@@ -323,7 +323,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 		}
 		else
 		{
-			if(p_msi->target_id == GET_DEV_ID(p_device_info->id))
+			if(pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
 				return DEST_ETH;
 			else					
 				return DEST_MESH;
@@ -369,7 +369,7 @@ static void nwk_eth_rx_handler(void)
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t output_type;
 	bool_t ret = PLAT_FALSE;
-	mac_send_info_t send_info;
+	packet_info_t send_info;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	static uint8_t broadcast_frame_seq = 0;
 	
@@ -430,7 +430,7 @@ static void nwk_mesh_rx_handler(void)
 	kbuf_t *kbuf_copy = PLAT_NULL;
 	uint8_t output_type;
 	bool_t ret = PLAT_FALSE;
-	mac_send_info_t send_info;
+	packet_info_t packet_info;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 		
 	do
@@ -438,11 +438,11 @@ static void nwk_mesh_rx_handler(void)
 		kbuf = nwk_mesh_recv_get();		
 		if (kbuf)
 		{
-			output_type = nwk_pkt_transfer(SRC_MESH, kbuf, &send_info);
+			output_type = nwk_pkt_transfer(SRC_MESH, kbuf, &packet_info);
 			//如果是管理控制包，则解析处理之
 			if (output_type & DEST_MGMT)
 			{
-				probe_frame_parse((probe_data_t *)kbuf->offset, send_info.src_id, send_info.snr);
+				probe_frame_parse((probe_data_t *)kbuf->offset, packet_info.src_id, packet_info.snr);
 				continue;
 			}
 						
@@ -453,7 +453,7 @@ static void nwk_mesh_rx_handler(void)
 			}
 
 			//同时需要发给两路，必定为广播包
-			if ((output_type & DEST_MESH) && (output_type & DEST_ETH) && (send_info.target_id == BROADCAST_ID))
+			if ((output_type & DEST_MESH) && (output_type & DEST_ETH) && (packet_info.target_id == BROADCAST_ID))
 			{
 				kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
 				if (kbuf_copy)
@@ -466,10 +466,10 @@ static void nwk_mesh_rx_handler(void)
 					nwk_eth_send_asyn(kbuf_copy);
 				}
 					
-				send_info.src_id = GET_DEV_ID(p_device_info->id);
-				send_info.dest_id = send_info.target_id;
+				packet_info.src_id = GET_DEV_ID(p_device_info->id);
+				packet_info.dest_id = packet_info.target_id;
 				
-				ret = mac_send(kbuf, &send_info);
+				ret = mac_send(kbuf, &packet_info);
 				if (!ret)
 					kbuf_free(kbuf);
 			
@@ -478,16 +478,16 @@ static void nwk_mesh_rx_handler(void)
 
 			if (output_type & DEST_MESH)
 			{	
-				send_info.src_id = GET_DEV_ID(p_device_info->id);
+				packet_info.src_id = GET_DEV_ID(p_device_info->id);
 				//查询路由表，得到下一跳节点ID
-				send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
-				if (send_info.dest_id == 0)
+				packet_info.dest_id = route_table_query(packet_info.target_id, PLAT_NULL, PLAT_NULL);
+				if (packet_info.dest_id == 0)
 				{
 					kbuf_free(kbuf);
 					return;
 				}
 				
-				ret = mac_send(kbuf, &send_info);
+				ret = mac_send(kbuf, &packet_info);
 				if (!ret)
 					kbuf_free(kbuf);
 			}

@@ -575,7 +575,7 @@ static void app_test_cb(void)
 static void app_test_handler(void)
 {
 	kbuf_t *kbuf;	
-    mac_send_info_t send_info;
+    packet_info_t send_info;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
 	kbuf = kbuf_alloc(KBUF_BIG_TYPE);
