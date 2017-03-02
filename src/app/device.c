@@ -27,8 +27,8 @@ void device_info_init(void)
 
 	if (GET_DEV_ID(pg_device_info->id) == 0xff || GET_DEV_ID(pg_device_info->id) == 0)
 	{
-		SET_TYPE_ID(pg_device_info->id, 214);//214:表示为214的板子
-		SET_MODE_ID(pg_device_info->id, 0x00);
+		SET_TYPE_ID(pg_device_info->id, TYPE_214);
+		SET_MODE_ID(pg_device_info->id, MODE_NORMAL);
 		SET_MESH_ID(pg_device_info->id, 0x12);
 		SET_DEV_ID(pg_device_info->id, 0x01);
 		

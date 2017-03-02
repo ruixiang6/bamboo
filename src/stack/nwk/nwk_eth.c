@@ -146,6 +146,13 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
             q = q->next;
         }
     } while (0u == kbuf_chain_end);
+	
+	//如果为SNIFFEER直接转到本机以太网口上
+	if (GET_MODE_ID(p_device_info->id) == MODE_SINFFER)
+	{
+		nwk_eth_send_asyn(kbuf);
+		return ERR_OK;
+	}
 
 	output_type = nwk_pkt_transfer(SRC_IP, kbuf, &send_info);
 	//同时需要发给两路，且必定为广播包

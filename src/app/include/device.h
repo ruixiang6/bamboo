@@ -4,6 +4,11 @@
 #include <platform.h>
 #include <nwk.h>
 
+#define TYPE_214					214
+
+#define MODE_NORMAL					0
+#define MODE_SINFFER				255
+
 #define GET_DEV_ID(a)				(a[0])
 #define GET_MESH_ID(a)				(a[1])
 #define GET_MODE_ID(a)				(a[2])

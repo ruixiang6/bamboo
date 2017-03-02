@@ -2,9 +2,8 @@
 #include <nwk.h>
 #include <nwk_mesh.h>
 
+//MESH╡Ц╫с©з╤сап
 
-
-//MESHЕ╠┌Ф▌╔Е▐ёИ≤÷Е┬≈
 static list_t nwk_mesh_rx_list;
 
 static kbuf_t *probe_frame = PLAT_NULL;

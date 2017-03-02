@@ -108,9 +108,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 					}
 					else if (p_ip_hdr->dest.addr == ipaddr.addr)
 					{
-                        //bug£¿
-						p_msi->target_id = BROADCAST_ID;
-						return DEST_MESH;
+						return DEST_IP;
 					}
 					else
 					{
