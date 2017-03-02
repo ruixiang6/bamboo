@@ -146,7 +146,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 			addr_table_query(p_eth_hdr->dest.addr, &p_msi->target_id);
 			if ((p_msi->target_id > 0) && (p_msi->target_id <= NODE_MAX_NUM))
 			{
-				if(p_msi->target_id == GET_DEV_ID(p_device_info->id))
+				if (p_msi->target_id == GET_DEV_ID(p_device_info->id))
 					return DEST_ETH;
 				else					
 					return DEST_MESH;
@@ -254,7 +254,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, mac_send_info_t *p_msi)
 		}
 		else
 		{
-			if(p_msi->target_id == GET_DEV_ID(p_device_info->id))
+			if (p_msi->target_id == GET_DEV_ID(p_device_info->id))
 				return DEST_ETH;
 			else					
 				return DEST_MESH;
@@ -291,7 +291,7 @@ static void nwk_eth_tx_handler(void)
 		{
 			flush_flag = PLAT_FALSE;
 		}
-	} while(res != ETH_SEND_EMPTY);
+	} while (res != ETH_SEND_EMPTY);
 }
 
 
@@ -364,6 +364,8 @@ static void nwk_mesh_rx_handler(void)
 	uint8_t output_type;
 	bool_t ret = PLAT_FALSE;
 	mac_send_info_t send_info;
+	uint16_t chksum = 0;
+	probe_data_t *p_probe_data = PLAT_NULL;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 		
 	do
@@ -375,7 +377,18 @@ static void nwk_mesh_rx_handler(void)
 			//如果是管理控制包，则解析处理之
 			if (output_type & DEST_MGMT)
 			{
-				probe_frame_parse((probe_data_t *)kbuf->offset, send_info.src_id, send_info.snr);
+				p_probe_data = (probe_data_t *)kbuf->offset;
+				chksum = p_probe_data->chksum;
+				p_probe_data->chksum = 0;
+				if (chksum != check16_sum((uint8_t *)p_probe_data, sizeof(probe_data_t)))
+				{
+					kbuf_free(kbuf);
+				}
+				else
+				{
+					probe_frame_parse(p_probe_data, send_info.src_id, send_info.snr);
+				}
+				
 				continue;
 			}
 						
@@ -434,7 +447,7 @@ static void nwk_mesh_rx_handler(void)
 				kbuf_free(kbuf);
 			}
 		}
-	}while(kbuf != PLAT_NULL);
+	}while (kbuf != PLAT_NULL);
 }
 
 
