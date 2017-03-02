@@ -323,7 +323,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		}
 		else
 		{
-			if(pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
+			if (pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
 				return DEST_ETH;
 			else					
 				return DEST_MESH;
@@ -334,6 +334,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		return 0;
 	}
 }
+
 
 //tcpip协议栈收到数据后的处理，转置网卡
 static void nwk_eth_tx_handler(void)
@@ -359,7 +360,7 @@ static void nwk_eth_tx_handler(void)
 		{
 			flush_flag = PLAT_FALSE;
 		}
-	} while(res != ETH_SEND_EMPTY);
+	} while (res != ETH_SEND_EMPTY);
 }
 
 
@@ -369,7 +370,7 @@ static void nwk_eth_rx_handler(void)
 	kbuf_t *kbuf = PLAT_NULL;
 	uint8_t output_type;
 	bool_t ret = PLAT_FALSE;
-	packet_info_t send_info;
+	packet_info_t packet_info;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	static uint8_t broadcast_frame_seq = 0;
 	
@@ -378,7 +379,7 @@ static void nwk_eth_rx_handler(void)
 		kbuf = nwk_eth_recv_asyn();
 		if (kbuf)
 		{
-			output_type = nwk_pkt_transfer(SRC_ETH, kbuf, &send_info);
+			output_type = nwk_pkt_transfer(SRC_ETH, kbuf, &packet_info);
 			if (output_type & DEST_IP)
 			{
 				//经过判断处理后，确定提交本地tcpip协议栈
@@ -387,28 +388,30 @@ static void nwk_eth_rx_handler(void)
 
 			if (output_type & DEST_MESH)
 			{
-				send_info.sender_id = GET_DEV_ID(p_device_info->id);
-				send_info.src_id = GET_DEV_ID(p_device_info->id);                
-				if (send_info.target_id == BROADCAST_ID)
+				packet_info.sender_id = GET_DEV_ID(p_device_info->id);
+				packet_info.src_id = GET_DEV_ID(p_device_info->id);                
+				if (packet_info.target_id == BROADCAST_ID)
 				{
-					send_info.seq_num = broadcast_frame_seq++;
-					send_info.dest_id = send_info.target_id;
+					packet_info.seq_num = broadcast_frame_seq++;
+					packet_info.dest_id = packet_info.target_id;
 				}
 				else
 				{
-					send_info.seq_num = 0;
+					packet_info.seq_num = 0;
 					//查询路由表，得到下一跳节点ID
-					send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
-					if (send_info.dest_id == 0)
+					packet_info.dest_id = route_table_query(packet_info.target_id, PLAT_NULL, PLAT_NULL);
+					if (packet_info.dest_id == 0)
 					{
 						kbuf_free(kbuf);
 						return;
 					}
 				}
 
-				ret = mac_send(kbuf, &send_info);
+				ret = mac_send(kbuf, &packet_info);
 				if (!ret)
+				{
 					kbuf_free(kbuf);
+				}
 			}
 			else
 			{
@@ -431,6 +434,8 @@ static void nwk_mesh_rx_handler(void)
 	uint8_t output_type;
 	bool_t ret = PLAT_FALSE;
 	packet_info_t packet_info;
+	probe_data_t *p_probe_data = PLAT_NULL;
+	uint16_t chksum = 0;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 		
 	do
@@ -442,7 +447,18 @@ static void nwk_mesh_rx_handler(void)
 			//如果是管理控制包，则解析处理之
 			if (output_type & DEST_MGMT)
 			{
-				probe_frame_parse((probe_data_t *)kbuf->offset, packet_info.src_id, packet_info.snr);
+				p_probe_data = (probe_data_t *)kbuf->offset;
+				chksum = p_probe_data->chksum;
+				p_probe_data->chksum = 0;
+				if (chksum != check16_sum((uint8_t *)p_probe_data, sizeof(probe_data_t)))
+				{
+					kbuf_free(kbuf);
+				}
+				else
+				{
+					probe_frame_parse(p_probe_data, packet_info.src_id, packet_info.snr);
+				}
+				
 				continue;
 			}
 						
@@ -471,7 +487,9 @@ static void nwk_mesh_rx_handler(void)
 				
 				ret = mac_send(kbuf, &packet_info);
 				if (!ret)
+				{
 					kbuf_free(kbuf);
+				}
 			
 				return;
 			}
@@ -489,7 +507,9 @@ static void nwk_mesh_rx_handler(void)
 				
 				ret = mac_send(kbuf, &packet_info);
 				if (!ret)
+				{
 					kbuf_free(kbuf);
+				}
 			}
 			else if (output_type & DEST_ETH)
 			{
@@ -501,7 +521,7 @@ static void nwk_mesh_rx_handler(void)
 				kbuf_free(kbuf);
 			}
 		}
-	}while(kbuf != PLAT_NULL);
+	}while (kbuf != PLAT_NULL);
 }
 
 
