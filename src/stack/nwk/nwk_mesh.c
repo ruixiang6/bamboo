@@ -56,7 +56,10 @@ void probe_frame_fill(void)
 	neighbor_field_fill(&p_probe_data->nf);
 	route_field_fill(&p_probe_data->rf, my_id);
 	//affiliate_field_fill(&p_probe_data->af);
-	
+
+	p_probe_data->chksum = 0;
+	p_probe_data->chksum = check16_sum(p_probe_data, sizeof(probe_data_t));
+
 	OSEL_EXIT_CRITICAL();
 }
 

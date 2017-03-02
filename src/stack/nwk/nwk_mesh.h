@@ -13,6 +13,7 @@ typedef struct _probe_data_t {
 	neighbor_field_t nf;
 	route_field_t rf;
 	//affiliate_field_t af;
+	uint16_t chksum;
 } probe_data_t;
 
 #pragma pack()

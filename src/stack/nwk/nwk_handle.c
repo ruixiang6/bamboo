@@ -22,15 +22,15 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
     uint16_t ipaddr2_0, ipaddr2_1;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
-	//Êı¾İ°üÀ´×ÔÄÚÍøµÄÉè±¸£¬ÈçPC
+	//æ•°æ®åŒ…æ¥è‡ªå†…ç½‘çš„è®¾å¤‡ï¼Œå¦‚PC
 	if (src_type == SRC_ETH)
 	{
 		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
 		
-		//´ÓÄÚÍøÊÕµ½Êı¾İ£¬ÔòÔ´macµÄpc±Ø¶¨Á¬½Ó±¾½Úµã£¬ËùÒÔµØÖ·±íÖĞÌí¼Ó´ËÌõ¶ÔÓ¦Ïî
+		//ä»å†…ç½‘æ”¶åˆ°æ•°æ®ï¼Œåˆ™æºmacçš„pcå¿…å®šè¿æ¥æœ¬èŠ‚ç‚¹ï¼Œæ‰€ä»¥åœ°å€è¡¨ä¸­æ·»åŠ æ­¤æ¡å¯¹åº”é¡¹
 		addr_table_add(p_eth_hdr->src.addr, GET_DEV_ID(p_device_info->id));
 			
-		//ÏÈ¹ıÂË£¬Èç¹ûÔ¶¶ËmacĞèÒª¹ıÂË
+		//å…ˆè¿‡æ»¤ï¼Œå¦‚æœè¿œç«¯macéœ€è¦è¿‡æ»¤
 		if (p_device_info->remote_eth_mac_addr[0] != 0xFF
 			&& p_device_info->remote_eth_mac_addr[1] != 0xFF
 			&& p_device_info->remote_eth_mac_addr[2] != 0xFF
@@ -79,7 +79,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 					}
 					else
 					{
-                         //Ìá¸ßARPµÄÓÅÏÈ¼¶ÊôĞÔ
+                         //æé«˜ARPçš„ä¼˜å…ˆçº§å±æ€§
                         pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
 						pakcet_info->target_id = BROADCAST_ID;
 						return DEST_MESH;
@@ -98,11 +98,11 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 				             p_device_info->local_netmask_addr[1], 
 				             p_device_info->local_netmask_addr[2], 
 				             p_device_info->local_netmask_addr[3]);
-					//IP¹ã²¥°ü
+					//IPå¹¿æ’­åŒ…
 					if ((p_ip_hdr->dest.addr & ~netmask.addr) == (IPADDR_BROADCAST & ~netmask.addr))
 					{
 						pakcet_info->target_id = BROADCAST_ID;
-                        //ÓÅÏÈ¼¶½ÏµÍ
+                        //ä¼˜å…ˆçº§è¾ƒä½
                         pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
 						return DEST_IP|DEST_MESH;
 					}
@@ -120,14 +120,14 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		}
 		else
 		{
-			//Èç¹û·Ç¹ã²¥°üĞèÒª´«Êä£¬²éÑ¯µØÖ·±íµÃµ½Ä¿±ê½ÚµãID
+			//å¦‚æœéå¹¿æ’­åŒ…éœ€è¦ä¼ è¾“ï¼ŒæŸ¥è¯¢åœ°å€è¡¨å¾—åˆ°ç›®æ ‡èŠ‚ç‚¹ID
 			addr_table_query(p_eth_hdr->dest.addr, &pakcet_info->target_id);
 			if ((pakcet_info->target_id > 0) && (pakcet_info->target_id <= NODE_MAX_NUM) && (pakcet_info->target_id != GET_DEV_ID(p_device_info->id)))
 			{
                 switch(htons(p_eth_hdr->type))
                 {
                     case ETHTYPE_ARP:
-                        //¸ßÓÅÏÈ¼¶
+                        //é«˜ä¼˜å…ˆçº§
                         pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                         break;
                     case ETHTYPE_IP:
@@ -135,12 +135,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                         if (IPH_V(p_ip_hdr) != 4) return 0;
                         if (IPH_PROTO(p_ip_hdr) == IP_PROTO_ICMP || IPH_PROTO(p_ip_hdr) == IP_PROTO_IGMP)
                         {
-                            //¸ßÓÅÏÈ¼¶
+                            //é«˜ä¼˜å…ˆçº§
                             pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                         }
                         else
                         {
-                            //ÖĞÓÅÏÈ¼¶
+                            //ä¸­ä¼˜å…ˆçº§
                             pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
                         }
                         break;
@@ -154,7 +154,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
             }
 		}
 	}
-	//Êı¾İ°üÀ´×ÔÓÚ±¾½ÚµãµÄlwipĞ­ÒéÕ»
+	//æ•°æ®åŒ…æ¥è‡ªäºæœ¬èŠ‚ç‚¹çš„lwipåè®®æ ˆ
 	else if (src_type == SRC_IP)
 	{
 		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
@@ -168,12 +168,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		{
             if (htons(p_eth_hdr->type) == ETHTYPE_ARP)
             {
-                //¸ßÓÅÏÈ¼¶
+                //é«˜ä¼˜å…ˆçº§
                 pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
             }
             else
             {
-                //ÓÅÏÈ¼¶½ÏµÍ
+                //ä¼˜å…ˆçº§è¾ƒä½
                 pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
             }
 			pakcet_info->target_id = BROADCAST_ID;
@@ -181,7 +181,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		}
 		else
 		{
-			//Èç¹û·Ç¹ã²¥°üĞèÒª´«Êä£¬²éÑ¯µØÖ·±íµÃµ½Ä¿±ê½ÚµãID£¬Èç¹ûÊÇ×Ô¼ºÔò±íÃ÷´«Êä¸øÄÚÍø£¬·ñÔòÔò×ªmesh
+			//å¦‚æœéå¹¿æ’­åŒ…éœ€è¦ä¼ è¾“ï¼ŒæŸ¥è¯¢åœ°å€è¡¨å¾—åˆ°ç›®æ ‡èŠ‚ç‚¹IDï¼Œå¦‚æœæ˜¯è‡ªå·±åˆ™è¡¨æ˜ä¼ è¾“ç»™å†…ç½‘ï¼Œå¦åˆ™åˆ™è½¬mesh
 			addr_table_query(p_eth_hdr->dest.addr, &pakcet_info->target_id);
 			if ((pakcet_info->target_id > 0) && (pakcet_info->target_id <= NODE_MAX_NUM))
 			{
@@ -194,7 +194,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                     switch(htons(p_eth_hdr->type))
                     {
                         case ETHTYPE_ARP:
-                            //¸ßÓÅÏÈ¼¶
+                            //é«˜ä¼˜å…ˆçº§
                             pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                             break;
                         case ETHTYPE_IP:
@@ -202,12 +202,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                             if (IPH_V(p_ip_hdr) != 4) return 0;
                             if (IPH_PROTO(p_ip_hdr) == IP_PROTO_ICMP || IPH_PROTO(p_ip_hdr) == IP_PROTO_IGMP)
                             {
-                                //¸ßÓÅÏÈ¼¶
+                                //é«˜ä¼˜å…ˆçº§
                                 pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
                             }
                             else
                             {
-                                //ÖĞÓÅÏÈ¼¶
+                                //ä¸­ä¼˜å…ˆçº§
                                 pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
                             }
                             break;
@@ -222,7 +222,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
             }
 		}
 	}
-	//Êı¾İ°üÀ´×ÔÓÚmeshÎŞÏß½ÓÊÕ£¬ĞèÒª¿¼ÂÇ¶àÖÖ³ö¿Ú£¬Èç¹û×ª·¢»¹Ó¦±£ÁôÔ­Í·²¿ĞÅÏ¢
+	//æ•°æ®åŒ…æ¥è‡ªäºmeshæ— çº¿æ¥æ”¶ï¼Œéœ€è¦è€ƒè™‘å¤šç§å‡ºå£ï¼Œå¦‚æœè½¬å‘è¿˜åº”ä¿ç•™åŸå¤´éƒ¨ä¿¡æ¯
 	else if (src_type == SRC_MESH)
 	{
 		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
@@ -265,7 +265,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			&& p_eth_hdr->dest.addr[4] == 0xFF
 			&& p_eth_hdr->dest.addr[5] == 0xFF)
 		{
-			//Èç¹û´Ë¹ã²¥ÒÑ¾­½ÓÊÕ¹ıÁË£¬Ôò²»ÔÙ´¦Àí£¬±ÜÃâÎŞÏŞ´ÎµÄ×ª·¢
+			//å¦‚æœæ­¤å¹¿æ’­å·²ç»æ¥æ”¶è¿‡äº†ï¼Œåˆ™ä¸å†å¤„ç†ï¼Œé¿å…æ— é™æ¬¡çš„è½¬å‘
 			if (broadcast_rcv_table_judge(pakcet_info->sender_id, pakcet_info->seq_num))
 			{
 				return 0;
@@ -279,7 +279,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			{
 				case ETHTYPE_ARP:
 					
-					//´ÓmeshÍâÍøÊÕµ½ARP¹ã²¥Êı¾İ£¬¼ÇÂ¼Ô´macµÄpcÓëÆä½Úµã£¬µØÖ·±íÖĞÌí¼Ó´ËÌõ¶ÔÓ¦Ïî
+					//ä»meshå¤–ç½‘æ”¶åˆ°ARPå¹¿æ’­æ•°æ®ï¼Œè®°å½•æºmacçš„pcä¸å…¶èŠ‚ç‚¹ï¼Œåœ°å€è¡¨ä¸­æ·»åŠ æ­¤æ¡å¯¹åº”é¡¹
 					addr_table_add(p_eth_hdr->src.addr, pakcet_info->sender_id);
 					
 					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -304,7 +304,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 							p_device_info->local_ip_addr[1],
 							p_device_info->local_ip_addr[2],
 							p_device_info->local_ip_addr[3]);
-					//IP¹ã²¥£¬¶ÔÓÚmesh¶ËÊÕµ½¹ã²¥°ü£¬ĞèÒª¿¼ÂÇ±¾µØ£¬ÄÚÍø£¬meshÈı¸ö·½ÏòµÄ×ª·¢
+					//IPå¹¿æ’­ï¼Œå¯¹äºmeshç«¯æ”¶åˆ°å¹¿æ’­åŒ…ï¼Œéœ€è¦è€ƒè™‘æœ¬åœ°ï¼Œå†…ç½‘ï¼Œmeshä¸‰ä¸ªæ–¹å‘çš„è½¬å‘
 					if ((p_ip_hdr->dest.addr & ~netmask.addr) == (IPADDR_BROADCAST & ~netmask.addr))
 					{
 						return DEST_ETH|DEST_IP|DEST_MESH;
@@ -335,7 +335,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 	}
 }
 
-//tcpipĞ­ÒéÕ»ÊÕµ½Êı¾İºóµÄ´¦Àí£¬×ªÖÃÍø¿¨
+//tcpipåè®®æ ˆæ”¶åˆ°æ•°æ®åçš„å¤„ç†ï¼Œè½¬ç½®ç½‘å¡
 static void nwk_eth_tx_handler(void)
 {
 	NWK_SEND_ETH_RES_T res = ETH_SEND_EMPTY;
@@ -347,7 +347,7 @@ static void nwk_eth_tx_handler(void)
 		res = nwk_eth_send(flush_flag);
 		if (res == ETH_SEND_FAILED)
 		{
-			//ÑÓÊ±1ms
+			//å»¶æ—¶1ms
 			osel_systick_delay(1);
 			repeat_cnt++;
 			if (repeat_cnt > 3)
@@ -363,7 +363,7 @@ static void nwk_eth_tx_handler(void)
 }
 
 
-//±¾µØÍø¿¨ÊÕµ½Êı¾İºóµÄ´¦Àí
+//æœ¬åœ°ç½‘å¡æ”¶åˆ°æ•°æ®åçš„å¤„ç†
 static void nwk_eth_rx_handler(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
@@ -381,7 +381,7 @@ static void nwk_eth_rx_handler(void)
 			output_type = nwk_pkt_transfer(SRC_ETH, kbuf, &send_info);
 			if (output_type & DEST_IP)
 			{
-				//¾­¹ıÅĞ¶Ï´¦Àíºó£¬È·¶¨Ìá½»±¾µØtcpipĞ­ÒéÕ»
+				//ç»è¿‡åˆ¤æ–­å¤„ç†åï¼Œç¡®å®šæäº¤æœ¬åœ°tcpipåè®®æ ˆ
 				nwk_tcpip_input(kbuf->offset, kbuf->valid_len);
 			}
 
@@ -397,7 +397,7 @@ static void nwk_eth_rx_handler(void)
 				else
 				{
 					send_info.seq_num = 0;
-					//²éÑ¯Â·ÓÉ±í£¬µÃµ½ÏÂÒ»Ìø½ÚµãID
+					//æŸ¥è¯¢è·¯ç”±è¡¨ï¼Œå¾—åˆ°ä¸‹ä¸€è·³èŠ‚ç‚¹ID
 					send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
 					if (send_info.dest_id == 0)
 					{
@@ -423,7 +423,7 @@ static void nwk_eth_rx_handler(void)
 }
 
 
-//mesh¶ËÊÕµ½Êı¾İºóµÄ´¦Àí
+//meshç«¯æ”¶åˆ°æ•°æ®åçš„å¤„ç†
 static void nwk_mesh_rx_handler(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
@@ -439,7 +439,7 @@ static void nwk_mesh_rx_handler(void)
 		if (kbuf)
 		{
 			output_type = nwk_pkt_transfer(SRC_MESH, kbuf, &packet_info);
-			//Èç¹ûÊÇ¹ÜÀí¿ØÖÆ°ü£¬Ôò½âÎö´¦ÀíÖ®
+			//å¦‚æœæ˜¯ç®¡ç†æ§åˆ¶åŒ…ï¼Œåˆ™è§£æå¤„ç†ä¹‹
 			if (output_type & DEST_MGMT)
 			{
 				probe_frame_parse((probe_data_t *)kbuf->offset, packet_info.src_id, packet_info.snr);
@@ -448,11 +448,11 @@ static void nwk_mesh_rx_handler(void)
 						
 			if (output_type & DEST_IP)
 			{
-				//¾­¹ıÅĞ¶Ï´¦Àíºó£¬Ìá½»µ½±¾µØtcpipĞ­ÒéÕ»
+				//ç»è¿‡åˆ¤æ–­å¤„ç†åï¼Œæäº¤åˆ°æœ¬åœ°tcpipåè®®æ ˆ
 				nwk_tcpip_input(kbuf->offset, kbuf->valid_len);
 			}
 
-			//Í¬Ê±ĞèÒª·¢¸øÁ½Â·£¬±Ø¶¨Îª¹ã²¥°ü
+			//åŒæ—¶éœ€è¦å‘ç»™ä¸¤è·¯ï¼Œå¿…å®šä¸ºå¹¿æ’­åŒ…
 			if ((output_type & DEST_MESH) && (output_type & DEST_ETH) && (packet_info.target_id == BROADCAST_ID))
 			{
 				kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
@@ -462,7 +462,7 @@ static void nwk_mesh_rx_handler(void)
 					kbuf_copy->valid_len = kbuf->valid_len;
 					mem_cpy(kbuf_copy->offset, kbuf->offset, kbuf->valid_len);
 			
-					//Òì²½·¢ËÍ¸ønwkµÄeth
+					//å¼‚æ­¥å‘é€ç»™nwkçš„eth
 					nwk_eth_send_asyn(kbuf_copy);
 				}
 					
@@ -479,7 +479,7 @@ static void nwk_mesh_rx_handler(void)
 			if (output_type & DEST_MESH)
 			{	
 				packet_info.src_id = GET_DEV_ID(p_device_info->id);
-				//²éÑ¯Â·ÓÉ±í£¬µÃµ½ÏÂÒ»Ìø½ÚµãID
+				//æŸ¥è¯¢è·¯ç”±è¡¨ï¼Œå¾—åˆ°ä¸‹ä¸€è·³èŠ‚ç‚¹ID
 				packet_info.dest_id = route_table_query(packet_info.target_id, PLAT_NULL, PLAT_NULL);
 				if (packet_info.dest_id == 0)
 				{
@@ -493,7 +493,7 @@ static void nwk_mesh_rx_handler(void)
 			}
 			else if (output_type & DEST_ETH)
 			{
-				//Òì²½·¢ËÍ¸ønwkµÄeth
+				//å¼‚æ­¥å‘é€ç»™nwkçš„eth
 				nwk_eth_send_asyn(kbuf);
 			}
 			else
