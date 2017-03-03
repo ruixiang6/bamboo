@@ -324,9 +324,23 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		else
 		{
 			if (pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
+			{
+				switch(htons(p_eth_hdr->type))
+				{
+					case ETHTYPE_ARP:
+						
+						//从mesh外网收到ARP广播数据，记录源mac的pc与其节点，地址表中添加此条对应项
+						addr_table_add(p_eth_hdr->src.addr, pakcet_info->sender_id);
+						break;
+					default: break;				
+				}
+				
 				return DEST_ETH;
-			else					
+			}
+			else
+			{
 				return DEST_MESH;
+			}
 		}
 	}
 	else

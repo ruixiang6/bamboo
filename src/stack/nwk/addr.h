@@ -4,7 +4,7 @@
 #include <nwk.h>
 
 
-#define ADDR_TABLE_MODE_QUEUE		1
+//#define ADDR_TABLE_MODE_QUEUE		1
 
 #define ADDR_LENGTH					6
 #define ADDR_TABLE_MAX_NUM			200

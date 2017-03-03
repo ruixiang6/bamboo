@@ -431,8 +431,8 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		//把数据偏移到网络层
 		kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 		
-		if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) >= QOS_L
-			&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) <= QOS_H)
+		if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) >= QOS_H
+			&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) <= QOS_L)
 		{
             if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
 			{
