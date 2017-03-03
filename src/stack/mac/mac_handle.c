@@ -50,13 +50,13 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 	//前导码+发射时间+切换时间+offset
 	//p_mac_frm_head->duration = 360+720*(p_mac_frm_head->phy+1)+100+200;
 	p_mac_frm_head->duration = 0;
+		//填写Qos对应的队列和帧类型todo
+	p_mac_frm_head->frm_ctrl.type = p_send_info->type;
 	//计算checksum
 	p_mac_frm_head->chksum = 0;
 	p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(mac_frm_head_t));
 	//kbuf赋予总长度HAL_RF_OF_REG_MAX_RAM_SIZE倍数
 	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
-	//填写Qos对应的队列和帧类型todo
-	p_mac_frm_head->frm_ctrl.type = p_send_info->type;
 	//如果这个帧是纯PROB那就直接返回，不入队列
 	if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB
 		&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == 0)

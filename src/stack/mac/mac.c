@@ -133,8 +133,9 @@ void mac_ofdm_recv_cb(void)
 	if (p_mac_head->phy+1<=MAX_PHY_OFDM_FRM_MULTI)//max = 1888Bytes
 	{
 		kbuf->valid_len = (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
-		p_mac_head->phy = (uint8_t)phy_ofdm_snr();
+		//p_mac_head->phy = (uint8_t)phy_ofdm_snr();
 		phy_ofdm_read(kbuf->base, kbuf->valid_len);
+		p_mac_head->phy = (uint8_t)phy_ofdm_snr();
 		list_behind_put(&kbuf->list, &mac_ofdm_recv_list);
 		osel_event_set(mac_event_h, &object);
 	}

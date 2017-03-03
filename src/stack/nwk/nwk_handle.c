@@ -457,6 +457,7 @@ static void nwk_mesh_rx_handler(void)
 				else
 				{
 					probe_frame_parse(p_probe_data, packet_info.src_id, packet_info.snr);
+					kbuf_free(kbuf);
 				}
 				
 				continue;

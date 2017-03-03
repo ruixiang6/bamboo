@@ -39,6 +39,9 @@ bool_t neighbor_table_flush(uint8_t id)
 			neighbor_table.item[id-1].timeout--;
 			if (neighbor_table.item[id-1].timeout == 0)
 			{
+				neighbor_table.item[id-1].snr = 0;	
+				neighbor_table.item[id-1].snr_tx = 0;
+				
 				return PLAT_TRUE;
 			}
 		}
@@ -76,6 +79,19 @@ void neighbor_table_init(void)
 		neighbor_table.item[i].snr = 0;
 		neighbor_table.item[i].snr_tx = 0;
 		neighbor_table.item[i].timeout = 0;
+	}
+}
+
+
+void neighbor_table_print(void)
+{
+	uint8_t i = 0;
+
+	DBG_PRINTF("nb:\r\n");
+	for (i = 0; i < 5; i++) 
+	{
+		DBG_PRINTF("  %x:%d-%d-%d\r\n", 
+			i+1, neighbor_table.item[i].snr, neighbor_table.item[i].snr_tx, neighbor_table.item[i].timeout);
 	}
 }
 

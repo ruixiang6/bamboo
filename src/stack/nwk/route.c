@@ -176,3 +176,16 @@ void route_table_init(void)
 	}
 }
 
+
+void route_table_print(void)
+{
+	uint8_t i = 0;
+
+	DBG_PRINTF("rb:\r\n");
+	for (i = 0; i < 5; i++) 
+	{
+		DBG_PRINTF("  %x:%x-%d-%d\r\n", 
+			i+1, route_table.item[i].next_id, route_table.item[i].hop, route_table.item[i].seq);
+	}
+}
+
