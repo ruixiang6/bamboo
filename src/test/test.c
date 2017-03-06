@@ -1113,7 +1113,7 @@ static void config_set_param()
 
 	device_info_init();
 	
-	DBG_PRINTF("Input Parameter(type,mode,mesh_id,dev_id,local_mac,ip,gateway,netmask,remote_mac)\r\n");
+	DBG_PRINTF("Input Parameter(type,mode,mesh_id,dev_id,local_mac,ip,gateway,netmask,remote_mac,remote_ip,remote_port)\r\n");
 	DBG_PRINTF("Example:type=XX(Hex or Dec)\r\n");	
 	test_cb.uart_recv_date = PLAT_FALSE;
 	while(!test_cb.uart_recv_date);
@@ -1284,6 +1284,41 @@ static void config_set_param()
 				p_device_info->remote_eth_mac_addr[3],
 				p_device_info->remote_eth_mac_addr[4],
 				p_device_info->remote_eth_mac_addr[5]);
+	}
+	////////设置remote ip//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "remote_ip=");
+	if (str)
+	{
+		str = str + strlen("remote_ip=");
+		DBG_PRINTF("\r\n");
+		
+		for (uint8_t index=0; index<4; index++)
+		{
+			stop_str = strstr((char_t *)str, ":");
+			if (stop_str) stop_str[0] = '\0';
+			sscanf(str, "%d", &value);
+			p_device_info->remote_ip_addr[index] = value;
+			str = &stop_str[1];
+		}				
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set REMOTE IP OK!=%d:%d:%d:%d\r\n", 
+				p_device_info->remote_ip_addr[0],
+				p_device_info->remote_ip_addr[1],
+				p_device_info->remote_ip_addr[2],
+				p_device_info->remote_ip_addr[3]);
+	}
+	////////设置remote port//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "remote_port=");
+	if (str)
+	{
+		str = str + strlen("remote_port=");
+        DBG_PRINTF("\r\n");
+		sscanf(str, "%d", &value);
+		p_device_info->remote_port = value;
+        update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Remote Port OK!=[%d]\r\n", p_device_info->remote_port);
 	}
 	//////////////////////////////////////////
 	if (update_flag == PLAT_TRUE)

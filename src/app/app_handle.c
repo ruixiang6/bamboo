@@ -581,12 +581,13 @@ static void app_test_mac_proc(uint16_t timeout_cnt_ms)
 	if (kbuf)
 	{
 		kbuf->valid_len = 1514;
+        mem_set(&send_info, 0, sizeof(packet_info_t));
 		send_info.src_id = GET_DEV_ID(p_device_info->id);
         send_info.dest_id = BROADCAST_ID;
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
         send_info.target_id = BROADCAST_ID;
         send_info.seq_num = app_test_mac.send_frm_seq++;
-        send_info.type = MAC_FRM_TYPE_ASM(0,0,TEST,0);		
+        send_info.frm_ctrl.reserve = PLAT_TRUE;		
 		//发送给mac层
 		if (!mac_send(kbuf, &send_info))
 		{
@@ -628,8 +629,7 @@ static void app_sniffer_handler(void)
 	mac_frm_head_t *p_mac_frm_head;
 	mac_frm_head_t *p_mac_frm_head_copy;
 	kbuf_t *kbuf_copy = PLAT_NULL;
-	app_sniffer_frm_head_t *p_sniffer_frm_head;
-	uint8_t qos;
+	app_sniffer_frm_head_t *p_sniffer_frm_head;	
 	OSEL_DECL_CRITICAL();
 
 	do
@@ -646,9 +646,9 @@ static void app_sniffer_handler(void)
 			p_mac_frm_head = (mac_frm_head_t *)kbuf->offset;
 
 			//如果收到PROB的信息，则不用判断地址，可能是一个拼帧，都需要上传给设备
-			if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+			if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
 			{
-				if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) != 0)
+				if (p_mac_frm_head->frm_ctrl.qos_level != NONE)
 				{
 					kbuf_copy = kbuf_alloc(KBUF_BIG_NUM);
 					if (kbuf_copy)
@@ -666,7 +666,7 @@ static void app_sniffer_handler(void)
 						//copy probe部分
 						mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len, sizeof(probe_data_t));
 						//将帧类型变为纯PROB的数据包
-						p_mac_frm_head_copy->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,PROB,0,0);
+						p_mac_frm_head_copy->frm_ctrl.probe_flag = PROBE;
 						p_mac_frm_head_copy->dest_dev_id = BROADCAST_ID;
 						p_mac_frm_head_copy->target_id = BROADCAST_ID;
 						p_mac_frm_head_copy->frm_len = sizeof(probe_data_t);
@@ -694,14 +694,13 @@ static void app_sniffer_handler(void)
 				}
 			}
 			
-			if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) <= QOS_L
-				&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) >= QOS_H)
+			if (p_mac_frm_head->frm_ctrl.qos_level >= QOS_L
+				&& p_mac_frm_head->frm_ctrl.qos_level <= QOS_H)
 			{
-	            if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+	            if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
 				{
-					qos = MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type);
 					//将帧类型变为纯QOS的数据包	
-					p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,0,0,qos);
+					p_mac_frm_head->frm_ctrl.probe_flag = NONE;
 					p_mac_frm_head->frm_len -= sizeof(probe_data_t);
 				}
 				

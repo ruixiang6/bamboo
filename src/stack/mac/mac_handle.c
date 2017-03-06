@@ -53,18 +53,18 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 	//kbuf赋予总长度HAL_RF_OF_REG_MAX_RAM_SIZE倍数
 	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
 	//填写Qos对应的队列和帧类型todo
-	p_mac_frm_head->frm_ctrl.type = p_send_info->type;
+	p_mac_frm_head->frm_ctrl = p_send_info->frm_ctrl;
 	//计算checksum
 	p_mac_frm_head->chksum = 0;
 	p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(mac_frm_head_t));
 	//如果这个帧是纯PROB那就直接返回，不入队列
-	if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB
-		&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == 0)
+	if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE
+		&& p_mac_frm_head->frm_ctrl.qos_level == NONE)
 	{
 		return PLAT_TRUE;
 	}
     
-	if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_H)
+	if (p_mac_frm_head->frm_ctrl.qos_level == QOS_H)
 	{
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
@@ -72,7 +72,7 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 		mac_send_entity[0].total_num++;
 		OSEL_EXIT_CRITICAL();
 	}
-	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_M)
+	else if (p_mac_frm_head->frm_ctrl.qos_level == QOS_M)
 	{
         OSEL_ENTER_CRITICAL();
         list_behind_put(&kbuf->list, &mac_send_entity[1].tx_list);
@@ -80,7 +80,7 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
         mac_send_entity[1].total_num++;
         OSEL_EXIT_CRITICAL();	
 	}
-	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_L)
+	else if (p_mac_frm_head->frm_ctrl.qos_level == QOS_L)
 	{
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, &mac_send_entity[2].tx_list);
@@ -189,7 +189,7 @@ static void mac_of_tx_handler(void)
 				p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
 				p_mac_frm_head->frm_len += sizeof(probe_data_t);
 				//添加一个PROBE位
-				p_mac_frm_head->frm_ctrl.type |= MAC_FRM_TYPE_ASM(0, PROB, 0, 0);
+				p_mac_frm_head->frm_ctrl.probe_flag = PROBE;
 			}			
 			mac_rdy_snd_kbuf = kbuf;
 			
@@ -216,7 +216,7 @@ static void mac_of_tx_handler(void)
 				send_info.dest_id = BROADCAST_ID;
 				send_info.target_id = BROADCAST_ID;
 				send_info.seq_num = 0;//暂时为0
-				send_info.type = MAC_FRM_TYPE_ASM(0, PROB, 0, 0);
+				send_info.frm_ctrl.probe_flag = PROBE;
 				//填充帧头
 				if (mac_send(kbuf, &send_info))
 				{
@@ -371,7 +371,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 	uint16_t object;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	kbuf_t *kbuf_copy = PLAT_NULL;
-	uint8_t qos;
+	
 	OSEL_DECL_CRITICAL();
 	
 	if (kbuf == PLAT_NULL)
@@ -396,9 +396,9 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 #endif
 	
 	//如果收到PROB的信息，则不用判断地址，可能是一个拼帧，需要复制一份，上传给设备
-	if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+	if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
 	{
-		if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) != 0)
+		if (p_mac_frm_head->frm_ctrl.qos_level != NONE)
 		{
 			kbuf_copy = kbuf_alloc(KBUF_BIG_NUM);
 				
@@ -414,7 +414,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 				kbuf_copy->offset = kbuf_copy->base+sizeof(mac_frm_head_t);
 				mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len-sizeof(probe_data_t), sizeof(probe_data_t));
 				//将帧类型变为纯PROB的数据包
-				p_mac_frm_head_copy->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,PROB,0,0);
+				p_mac_frm_head->frm_ctrl.probe_flag = PROBE;
 				p_mac_frm_head_copy->dest_dev_id = BROADCAST_ID;
 				p_mac_frm_head_copy->target_id = BROADCAST_ID;
 				nwk_mesh_recv_put(kbuf_copy);
@@ -442,14 +442,13 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		//把数据偏移到网络层
 		kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 		
-		if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) <= QOS_L
-			&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) >= QOS_H)
+		if (p_mac_frm_head->frm_ctrl.qos_level >= QOS_L
+			&& p_mac_frm_head->frm_ctrl.qos_level <= QOS_H)
 		{
-            if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+            if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
 			{
-				qos = MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type);
 				//将帧类型变为纯QOS的数据包	
-				p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,0,0,qos);
+				p_mac_frm_head->frm_ctrl.probe_flag = NONE;
 				//将帧长改为普通数据长度
 				p_mac_frm_head->frm_len -= sizeof(probe_data_t);
 			}
@@ -457,7 +456,7 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 			kbuf->valid_len = p_mac_frm_head->frm_len;
 			nwk_mesh_recv_put(kbuf);
 		}
-		else if (MAC_FRM_TYPE_TEST(p_mac_frm_head->frm_ctrl.type) == TEST)
+		else if (p_mac_frm_head->frm_ctrl.reserve)
 		{
 			//上至APP
 			object = APP_EVENT_TEST_MAC;

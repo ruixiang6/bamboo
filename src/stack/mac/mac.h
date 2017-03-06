@@ -20,19 +20,14 @@
 
 #define	BROADCAST_ID			    0xFF
 
+#define NONE						0
+#define PROBE						1
 #define RTS							1
 #define CTS							2
 #define ACK							3
-#define PROB						1
-#define TEST						1	
-#define QOS_H						1
+#define QOS_H						3
 #define QOS_M						2
-#define QOS_L						3
-#define MAC_FRM_TYPE_ASM(c, p, t, q) 	((q<<4)|(p<<2)|(t<<3)|c)
-#define MAC_FRM_TYPE_CTRL(t)		(t&0x3)
-#define MAC_FRM_TYPE_PROB(t)		((t>>2)&0x1)
-#define MAC_FRM_TYPE_QOS(t)			((t>>4)&0x3)
-#define MAC_FRM_TYPE_TEST(t)		((t>>3)&0x1)
+#define QOS_L						1
 
 #define MAC_PKT_LIVE_US			    100000
 #define MAC_PKT_PROBE_LIVE_US	    50000
@@ -46,15 +41,18 @@
 
 typedef struct
 {
-	uint16_t protocol:	2,
-			 type:		6,
-			 to_ds:		1,
-			 from_ds:	1,
-			 retry:		1,
-			 pwr_mgmt:	1,
-			 more_data:	1,
-			 protected:	1,
-			 order:		1;
+	uint16_t protocol:		2,
+			 ctl_mgmt:		2,
+			 probe_flag:	1,
+			 reserve:		1,
+			 qos_level:		2,
+			 to_ds:			1,
+			 from_ds:		1,
+			 retry:			1,
+			 pwr_mgmt:		1,
+			 more_data:		1,
+			 protected:		1,
+			 order:			1;
 }mac_frm_ctrl_t;
 
 typedef struct
@@ -111,7 +109,7 @@ typedef struct
 	uint8_t sender_id;
 	uint8_t target_id;
 	uint8_t seq_num;
-	uint8_t type;
+	mac_frm_ctrl_t frm_ctrl;
 	uint8_t snr;
 }packet_info_t;
 

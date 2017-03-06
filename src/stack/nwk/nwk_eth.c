@@ -162,7 +162,9 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 		nwk_eth_send_asyn(kbuf);
 		return ERR_OK;
 	}
-
+    
+    mem_clr(&send_info, sizeof(packet_info_t));
+    
 	output_type = nwk_pkt_transfer(SRC_IP, kbuf, &send_info);
 	//同时需要发给两路，且必定为广播包
 	if ((output_type & DEST_MESH) && (output_type & DEST_ETH) && (send_info.target_id == BROADCAST_ID))
@@ -194,7 +196,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
 		send_info.src_id = GET_DEV_ID(p_device_info->id);
         send_info.seq_num = 0;
-        send_info.type = MAC_FRM_TYPE_ASM(0,0,0,QOS_M);
+        send_info.frm_ctrl.qos_level = QOS_M;
 		//查询路由表，得到下一跳节点ID
         send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
 		if (send_info.dest_id == 0)
