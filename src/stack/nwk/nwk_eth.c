@@ -4,11 +4,12 @@
 #include <route.h>
 #include <mac.h>
 
-//“‘Ã´Õ¯Ωªª•µƒΩ”ø⁄∂”¡–
+//‰ª•Â§™ÁΩë‰∫§‰∫íÁöÑÊé•Âè£ÈòüÂàó
 static list_t nwk_eth_tx_list;
 static list_t nwk_eth_rx_list;
+static bool_t nwk_eth_flag = PLAT_FALSE;
 
-//TCPIPΩªª•µƒΩ·ππ
+//TCPIP‰∫§‰∫íÁöÑÁªìÊûÑ
 static nwk_tcpip_t nwk_tcpip;
 
 static void nwk_eth_send_cb(void *arg)
@@ -66,10 +67,18 @@ NWK_SEND_ETH_RES_T nwk_eth_send(bool_t flush_flag)
 		OSEL_ENTER_CRITICAL();
 		skbuf = (kbuf_t *)list_front_get(&nwk_eth_tx_list);
 		OSEL_EXIT_CRITICAL();
-	}
+	}	
 
 	if (skbuf)
 	{
+		if (nwk_eth_flag == PLAT_FALSE)
+		{
+			kbuf_free(skbuf);
+			res = ETH_SEND_SUCCES;
+			skbuf = PLAT_NULL;
+            return res;
+		}
+		
 		if (hal_eth_send(skbuf))
 		{
 			res = ETH_SEND_SUCCES;
@@ -103,7 +112,7 @@ kbuf_t *nwk_eth_recv_asyn(void)
 }
 
 
-//tcpip–≠“È’ªµƒ≥ˆø⁄
+//tcpipÂçèËÆÆÊ†àÁöÑÂá∫Âè£
 err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 {
     pbuf_t *q;
@@ -147,15 +156,17 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
         }
     } while (0u == kbuf_chain_end);
 	
-	//»Áπ˚Œ™SNIFFEER÷±Ω”◊™µΩ±æª˙“‘Ã´Õ¯ø⁄…œ
+	//Â¶ÇÊûú‰∏∫SNIFFEERÁõ¥Êé•ËΩ¨Âà∞Êú¨Êú∫‰ª•Â§™ÁΩëÂè£‰∏ä
 	if (GET_MODE_ID(p_device_info->id) == MODE_SINFFER)
 	{
 		nwk_eth_send_asyn(kbuf);
 		return ERR_OK;
 	}
-
+    
+    mem_clr(&send_info, sizeof(packet_info_t));
+    
 	output_type = nwk_pkt_transfer(SRC_IP, kbuf, &send_info);
-	//Õ¨ ±–Ë“™∑¢∏¯¡Ω¬∑£¨«“±ÿ∂®Œ™π„≤•∞¸
+	//ÂêåÊó∂ÈúÄË¶ÅÂèëÁªô‰∏§Ë∑ØÔºå‰∏îÂøÖÂÆö‰∏∫ÂπøÊí≠ÂåÖ
 	if ((output_type & DEST_MESH) && (output_type & DEST_ETH) && (send_info.target_id == BROADCAST_ID))
 	{
 		kbuf_copy = kbuf_alloc(KBUF_BIG_TYPE);
@@ -164,7 +175,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 			kbuf_copy->offset = kbuf_copy->base + sizeof(mac_frm_head_t);
 			kbuf_copy->valid_len = kbuf->valid_len;
 			mem_cpy(kbuf_copy->offset, kbuf->offset, kbuf->valid_len);
-			//“Ï≤Ω∑¢ÀÕ∏¯nwkµƒeth
+			//ÂºÇÊ≠•ÂèëÈÄÅÁªônwkÁöÑeth
 			nwk_eth_send_asyn(kbuf_copy);
 		}
 		
@@ -185,8 +196,8 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
 		send_info.src_id = GET_DEV_ID(p_device_info->id);
         send_info.seq_num = 0;
-        send_info.type = MAC_FRM_TYPE_ASM(0,0,0,QOS_M);
-		//≤È—Ø¬∑”…±Ì£¨µ√µΩœ¬“ªÃ¯Ω⁄µ„ID
+        send_info.frm_ctrl.qos_level = QOS_M;
+		//Êü•ËØ¢Ë∑ØÁî±Ë°®ÔºåÂæóÂà∞‰∏ã‰∏ÄË∑≥ËäÇÁÇπID
         send_info.dest_id = route_table_query(send_info.target_id, PLAT_NULL, PLAT_NULL);
 		if (send_info.dest_id == 0)
 		{
@@ -200,7 +211,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
 	}
 	else if (output_type & DEST_ETH)
 	{
-		//“Ï≤Ω∑¢ÀÕ∏¯nwkµƒeth
+		//ÂºÇÊ≠•ÂèëÈÄÅÁªônwkÁöÑeth
 		nwk_eth_send_asyn(kbuf);
 	}
 	else
@@ -211,7 +222,7 @@ err_t nwk_tcpip_output(nwk_tcpip_t *p_nwk_tcpip, pbuf_t *p)
     return ERR_OK;
 }
 
-//tcpip–≠“È’ªµƒ»Îø⁄
+//tcpipÂçèËÆÆÊ†àÁöÑÂÖ•Âè£
 bool_t nwk_tcpip_input(uint8_t *buf, uint32_t size)
 {
     eth_hdr_t *ethhdr;
@@ -329,7 +340,7 @@ static bool_t nwk_eth_hw_init(void)
     mcb.mac[3] = p_device_info->local_eth_mac_addr[3];
     mcb.mac[4] = p_device_info->local_eth_mac_addr[4];
     mcb.mac[5] = p_device_info->local_eth_mac_addr[5];
-	//Â°´ÂÜôÂÅèÁßª
+
 	mcb.pkt_offset = sizeof(mac_frm_head_t);	
 	mcb.tx_func = nwk_eth_send_cb;
 	mcb.rx_func = nwk_eth_recv_cb;
@@ -344,8 +355,6 @@ static bool_t nwk_eth_hw_init(void)
 
 void nwk_idle_hook(void)
 {
-	static bool_t nwk_eth_flag = PLAT_FALSE;
-
 	if (nwk_eth_flag == PLAT_FALSE)
 	{
 		nwk_eth_flag = nwk_eth_hw_init();

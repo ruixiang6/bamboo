@@ -63,8 +63,10 @@ typedef struct
 	uint8_t local_ip_addr[4];
 	uint8_t local_gateway_addr[4];
 	uint8_t local_netmask_addr[4];
-	//Ô¶¶Ë¹ıÂËmacµØÖ·
+	//è¿œç«¯è¿‡æ»¤macåœ°å€
 	uint8_t remote_eth_mac_addr[6];
+	uint8_t remote_ip_addr[4];
+	uint16_t remote_port;
 	//dont save
 	dev_pos_t pos;
 	dev_time_t time;	

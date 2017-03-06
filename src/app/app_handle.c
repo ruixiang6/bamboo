@@ -4,6 +4,8 @@
 #include <device.h>
 #include <test.h>
 #include <mac.h>
+#include <nwk.h>
+#include <nwk_mesh.h>
 
 #define APP_RECV_TIMEOUT	0xFF
 
@@ -17,12 +19,11 @@ static void app_audio_out_proc(void);
 static void app_audio_in_proc(void);
 static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type);
 
-static void app_test_cb(void);
-static void app_test_handler(void);
+static void app_test_mac_proc(uint16_t timeout_cnt_ms);
 static void app_test_mac_handler(void);
 
-static uint16_t app_test_id = 0;
-
+static void app_sniffer_handler(void);
+static void app_sniffer_send(kbuf_t *kbuf);
 
 void app_handler(uint16_t event_type)
 {
@@ -46,11 +47,11 @@ void app_handler(uint16_t event_type)
 		osel_event_clear(app_event_h, &object);
 		app_audio_handler();		
 	}
-	else if (event_type & APP_EVENT_TEST)
+	else if (event_type & APP_EVENT_SNIFFER)
 	{
-		object = APP_EVENT_TEST;
+		object = APP_EVENT_SNIFFER;
 		osel_event_clear(app_event_h, &object);
-		app_test_handler();
+		app_sniffer_handler();
 	}
 	else if (event_type & APP_EVENT_TEST_MAC)
 	{
@@ -63,13 +64,10 @@ void app_handler(uint16_t event_type)
 void app_timeout_handler(void)
 {	
 	static uint16_t count = 0;
-
 	count++;
-	if (count == 2000)
-	{
-		count = 0;
 
-	}
+	app_test_mac_proc(count);
+	
 }
 
 static void app_gps_handler(void)
@@ -136,10 +134,6 @@ static void app_gps_handler(void)
     actual_size = 0;
 }
 
-
-static uint32_t value = 1000000;
-static uint32_t seq = 0;
-
 static void app_uart_handler(void)
 {
 	uint8_t temp_buf[18];	
@@ -166,27 +160,26 @@ static void app_uart_handler(void)
 		p_start =  strstr((char_t*)temp_buf, "send");
 		if (p_start)
 		{
-			value = 1000000;
+			app_test_mac.send_frm_interval = 1;
 			
 			p_stop = strstr(p_start, ";");
 			if (p_stop)
 			{
 				p_start = p_start + strlen("send=");
 				*p_stop = '\0';
-				sscanf(p_start, "%d", &value);
+				sscanf(p_start, "%d", &app_test_mac.send_frm_interval);
 			}
-			
-			app_test_id = hal_timer_free(app_test_id);
-			app_test_id = hal_timer_alloc(value, app_test_cb);
-			seq = 0;
+
+			app_test_mac.send_frm_seq = 0;
+			app_test_mac.state = PLAT_TRUE;
 			return;
 		}
 
 		p_start =  strstr((char_t*)temp_buf, "over");
 		if (p_start)
 		{			
-			app_test_id = hal_timer_free(app_test_id);
-			DBG_PRINTF("Send=%d\r\n", seq);
+			app_test_mac.state = PLAT_FALSE;
+			DBG_PRINTF("Send=%d\r\n", app_test_mac.send_frm_seq);
 			return;
 		}
 	}
@@ -240,10 +233,10 @@ static void app_audio_out_proc(void)
 		}
 		else
 		{	
-			//��ΪΪ2400bps��ѹ���ʣ���ÿ20ms����6�ֽ���Ч����
+			//因为为2400bps的压缩率，故每20ms产生6字节有效数据
 			mem_cpy(app_audio.rx_kbuf->base+app_audio.rx_kbuf->valid_len, &audio_recv_buf[10], 6);			
 			app_audio.rx_kbuf->valid_len += 6;
-			//�̰���󳤶�117
+			//短包最大长度117
 			if (app_audio.rx_kbuf->valid_len>=117)
 			{
 				//Send to NWK
@@ -257,7 +250,7 @@ static void app_audio_out_proc(void)
 	}
 	else
 	{
-		//��̧�𰴼���ʣ������Ҳ����Ҫ���ͳ�ȥ���ó���117���ֽ�
+		//当抬起按键，剩余数据也必须要发送出去不用筹齐117个字节
 		if (app_audio.rx_kbuf)
 		{
 			//Send to NWK
@@ -437,7 +430,7 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 		update_rtc_flag++;
 		mem_set(&dev_time, 0, sizeof(dev_time_t));
 		mem_set(&rtc_block, 0, sizeof(hal_rtc_block_t));
-		/*ʱ���ж�*/
+		/*时间判断*/
 		dev_time.hour = (p_nmea_gps_msg->time[0]-'0')*10 + p_nmea_gps_msg->time[1]-'0' + TIME_CHINA_ZONE;
 		if (dev_time.hour >= 24)
 		{
@@ -455,7 +448,7 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 		dev_time.month = (p_nmea_gps_msg->date[2]-'0')*10 + p_nmea_gps_msg->date[3]-'0';
 		dev_time.year = (p_nmea_gps_msg->date[4]-'0')*10 + p_nmea_gps_msg->date[5]-'0';
 		year = 2000 + dev_time.year;		
-	    //�ж�����
+	    //判断润年
 		if (year % 4 == 0 || year % 400 == 0)
 		{
 			if (year % 100 != 0)
@@ -471,12 +464,12 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 		{
 			flag_year = 0;
 		}
-		//�ݽ��ж�
+		//递进判断
 		if (flag_day)
 		{
 			dev_time.day += 1;
 			flag_day = 0;
-			//�ж�1 3 5 7 8 10 12�·�31��
+			//判断1 3 5 7 8 10 12月份31天
 			if(dev_time.month == 1 ||
 				dev_time.month == 3 ||
 				dev_time.month == 5 ||
@@ -498,7 +491,7 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 			}
 			else if (dev_time.month == 2)
 			{
-				/*����*/
+				/*闰年*/
 				if (flag_year)
 				{
 					if (dev_time.day > 29)
@@ -562,39 +555,45 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 	}
 }
 
-static void app_test_cb(void)
-{
-	uint16_t object = APP_EVENT_TEST;
-	
-	osel_event_set(app_event_h, &object);
-
-	app_test_id = hal_timer_free(app_test_id);
-	app_test_id = hal_timer_alloc(value, app_test_cb);
-}
-
-static void app_test_handler(void)
+static void app_test_mac_proc(uint16_t timeout_cnt_ms)
 {
 	kbuf_t *kbuf;	
     packet_info_t send_info;
     device_info_t *p_device_info = device_info_get(PLAT_FALSE);
+	static uint16_t interval = 0;
+
+	if (app_test_mac.state != PLAT_TRUE)
+	{
+		return;
+	}
+
+	if (app_test_mac.send_frm_interval != timeout_cnt_ms-interval)
+	{
+		return;
+	}
+	else
+	{
+		interval = timeout_cnt_ms;
+	}
 
 	kbuf = kbuf_alloc(KBUF_BIG_TYPE);
-
+	
 	if (kbuf)
 	{
 		kbuf->valid_len = 1514;
+        mem_set(&send_info, 0, sizeof(packet_info_t));
 		send_info.src_id = GET_DEV_ID(p_device_info->id);
         send_info.dest_id = BROADCAST_ID;
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
         send_info.target_id = BROADCAST_ID;
-        send_info.seq_num = seq++;
-        send_info.type = MAC_FRM_TYPE_ASM(0,0,TEST,0);		
-		//���͸�mac��
+        send_info.seq_num = app_test_mac.send_frm_seq++;
+        send_info.frm_ctrl.reserve = PLAT_TRUE;		
+		//发送给mac层
 		if (!mac_send(kbuf, &send_info))
 		{
 			kbuf_free(kbuf);
 		}
-		
+			
 	}
 	else
 	{
@@ -612,7 +611,7 @@ static void app_test_mac_handler(void)
 	do
 	{
 		OSEL_ENTER_CRITICAL();
-		kbuf = (kbuf_t *)list_front_get(&app_recv_list);
+		kbuf = (kbuf_t *)list_front_get(&app_test_mac.kbuf_rx_list);
 		OSEL_EXIT_CRITICAL();
 
 		if (kbuf)
@@ -623,5 +622,120 @@ static void app_test_mac_handler(void)
 		}
 	}while(kbuf);
 }
+
+static void app_sniffer_handler(void)
+{
+	kbuf_t *kbuf = PLAT_NULL;
+	mac_frm_head_t *p_mac_frm_head;
+	mac_frm_head_t *p_mac_frm_head_copy;
+	kbuf_t *kbuf_copy = PLAT_NULL;
+	app_sniffer_frm_head_t *p_sniffer_frm_head;	
+	OSEL_DECL_CRITICAL();
+
+	do
+	{
+		OSEL_ENTER_CRITICAL();
+		kbuf = (kbuf_t *)list_front_get(&app_sniffer.kbuf_rx_list);
+		OSEL_EXIT_CRITICAL();	
+
+		if (kbuf)
+		{
+			p_sniffer_frm_head = (app_sniffer_frm_head_t *)kbuf->base;
+			p_sniffer_frm_head->type = 0;//Sniffer frame type
+			kbuf->offset = kbuf->base+sizeof(app_sniffer_frm_head_t);
+			p_mac_frm_head = (mac_frm_head_t *)kbuf->offset;
+
+			//如果收到PROB的信息，则不用判断地址，可能是一个拼帧，都需要上传给设备
+			if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
+			{
+				if (p_mac_frm_head->frm_ctrl.qos_level != NONE)
+				{
+					kbuf_copy = kbuf_alloc(KBUF_BIG_NUM);
+					if (kbuf_copy)
+					{
+						p_sniffer_frm_head = (app_sniffer_frm_head_t *)kbuf_copy->base;
+						kbuf_copy->offset = kbuf_copy->base+sizeof(app_sniffer_frm_head_t);
+						p_mac_frm_head_copy = (mac_frm_head_t *)kbuf_copy->offset;
+						//copy头信息
+						mem_cpy(p_mac_frm_head_copy, p_mac_frm_head, sizeof(mac_frm_head_t));
+						//减去probe_data_t,得到原有数据的长度
+						p_mac_frm_head->frm_len = p_mac_frm_head->frm_len - sizeof(probe_data_t);
+						//copy这ctrl_data_t部分数据
+						kbuf_copy->offset = kbuf_copy->offset+sizeof(mac_frm_head_t);
+						kbuf->offset = kbuf->offset+sizeof(mac_frm_head_t);
+						//copy probe部分
+						mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len, sizeof(probe_data_t));
+						//将帧类型变为纯PROB的数据包
+						p_mac_frm_head_copy->frm_ctrl.probe_flag = PROBE;
+						p_mac_frm_head_copy->dest_dev_id = BROADCAST_ID;
+						p_mac_frm_head_copy->target_id = BROADCAST_ID;
+						p_mac_frm_head_copy->frm_len = sizeof(probe_data_t);
+						kbuf_copy->valid_len = sizeof(mac_frm_head_t)+p_mac_frm_head_copy->frm_len;
+						//发送数据
+						p_sniffer_frm_head->head = APP_SNIFF_HEAD;
+						p_sniffer_frm_head->length = kbuf_copy->valid_len;
+						kbuf_copy->valid_len = sizeof(app_sniffer_frm_head_t)+kbuf_copy->valid_len;
+						app_sniffer_send(kbuf_copy);
+						kbuf_free(kbuf_copy);
+					}
+				}
+				else
+				{					
+					//probe_data_t数据的长度
+					p_mac_frm_head->frm_len = sizeof(probe_data_t);
+					kbuf->valid_len = sizeof(mac_frm_head_t) + p_mac_frm_head->frm_len;
+					//发送数据
+					p_sniffer_frm_head->head = APP_SNIFF_HEAD;
+					p_sniffer_frm_head->length = kbuf->valid_len;
+					kbuf->valid_len = sizeof(app_sniffer_frm_head_t)+kbuf->valid_len;
+					app_sniffer_send(kbuf);
+					kbuf_free(kbuf);
+					continue;
+				}
+			}
+			
+			if (p_mac_frm_head->frm_ctrl.qos_level >= QOS_L
+				&& p_mac_frm_head->frm_ctrl.qos_level <= QOS_H)
+			{
+	            if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
+				{
+					//将帧类型变为纯QOS的数据包	
+					p_mac_frm_head->frm_ctrl.probe_flag = NONE;
+					p_mac_frm_head->frm_len -= sizeof(probe_data_t);
+				}
+				
+				if (p_mac_frm_head->frm_len)
+				{
+					kbuf->valid_len = sizeof(mac_frm_head_t)+p_mac_frm_head->frm_len;
+					//发送数据
+					p_sniffer_frm_head->head = APP_SNIFF_HEAD;
+					p_sniffer_frm_head->length = kbuf->valid_len;
+					kbuf->valid_len = sizeof(app_sniffer_frm_head_t)+kbuf->valid_len;
+					app_sniffer_send(kbuf);
+                    kbuf_free(kbuf);
+				}
+				else
+				{
+					kbuf_free(kbuf);
+				}
+			}
+			else
+			{
+				kbuf_free(kbuf);
+			}			
+		}
+	}while(kbuf);
+}
+
+static void app_sniffer_send(kbuf_t *kbuf)
+{	
+	int32_t len;	
+	
+	if (app_sniffer.socket_id>=0)
+	{
+		len = sendto(app_sniffer.socket_id, kbuf->base, kbuf->valid_len, 0, (struct sockaddr *)&app_sniffer.s_addr, sizeof(app_sniffer.s_addr));
+	}
+}
+
 
 

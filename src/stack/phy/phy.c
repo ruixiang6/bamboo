@@ -5,21 +5,21 @@ static phy_tmr_t phy_tmr_array[MAX_PHY_TMR_NUM];
 
 void phy_ofdm_init(fpv_t send_func, fpv_t recv_func)
 {
-	//OFDM½øÈëIDLEÌ¬
+	//OFDMè¿›å…¥IDLEæ€
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);	
-	//Ê¹ÄÜofdm½ÓÊÕºÍ·¢ËÍÖĞ¶Ï
+	//ä½¿èƒ½ofdmæ¥æ”¶å’Œå‘é€ä¸­æ–­
 	hal_rf_of_int_reg_handler(HAL_RF_OF_TX_FIN_INT, send_func);
 	hal_rf_of_int_reg_handler(HAL_RF_OF_RX_FIN_INT, recv_func);		
 	hal_rf_of_reset();
-	//Çå³ıÖĞ¶Ï
+	//æ¸…é™¤ä¸­æ–­
 	hal_rf_of_int_clear(HAL_RF_OF_TX_FIN_INT);
 	hal_rf_of_int_clear(HAL_RF_OF_RX_FIN_INT);
 	
-	//¿ªÆô½ÓÊÕÖĞ¶Ï
+	//å¼€å¯æ¥æ”¶ä¸­æ–­
 	hal_rf_of_int_enable(HAL_RF_OF_TX_FIN_INT);	
-	//¿ªÆô·¢ËÍÖĞ¶Ï
+	//å¼€å¯å‘é€ä¸­æ–­
 	hal_rf_of_int_enable(HAL_RF_OF_RX_FIN_INT);
-	//½øÈë½ÓÊÕ×´Ì¬
+	//è¿›å…¥æ¥æ”¶çŠ¶æ€
 	hal_rf_of_set_state(HAL_RF_OF_RECV_M);
 }
 
@@ -243,7 +243,7 @@ uint16_t phy_ofdm_snr(void)
 {
 	uint16_t snr;
 	
-	//½«ĞÅÔë±È´«¸øÖ¡Í·
+	//å°†ä¿¡å™ªæ¯”ä¼ ç»™å¸§å¤´
 	snr = (uint16_t)(hal_rf_ofdm_cal_sn()*10);
 	if (snr>255) snr = 255;
     
@@ -252,18 +252,18 @@ uint16_t phy_ofdm_snr(void)
 
 void phy_init(void)
 {
-	/* ÉäÆµ³õÊ¼»¯ */
+	/* å°„é¢‘åˆå§‹åŒ– */
 	hal_rf_init();
 }
 
 void phy_deinit(void)
 {
-	//OFDM½øÈëIDLEÌ¬
+	//OFDMè¿›å…¥IDLEæ€
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
 
-	//¹Ø±Õ½ÓÊÕÖĞ¶Ï
+	//å…³é—­æ¥æ”¶ä¸­æ–­
 	hal_rf_of_int_disable(HAL_RF_OF_TX_FIN_INT);	
-	//¹Ø±Õ·¢ËÍÖĞ¶Ï
+	//å…³é—­å‘é€ä¸­æ–­
 	hal_rf_of_int_disable(HAL_RF_OF_RX_FIN_INT);
 }
 

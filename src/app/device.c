@@ -63,6 +63,13 @@ void device_info_init(void)
 		pg_device_info->remote_eth_mac_addr[4] = 0xFF;
 		pg_device_info->remote_eth_mac_addr[5] = 0xFF;
 
+		pg_device_info->remote_ip_addr[0] = 192;
+		pg_device_info->remote_ip_addr[1] = 168;
+		pg_device_info->remote_ip_addr[2] = 12;
+		pg_device_info->remote_ip_addr[3] = 55;
+
+		pg_device_info->remote_port = 60000;
+
 		hal_flash_write(DEVICE_BASE_ADDR, (uint8_t *)pg_device_info, SAVE_SIZE);
 	}
 	else
@@ -111,6 +118,14 @@ void device_info_init(void)
 				pg_device_info->remote_eth_mac_addr[3],
 				pg_device_info->remote_eth_mac_addr[4],
 				pg_device_info->remote_eth_mac_addr[5]);
+
+	DBG_PRINTF("remote_ip(dec)=%d:%d:%d:%d\r\n", 
+				pg_device_info->remote_ip_addr[0],
+				pg_device_info->remote_ip_addr[1],
+				pg_device_info->remote_ip_addr[2],
+				pg_device_info->remote_ip_addr[3]);
+	
+	DBG_PRINTF("remote_port(dec)=%d\r\n", pg_device_info->remote_port);
 	
 	srand(GET_DEV_ID(pg_device_info->id));
 }

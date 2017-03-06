@@ -29,42 +29,42 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 	}
 
 	p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-	//ÌîÐ´MESH_ID
+	//å¡«å†™MESH_ID
 	p_mac_frm_head->mesh_id = GET_MESH_ID(p_device_info->id);
-	//ÌîÐ´SRC_DEV_ID
+	//å¡«å†™SRC_DEV_ID
 	p_mac_frm_head->src_dev_id = p_send_info->src_id;
-	//ÌîÐ´DST_DEV_ID
+	//å¡«å†™DST_DEV_ID
 	p_mac_frm_head->dest_dev_id = p_send_info->dest_id;
-	//ÌîÐ´Sender_ID
+	//å¡«å†™Sender_ID
 	p_mac_frm_head->sender_id = p_send_info->sender_id;
-	//ÌîÐ´Target_ID
+	//å¡«å†™Target_ID
 	p_mac_frm_head->target_id = p_send_info->target_id;
-	//ÌîÐ´ÐòºÅ
+	//å¡«å†™åºå·
 	p_mac_frm_head->seq_ctrl.seq_num = p_send_info->seq_num;
-	//Ìî³äÔØºÉ³¤¶È
+	//å¡«å……è½½è·é•¿åº¦
 	p_mac_frm_head->frm_len = kbuf->valid_len;
-	//kbuf¸³Óè×Ü³¤¶È
+	//kbufèµ‹äºˆæ€»é•¿åº¦
 	kbuf->valid_len = sizeof(mac_frm_head_t) + p_mac_frm_head->frm_len;
-	//×î´óµÄ³¤¶È±¶Êý
+	//æœ€å¤§çš„é•¿åº¦å€æ•°
 	p_mac_frm_head->phy = (kbuf->valid_len-1)/HAL_RF_OF_REG_MAX_RAM_SIZE;
-	//Ç°µ¼Âë+·¢ÉäÊ±¼ä+ÇÐ»»Ê±¼ä+offset
+	//å‰å¯¼ç +å‘å°„æ—¶é—´+åˆ‡æ¢æ—¶é—´+offset
 	//p_mac_frm_head->duration = 360+720*(p_mac_frm_head->phy+1)+100+200;
-	p_mac_frm_head->duration = 0;
-		//ÌîÐ´Qos¶ÔÓ¦µÄ¶ÓÁÐºÍÖ¡ÀàÐÍtodo
-	p_mac_frm_head->frm_ctrl.type = p_send_info->type;
-	//¼ÆËãchecksum
+	p_mac_frm_head->duration = 0;	
+	//kbufèµ‹äºˆæ€»é•¿åº¦HAL_RF_OF_REG_MAX_RAM_SIZEå€æ•°
+	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
+	//å¡«å†™Qoså¯¹åº”çš„é˜Ÿåˆ—å’Œå¸§ç±»åž‹todo
+	p_mac_frm_head->frm_ctrl = p_send_info->frm_ctrl;
+	//è®¡ç®—checksum
 	p_mac_frm_head->chksum = 0;
 	p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(mac_frm_head_t));
-	//kbuf¸³Óè×Ü³¤¶ÈHAL_RF_OF_REG_MAX_RAM_SIZE±¶Êý
-	kbuf->valid_len = (p_mac_frm_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
-	//Èç¹ûÕâ¸öÖ¡ÊÇ´¿PROBÄÇ¾ÍÖ±½Ó·µ»Ø£¬²»Èë¶ÓÁÐ
-	if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB
-		&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == 0)
+	//å¦‚æžœè¿™ä¸ªå¸§æ˜¯çº¯PROBé‚£å°±ç›´æŽ¥è¿”å›žï¼Œä¸å…¥é˜Ÿåˆ—
+	if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE
+		&& p_mac_frm_head->frm_ctrl.qos_level == NONE)
 	{
 		return PLAT_TRUE;
 	}
     
-	if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_H)
+	if (p_mac_frm_head->frm_ctrl.qos_level == QOS_H)
 	{
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
@@ -72,7 +72,7 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 		mac_send_entity[0].total_num++;
 		OSEL_EXIT_CRITICAL();
 	}
-	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_M)
+	else if (p_mac_frm_head->frm_ctrl.qos_level == QOS_M)
 	{
         OSEL_ENTER_CRITICAL();
         list_behind_put(&kbuf->list, &mac_send_entity[1].tx_list);
@@ -80,7 +80,7 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
         mac_send_entity[1].total_num++;
         OSEL_EXIT_CRITICAL();	
 	}
-	else if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) == QOS_L)
+	else if (p_mac_frm_head->frm_ctrl.qos_level == QOS_L)
 	{
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, &mac_send_entity[2].tx_list);
@@ -180,16 +180,16 @@ static void mac_of_tx_handler(void)
 			mac_send_entity[loop].total_size -= kbuf->valid_len;
 			mac_send_entity[loop].total_num--;			
 			OSEL_EXIT_CRITICAL();
-			//Ìí¼ÓÌ½ÕëÐÅÏ¢
+			//æ·»åŠ æŽ¢é’ˆä¿¡æ¯
 			if (kbuf_probe)
 			{
-				//½«probe_data_t¿½±´µ½Êý¾Ý°üµÄºóÃæ
+				//å°†probe_data_tæ‹·è´åˆ°æ•°æ®åŒ…çš„åŽé¢
 				mem_cpy(kbuf->base+kbuf->valid_len, kbuf_probe->offset, sizeof(probe_data_t));
 				kbuf->valid_len += sizeof(probe_data_t);
 				p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
 				p_mac_frm_head->frm_len += sizeof(probe_data_t);
-				//Ìí¼ÓÒ»¸öPROBEÎ»
-				p_mac_frm_head->frm_ctrl.type |= MAC_FRM_TYPE_ASM(0, PROB, 0, 0);
+				//æ·»åŠ ä¸€ä¸ªPROBEä½
+				p_mac_frm_head->frm_ctrl.probe_flag = PROBE;
 			}			
 			mac_rdy_snd_kbuf = kbuf;
 			
@@ -215,13 +215,13 @@ static void mac_of_tx_handler(void)
 				send_info.sender_id = GET_DEV_ID(p_device_info->id);
 				send_info.dest_id = BROADCAST_ID;
 				send_info.target_id = BROADCAST_ID;
-				send_info.seq_num = 0;//ÔÝÊ±Îª0
-				send_info.type = MAC_FRM_TYPE_ASM(0, PROB, 0, 0);
-				//Ìî³äÖ¡Í·
+				send_info.seq_num = 0;//æš‚æ—¶ä¸º0
+				send_info.frm_ctrl.probe_flag = PROBE;
+				//å¡«å……å¸§å¤´
 				if (mac_send(kbuf, &send_info))
 				{
 					mac_rdy_snd_kbuf = kbuf;
-					//Ìí¼ÓÌ½ÕëÐÅÏ¢
+					//æ·»åŠ æŽ¢é’ˆä¿¡æ¯
 					phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);			
 					phy_tmr_start(mac_timer.live_id, MAC_PKT_PROBE_LIVE_US);
 				}
@@ -316,13 +316,13 @@ void mac_csma_handler(void)
 			break;
 		case MAC_CSMA_RDY:
 #if 0
-			//¿ªÆôidleÌ¬			 
+			//å¼€å¯idleæ€			 
 			if (mac_timer.idle_state == PLAT_FALSE && mac_rdy_snd_kbuf)
 			{
 				p_mac_frm_head = (mac_frm_head_t *)mac_rdy_snd_kbuf->base;
 				if (p_mac_frm_head->duration)
 				{
-					//idleÊ±¼ä¶ÎÄÚ£¬¿É·¢ËÍÊý¾Ý
+					//idleæ—¶é—´æ®µå†…ï¼Œå¯å‘é€æ•°æ®
 					phy_tmr_start(mac_timer.idle_id, p_mac_frm_head->duration);
 					mac_timer.idle_us = p_mac_frm_head->duration;
 				}
@@ -346,13 +346,13 @@ static void mac_of_idle_handler(void)
 	
 	if (mac_timer.idle_state == PLAT_FALSE)
 	{
-		//idleÊ±¼ä¶ÎÄÚ£¬²»¿É·¢ËÍÊý¾Ý
+		//idleæ—¶é—´æ®µå†…ï¼Œä¸å¯å‘é€æ•°æ®
 		mac_timer.idle_state = PLAT_TRUE;
 		phy_tmr_start(mac_timer.idle_id, mac_timer.idle_us);
 	}
 	else
 	{
-		//idleÊ±¼ä¶ÎÄÚ£¬¿É·¢ËÍÊý¾Ý
+		//idleæ—¶é—´æ®µå†…ï¼Œå¯å‘é€æ•°æ®
 		mac_timer.idle_state = PLAT_FALSE;
 		osel_event_set(mac_event_h, &object);
 	}
@@ -367,22 +367,24 @@ static void mac_of_live_handler(void)
 static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 {
 	mac_frm_head_t *p_mac_frm_head = PLAT_NULL;
+	mac_frm_head_t *p_mac_frm_head_copy = PLAT_NULL;
 	uint16_t object;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	kbuf_t *kbuf_copy = PLAT_NULL;
-	uint8_t qos;
+	
 	OSEL_DECL_CRITICAL();
 	
 	if (kbuf == PLAT_NULL)
 	{
 		return PLAT_FALSE;
 	}
-
+	//åŽŸæœ‰æ•°æ®offsetæŒ‡å‘macå¸§å¤´
 	p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-	//°ÑÊý¾ÝÆ«ÒÆµ½ÍøÂç²ã
+	//æŠŠæ•°æ®åç§»åˆ°ç½‘ç»œå±‚
 	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+
 #if 0
-	//ÕÒµ½NAVÎ»ÖÃ
+	//æ‰¾åˆ°NAVä½ç½®
 	if (p_mac_frm_head->duration && mac_timer.idle_state == PLAT_FALSE)
 	{
 		phy_tmr_start(mac_timer.idle_id, p_mac_frm_head->duration);
@@ -392,67 +394,75 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		OSEL_EXIT_CRITICAL();
 	}
 #endif
+	
+	//å¦‚æžœæ”¶åˆ°PROBçš„ä¿¡æ¯ï¼Œåˆ™ä¸ç”¨åˆ¤æ–­åœ°å€ï¼Œå¯èƒ½æ˜¯ä¸€ä¸ªæ‹¼å¸§ï¼Œéœ€è¦å¤åˆ¶ä¸€ä»½ï¼Œä¸Šä¼ ç»™è®¾å¤‡
+	if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
+	{
+		if (p_mac_frm_head->frm_ctrl.qos_level != NONE)
+		{
+			kbuf_copy = kbuf_alloc(KBUF_BIG_NUM);
+				
+			if (kbuf_copy)
+			{
+				p_mac_frm_head_copy = (mac_frm_head_t *)kbuf_copy->base;				
+				//probe_data_tæ•°æ®çš„é•¿åº¦
+				p_mac_frm_head_copy->frm_len = sizeof(probe_data_t);
+				kbuf_copy->valid_len = sizeof(probe_data_t);
+				//copyå¤´ä¿¡æ¯
+				mem_cpy(p_mac_frm_head_copy, p_mac_frm_head, sizeof(mac_frm_head_t));				
+				//copyè¿™ctrl_data_téƒ¨åˆ†æ•°æ®
+				kbuf_copy->offset = kbuf_copy->base+sizeof(mac_frm_head_t);
+				mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len-sizeof(probe_data_t), sizeof(probe_data_t));
+				//å°†å¸§ç±»åž‹å˜ä¸ºçº¯PROBçš„æ•°æ®åŒ…
+				p_mac_frm_head->frm_ctrl.probe_flag = PROBE;
+				p_mac_frm_head_copy->dest_dev_id = BROADCAST_ID;
+				p_mac_frm_head_copy->target_id = BROADCAST_ID;
+				nwk_mesh_recv_put(kbuf_copy);
+			}
+		}
+		else
+		{
+			//probe_data_tæ•°æ®çš„é•¿åº¦
+			kbuf->valid_len = sizeof(probe_data_t);			
+			nwk_mesh_recv_put(kbuf);
+			return PLAT_TRUE;
+		}
+	}
+
 	if (p_mac_frm_head->mesh_id != GET_MESH_ID(p_device_info->id))
 	{
 		kbuf_free(kbuf);
 		return PLAT_FALSE;
 	}
-	//Èç¹ûÊÕµ½PROBµÄÐÅÏ¢£¬Ôò²»ÓÃÅÐ¶ÏµØÖ·£¬¿ÉÄÜÊÇÒ»¸öÆ´Ö¡£¬¶¼ÐèÒªÉÏ´«¸øÉè±¸
-	if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
-	{
-		kbuf_copy = kbuf_alloc(KBUF_BIG_NUM);
-		if (kbuf_copy)
-		{
-			p_mac_frm_head = (mac_frm_head_t *)kbuf_copy->base;
-			kbuf_copy->offset = kbuf_copy->base+sizeof(mac_frm_head_t);
-			kbuf_copy->valid_len = sizeof(probe_data_t);
-			//copyÍ·ÐÅÏ¢
-			mem_cpy(kbuf_copy->base, kbuf->base, sizeof(mac_frm_head_t));
-			//¼õÈ¥probe_data_t,µÃµ½Ô­ÓÐÊý¾ÝµÄ³¤¶È
-			p_mac_frm_head->frm_len = p_mac_frm_head->frm_len-sizeof(probe_data_t);
-			//copyÕâctrl_data_t²¿·ÖÊý¾Ý 	
-			mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len, sizeof(probe_data_t));
-			//½«Ö¡ÀàÐÍ±äÎª´¿PROBµÄÊý¾Ý°ü
-			p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,PROB,0,0);
-			p_mac_frm_head->dest_dev_id = BROADCAST_ID;
-			p_mac_frm_head->target_id = BROADCAST_ID;
-			nwk_mesh_recv_put(kbuf_copy);
-		}
-	}
 	
-	p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-	//°ÑÊý¾ÝÆ«ÒÆµ½ÍøÂç²ã
-	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
-
 	if (p_mac_frm_head->dest_dev_id == GET_DEV_ID(p_device_info->id)
 		|| p_mac_frm_head->dest_dev_id == BROADCAST_ID)
 	{
 		p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-		//°ÑÊý¾ÝÆ«ÒÆµ½ÍøÂç²ã
+		//æŠŠæ•°æ®åç§»åˆ°ç½‘ç»œå±‚
 		kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
 		
-		if (MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) >= QOS_H
-			&& MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type) <= QOS_L)
+		if (p_mac_frm_head->frm_ctrl.qos_level >= QOS_L
+			&& p_mac_frm_head->frm_ctrl.qos_level <= QOS_H)
 		{
-            if (MAC_FRM_TYPE_PROB(p_mac_frm_head->frm_ctrl.type) == PROB)
+            if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
 			{
-				qos = MAC_FRM_TYPE_QOS(p_mac_frm_head->frm_ctrl.type);
-				//½«Ö¡ÀàÐÍ±äÎª´¿QOSµÄÊý¾Ý°ü	
-				p_mac_frm_head->frm_ctrl.type = MAC_FRM_TYPE_ASM(0,0,0,qos);
-				//½«Ö¡³¤¸ÄÎªÆÕÍ¨Êý¾Ý³¤¶È
+				//å°†å¸§ç±»åž‹å˜ä¸ºçº¯QOSçš„æ•°æ®åŒ…	
+				p_mac_frm_head->frm_ctrl.probe_flag = NONE;
+				//å°†å¸§é•¿æ”¹ä¸ºæ™®é€šæ•°æ®é•¿åº¦
 				p_mac_frm_head->frm_len -= sizeof(probe_data_t);
 			}
-			//kbufµÄ³¤¶ÈÎªÍøÂç²ãµÄ³¤¶È
+			//kbufçš„é•¿åº¦ä¸ºç½‘ç»œå±‚çš„é•¿åº¦
 			kbuf->valid_len = p_mac_frm_head->frm_len;
 			nwk_mesh_recv_put(kbuf);
 		}
-		else if (MAC_FRM_TYPE_TEST(p_mac_frm_head->frm_ctrl.type) == TEST)
+		else if (p_mac_frm_head->frm_ctrl.reserve)
 		{
+			//ä¸Šè‡³APP
 			object = APP_EVENT_TEST_MAC;
 			OSEL_ENTER_CRITICAL();
-			list_behind_put(&kbuf->list, &app_recv_list);
-			OSEL_EXIT_CRITICAL();
-			//ÉÏÖÁAPP
+			list_behind_put(&kbuf->list, &app_test_mac.kbuf_rx_list);
+			OSEL_EXIT_CRITICAL();			
 			osel_event_set(app_event_h, &object);
 		}
 		else

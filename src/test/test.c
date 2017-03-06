@@ -113,7 +113,7 @@ static test_rf_ofdm_t *test_ofdm_script(void);
 
 void test_init(void)
 {	
-	/*´´½¨ TEST EVENTÈÎÎñ */	
+	/*åˆ›å»º TEST EVENTä»»åŠ¡ */	
 	test_event_h = osel_event_create(OSEL_EVENT_TYPE_SEM, 0);
 	DBG_ASSERT(test_event_h != PLAT_NULL);
 }
@@ -128,15 +128,15 @@ void test_handler(void)
 	DBG_ASSERT(p_of_frm2 != PLAT_NULL);
 	uart_buf = heap_alloc(TEST_UART_MAX_LEN, PLAT_TRUE);
 	DBG_ASSERT(uart_buf != PLAT_NULL);	
-	//³õÊ¼»¯mcb
+	//åˆå§‹åŒ–mcb
 	mem_clr((void *)&test_cb, sizeof(test_cb_t));
 			
-	//Ê¹ÄÜ´®¿Ú
+	//ä½¿èƒ½ä¸²å£
 	hal_uart_rx_irq_enable(UART_DEBUG, test_uart_rx_cb);		
-	//Ê¹ÄÜdma_ofdm½ÓÊÕºÍ·¢ËÍÖĞ¶Ï
+	//ä½¿èƒ½dma_ofdmæ¥æ”¶å’Œå‘é€ä¸­æ–­
 	hal_rf_of_int_reg_handler(HAL_RF_OF_DMA_TX_FIN_INT, test_ofdm_dma_send_cb);
 	hal_rf_of_int_reg_handler(HAL_RF_OF_DMA_RX_FIN_INT, test_ofdm_dma_recv_cb);
-	//Ê¹ÄÜofdm½ÓÊÕºÍ·¢ËÍÖĞ¶Ï
+	//ä½¿èƒ½ofdmæ¥æ”¶å’Œå‘é€ä¸­æ–­
 	hal_rf_of_int_reg_handler(HAL_RF_OF_TX_FIN_INT, test_ofdm_send_cb);
 	hal_rf_of_int_reg_handler(HAL_RF_OF_RX_FIN_INT, test_ofdm_recv_cb);	
 	////////////////////////////////////////////////
@@ -165,7 +165,7 @@ void test_handler(void)
 				}
 				DBG_PRINTF(RF_OFDM_INTERFACE);			
 	        	test_cb.machine_state = STEP_LEVEL2;					
-				//OFDM²âÊÔ
+				//OFDMæµ‹è¯•
 				test_ofdm_handler();
 				break;
 			case STEP_LEVEL3://Misc Test Interface!
@@ -174,7 +174,7 @@ void test_handler(void)
 				test_cb.uart_state = UART_MENU_STATE;
 				test_cb.uart_recv_date = PLAT_FALSE;					
 				while(!test_cb.uart_recv_date);
-				//ÆäËû²âÊÔ
+				//å…¶ä»–æµ‹è¯•
 				test_misc_handler();
 				break;
 			case STEP_LEVEL4://Test Config Parameter!
@@ -257,7 +257,7 @@ static test_rf_ofdm_t *test_ofdm_script(void)
 					{
 						if (value%HAL_RF_OF_REG_MAX_RAM_SIZE)
 						{
-							value = value/HAL_RF_OF_REG_MAX_RAM_SIZE+1;//472×Ö½ÚµÄ±¶Êı
+							value = value/HAL_RF_OF_REG_MAX_RAM_SIZE+1;//472å­—èŠ‚çš„å€æ•°
 							value = value*HAL_RF_OF_REG_MAX_RAM_SIZE;
 						}						
 						test_ofdm.frm_len = value;
@@ -354,7 +354,7 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 				hal_rf_of_int_clear(HAL_RF_OF_TX_FIN_INT);
 			}
 			
-			//³õÊ¼»¯´ËÖ¡
+			//åˆå§‹åŒ–æ­¤å¸§
 			p_of_frm1->head.seq_num = 0;
 			p_of_frm1->head.seq_total_num = p_test_ofdm->frm_num;
 			p_of_frm1->head.dst_addr = p_test_ofdm->dst_addr;
@@ -377,14 +377,14 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 						= crc32_tab((uint8_t *)p_of_frm1, 0, p_test_ofdm->frm_len-4);
 				if (p_test_ofdm->dma_flag)
 				{
-					//Ê¹ÓÃdma·½Ê½
+					//ä½¿ç”¨dmaæ–¹å¼
 					hal_rf_of_set_dma_ram(HAL_RF_OF_SEND_M, p_of_frm1, p_test_ofdm->frm_len);
 				}
 				else
 				{
-					//·ÅÈëtx_ram
+					//æ”¾å…¥tx_ram
 					hal_rf_of_write_ram(p_of_frm1, p_test_ofdm->frm_len);
-					//csmaÄ£Ê½
+					//csmaæ¨¡å¼
 					if (p_test_ofdm->csma_flag)
 					{
 						hal_rf_of_set_state(HAL_RF_OF_CCA_M);
@@ -412,7 +412,7 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 					}
 					hal_rf_of_set_state(HAL_RF_OF_SEND_M);
 				}
-				//µÈ´ı´«ÊäÍê±Ï
+				//ç­‰å¾…ä¼ è¾“å®Œæ¯•
 				while(hal_rf_of_get_state() != HAL_RF_OF_IDLE_M 
 					&& test_cb.rf_send_data == PLAT_TRUE
 					&& test_cb.rf_state==HAL_RF_OF_SEND_M);
@@ -424,14 +424,14 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 			break;
 		case TEST_OFDM_SEND_CW:
 			DBG_PRINTF("RF Carrier Wave Test\r\n");
-			HAL_RF_MISC->rf_switch |= (1u<<2);//µ¥ÔØ²¨Ê¹ÄÜ
+			HAL_RF_MISC->rf_switch |= (1u<<2);//å•è½½æ³¢ä½¿èƒ½
 			test_cb.rf_state = HAL_RF_OF_SEND_M;
 			while(test_cb.rf_state == HAL_RF_OF_SEND_M);        	
-			HAL_RF_MISC->rf_switch &= ~(1u<<2);//µ¥ÔØ²¨È¥ÄÜ
+			HAL_RF_MISC->rf_switch &= ~(1u<<2);//å•è½½æ³¢å»èƒ½
 			break;
 		case TEST_OFDM_SEND_FULL:
 			DBG_PRINTF("RF Send Full Test\r\n");
-			//Ç¿ÖÆdma²»´ò¿ª
+			//å¼ºåˆ¶dmaä¸æ‰“å¼€
 			p_test_ofdm->dma_flag = 0;
 			hal_rf_of_int_enable(HAL_RF_OF_TX_FIN_INT);
 			hal_rf_of_int_clear(HAL_RF_OF_TX_FIN_INT);
@@ -439,7 +439,7 @@ static void test_ofdm_send(test_rf_ofdm_t *p_test_ofdm)
 			test_cb.rf_send_data = PLAT_TRUE;
 			hal_rf_of_set_state(HAL_RF_OF_SEND_M);
 FULL_SEND:
-			//µÈ´ı´«ÊäÍê±Ï			
+			//ç­‰å¾…ä¼ è¾“å®Œæ¯•			
 			while(hal_rf_of_get_state() != HAL_RF_OF_IDLE_M 
 					&& test_cb.rf_send_data == PLAT_TRUE
 					&& test_cb.rf_state==HAL_RF_OF_SEND_M);
@@ -454,19 +454,19 @@ FULL_SEND:
 		default: return;
 	}	
 		
-	//¹Ø±Õ·¢ËÍ
+	//å…³é—­å‘é€
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
 	if (p_test_ofdm->dma_flag)
 	{
-		//¹Ø±ÕdmaÇëÇó·¢ËÍÖĞ¶Ï
+		//å…³é—­dmaè¯·æ±‚å‘é€ä¸­æ–­
 		hal_rf_of_int_disable(HAL_RF_OF_DMA_TX_FIN_INT);
-		//Çå³ıÖĞ¶Ï
+		//æ¸…é™¤ä¸­æ–­
 		hal_rf_of_int_clear(HAL_RF_OF_DMA_TX_FIN_INT);
 	}
 	else
 	{
 		hal_rf_of_int_disable(HAL_RF_OF_TX_FIN_INT);
-		//Çå³ıÖĞ¶Ï
+		//æ¸…é™¤ä¸­æ–­
 		hal_rf_of_int_clear(HAL_RF_OF_TX_FIN_INT);
 	}			
 }
@@ -495,32 +495,32 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 		default:return;
 	}
 
-	//·ÖÅäÒ»¸ö¶¨Ê±Æ÷×÷ÎªÊÕ²»µ½Êı¾İÊ±µÄ¶ÁÈ¡µ±Ç°ÄÜÁ¿
+	//åˆ†é…ä¸€ä¸ªå®šæ—¶å™¨ä½œä¸ºæ”¶ä¸åˆ°æ•°æ®æ—¶çš„è¯»å–å½“å‰èƒ½é‡
 	test_rf_timeout_id = hal_timer_alloc(REFRESH_TIME_MS*1000, test_rf_timeout_cb);
-	//´´½¨³¬Ê±Î»
+	//åˆ›å»ºè¶…æ—¶ä½
 	test_cb.rf_time_out = PLAT_TRUE;
 	test_cb.rf_state = HAL_RF_OF_RECV_M;
-	//ÄÚ³¡µÚÒ»Ö¡
+	//å†…åœºç¬¬ä¸€å¸§
 	test_cb.rf_recv_inside_first = PLAT_TRUE;
 	if (p_test_ofdm->mode == 0) prev_seq_num = -1;
 	else prev_seq_num = 0;
 	////////////////////////////////////////////////
 	if (p_test_ofdm->dma_flag)
 	{
-		//Çå³ıÖĞ¶Ï
+		//æ¸…é™¤ä¸­æ–­
 		hal_rf_of_int_clear(HAL_RF_OF_DMA_RX_FIN_INT);
-        //¿ªÆôdmaÇëÇó½ÓÊÕÖĞ¶Ï
+        //å¼€å¯dmaè¯·æ±‚æ¥æ”¶ä¸­æ–­
 		hal_rf_of_int_enable(HAL_RF_OF_DMA_RX_FIN_INT);
-		//Ê¹ÓÃdma·½Ê½
+		//ä½¿ç”¨dmaæ–¹å¼
 		hal_rf_of_set_dma_ram(HAL_RF_OF_RECV_M, p_of_frm1, TEST_OFDM_FRAME_MAX_LEN);
 	}
 	else
 	{
-		//Çå³ıÖĞ¶Ï
+		//æ¸…é™¤ä¸­æ–­
 		hal_rf_of_int_clear(HAL_RF_OF_RX_FIN_INT);
-        //¿ªÆô½ÓÊÕÖĞ¶Ï
+        //å¼€å¯æ¥æ”¶ä¸­æ–­
 		hal_rf_of_int_enable(HAL_RF_OF_RX_FIN_INT);
-		//¸³ÖµÒ»¿é¿Õ¼ä
+		//èµ‹å€¼ä¸€å—ç©ºé—´
 		p_of_frm = p_of_frm1;
         hal_rf_of_set_state(HAL_RF_OF_RECV_M);
 	}
@@ -538,7 +538,7 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 		
 		switch (p_test_ofdm->mode)
 		{
-			case TEST_OFDM_RECV_SIG_DEV://ĞÅºÅÔ´ÄÚ³¡
+			case TEST_OFDM_RECV_SIG_DEV://ä¿¡å·æºå†…åœº
 				if (p_of_frm->head.seq_num>=TEST_OFDM_INSIDE_MAX_FRAME_SEQ)
 				{
 					goto ERROR_INSIDE_RECV;
@@ -561,7 +561,7 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 					if ((seq_num - prev_seq_num)==1
 						|| (seq_num == 0 && prev_seq_num == TEST_OFDM_INSIDE_MAX_FRAME_SEQ-1))
                     {
-                        //ÕıÈ·½ÓÊÕ
+                        //æ­£ç¡®æ¥æ”¶
                     }
                     else if (test_cb.rf_recv_inside_first == PLAT_FALSE)
                     {
@@ -588,7 +588,7 @@ ERROR_INSIDE_RECV:
 					err_frame_count++;
 				}
 				break;
-			case TEST_OFDM_RECV_P2P://Éè±¸Íâ³¡
+			case TEST_OFDM_RECV_P2P://è®¾å¤‡å¤–åœº
 				if (p_of_frm->head.frm_len<=15)
                 {
                     frame_len = (p_of_frm->head.frm_len+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
@@ -601,7 +601,7 @@ ERROR_INSIDE_RECV:
 				if(*(uint32_t *)&p_of_frm->payload[frame_len-TEST_FRAME_HEAD_SIZE-4]
 						== crc32_tab((uint8_t *)p_of_frm, 0, frame_len-4))
 				{
-					//ÅĞ¶ÏµØÖ·Î»ÊÇ·ñ·ûºÏ
+					//åˆ¤æ–­åœ°å€ä½æ˜¯å¦ç¬¦åˆ
 					if (p_test_ofdm->src_addr != 0xFF)
 					{
 						if (p_of_frm->head.dst_addr != p_test_ofdm->src_addr)
@@ -627,7 +627,7 @@ ERROR_OUTSIDE_RECV:
 				err_frame_count++;
 				DBG_PRINTF("E%u|SNR%0.1f|\r\n", err_frame_count, snr);
 				break;
-			case TEST_OFDM_RECV_DISP://½ÓÊÕÏÔÊ¾
+			case TEST_OFDM_RECV_DISP://æ¥æ”¶æ˜¾ç¤º
 				hal_uart_send_string(UART_DEBUG, (uint8_t *)p_of_frm, p_test_ofdm->frm_disp);
 				break;
 		}
@@ -636,19 +636,19 @@ ERROR_OUTSIDE_RECV:
 RECV_OVER:
 	test_rf_timeout_id = hal_timer_free(test_rf_timeout_id);
 	test_cb.rf_time_out = PLAT_FALSE;
-	//¹Ø±Õ½ÓÊÕ
+	//å…³é—­æ¥æ”¶
 	hal_rf_of_set_state(HAL_RF_OF_IDLE_M);
 	if (p_test_ofdm->dma_flag)
 	{
-		//¹Ø±ÕdmaÇëÇó·¢ËÍÖĞ¶Ï
+		//å…³é—­dmaè¯·æ±‚å‘é€ä¸­æ–­
 		hal_rf_of_int_disable(HAL_RF_OF_DMA_RX_FIN_INT);
-		//Çå³ıÖĞ¶Ï
+		//æ¸…é™¤ä¸­æ–­
 		hal_rf_of_int_clear(HAL_RF_OF_DMA_RX_FIN_INT);
 	}
 	else
 	{
 		hal_rf_of_int_disable(HAL_RF_OF_RX_FIN_INT);
-		//Çå³ıÖĞ¶Ï
+		//æ¸…é™¤ä¸­æ–­
 		hal_rf_of_int_clear(HAL_RF_OF_RX_FIN_INT);
 	}
 	
@@ -664,7 +664,7 @@ RECV_OVER:
           	loss_frame_count = loss_frame_count - err_frame_count;
         }
 
-		if (p_test_ofdm->mode == 0)//ĞÅºÅÔ´
+		if (p_test_ofdm->mode == 0)//ä¿¡å·æº
 		{
 			total_frame_count = loss_frame_count + err_frame_count + recv_frame_count;
 		}
@@ -688,7 +688,7 @@ RECV_OVER:
 static void test_ofdm_cca(test_rf_ofdm_t *p_test_ofdm)
 {
 	hal_rf_of_set_state(HAL_RF_OF_CCA_M);
-	//·ÖÅäÒ»¸ö¶¨Ê±Æ÷×÷Îª
+	//åˆ†é…ä¸€ä¸ªå®šæ—¶å™¨ä½œä¸º
 	test_rf_timeout_id = hal_timer_alloc(REFRESH_TIME_MS*1000, test_rf_timeout_cb);	
 	test_cb.rf_state = HAL_RF_OF_CCA_M;
 	
@@ -781,7 +781,7 @@ void test_rf_timeout_cb(void)
 	
 	rssi = hal_rf_ofdm_cal_rssi(PLAT_TRUE, PLAT_NULL);
 	DBG_PRINTF("RS%0.1f|\r\n", rssi);
-	//´´½¨³¬Ê±Î»
+	//åˆ›å»ºè¶…æ—¶ä½
 	test_cb.rf_time_out = PLAT_TRUE;
 }
 
@@ -994,7 +994,7 @@ static void config_set_rf_param(void)
 	DBG_PRINTF("Example:rf_lo=XXXX.XXXXXX(Unit:MHz)\r\n");	
 	test_cb.uart_recv_date = PLAT_FALSE;
 	while(!test_cb.uart_recv_date);
-	/////////ÉèÖÃRF±¾Õñ///////////////////////
+	/////////è®¾ç½®RFæœ¬æŒ¯///////////////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "rf_lo=");
 	if (str)
@@ -1020,7 +1020,7 @@ static void config_set_rf_param(void)
 	
 	p_rf_param = hal_rf_param_get();
 	
-	////////ÉèÖÃpa_power//////////////////////
+	////////è®¾ç½®pa_power//////////////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "rf_pa_power=");
 	if (str)
@@ -1029,12 +1029,12 @@ static void config_set_rf_param(void)
         DBG_PRINTF("\r\n");
 		sscanf(str, "%x", &value);
 		p_rf_param->pa_power[p_rf_param->use_level] = value;
-		//rf¹¦·ÅÖµ
+		//rfåŠŸæ”¾å€¼
     	hal_rf_misc_set_rf_tx_pow(p_rf_param->pa_power[p_rf_param->use_level]);		
         update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set RF PA Power OK!=[0x%x]\r\n", p_rf_param->pa_power[p_rf_param->use_level]);
 	}
-	////////ÉèÖÃrf_ofdm_lms_power//////////////
+	////////è®¾ç½®rf_ofdm_lms_power//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "rf_ofdm_lms_power=");
 	if (str)
@@ -1043,12 +1043,12 @@ static void config_set_rf_param(void)
         DBG_PRINTF("\r\n");
 		sscanf(str, "%x", &value);
 		p_rf_param->ofdm_lms_power[p_rf_param->use_level] = value;		
-		//lms¹¦·ÅÖµ
+		//lmsåŠŸæ”¾å€¼
 		hal_rf_misc_set_lms_tx_pow(p_rf_param->ofdm_lms_power[p_rf_param->use_level]<<16|0);
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set OFDM LMS Power OK!=[0x%x]\r\n", p_rf_param->ofdm_lms_power[p_rf_param->use_level]);
 	}
-	////////ÉèÖÃrf_ofdm_rssi_offset////////////
+	////////è®¾ç½®rf_ofdm_rssi_offset////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "rf_ofdm_rssi_offset=");
 	if (str)
@@ -1060,7 +1060,7 @@ static void config_set_rf_param(void)
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set OFDM RSSI Offset OK!=[%d]\r\n",p_rf_param->ofdm_rssi_offset[p_rf_param->use_level]);
 	}
-	////////ÉèÖÃrf_ofdm_scl_pow////////////
+	////////è®¾ç½®rf_ofdm_scl_pow////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "rf_ofdm_scl_power=");
 	if (str)
@@ -1073,7 +1073,7 @@ static void config_set_rf_param(void)
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set OFDM SCL Power OK!=[0x%x]\r\n", p_rf_param->ofdm_scl_power[p_rf_param->use_level]);
 	}
-	////////ÉèÖÃrf_ofdm_rssi_thred////////////
+	////////è®¾ç½®rf_ofdm_rssi_thred////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "rf_ofdm_rssi_thred=");
 	if (str)
@@ -1085,7 +1085,7 @@ static void config_set_rf_param(void)
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set OFDM RSSI THRED = [%0.1f]\r\n", p_rf_param->ofdm_rssi_thred);
 	}
-	////////ÉèÖÃrf_default////////////
+	////////è®¾ç½®rf_default////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "rf_default");
 	if (str)
@@ -1113,11 +1113,11 @@ static void config_set_param()
 
 	device_info_init();
 	
-	DBG_PRINTF("Input Parameter(type,mode,mesh_id,dev_id,local_mac,ip,gateway,netmask,remote_mac)\r\n");
+	DBG_PRINTF("Input Parameter(type,mode,mesh_id,dev_id,local_mac,ip,gateway,netmask,remote_mac,remote_ip,remote_port)\r\n");
 	DBG_PRINTF("Example:type=XX(Hex or Dec)\r\n");	
 	test_cb.uart_recv_date = PLAT_FALSE;
 	while(!test_cb.uart_recv_date);
-	/////////ÉèÖÃtype///////////////////////
+	/////////è®¾ç½®type///////////////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "type=");
 	if (str)
@@ -1129,7 +1129,7 @@ static void config_set_param()
 		update_flag = PLAT_TRUE;
         DBG_PRINTF("Set Type OK!=[%d]\r\n", value);		
 	}	
-	////////ÉèÖÃmode//////////////////////
+	////////è®¾ç½®mode//////////////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "mode=");
 	if (str)
@@ -1141,7 +1141,7 @@ static void config_set_param()
         update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set Mode OK!=[%d]\r\n", value);
 	}
-	////////ÉèÖÃmesh_id//////////////
+	////////è®¾ç½®mesh_id//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "mesh_id=");
 	if (str)
@@ -1153,7 +1153,7 @@ static void config_set_param()
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set Mesh ID OK!=[%d]\r\n", value);
 	}
-	////////ÉèÖÃdev_id//////////////
+	////////è®¾ç½®dev_id//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "dev_id=");
 	if (str)
@@ -1165,7 +1165,7 @@ static void config_set_param()
 		update_flag = PLAT_TRUE;
 		DBG_PRINTF("Set Dev ID OK!=[%d]\r\n", value);
 	}
-	////////ÉèÖÃlocal_mac//////////////
+	////////è®¾ç½®local_mac//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "local_mac=");
 	if (str)
@@ -1190,7 +1190,7 @@ static void config_set_param()
 				p_device_info->local_eth_mac_addr[4],
 				p_device_info->local_eth_mac_addr[5]);
 	}
-	////////ÉèÖÃip//////////////
+	////////è®¾ç½®ip//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "ip=");
 	if (str)
@@ -1213,7 +1213,7 @@ static void config_set_param()
 				p_device_info->local_ip_addr[2],
 				p_device_info->local_ip_addr[3]);
 	}
-	////////ÉèÖÃgateway//////////////
+	////////è®¾ç½®gateway//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "gateway=");
 	if (str)
@@ -1236,7 +1236,7 @@ static void config_set_param()
 				p_device_info->local_gateway_addr[2],
 				p_device_info->local_gateway_addr[3]);
 	}
-	////////ÉèÖÃnetmask//////////////
+	////////è®¾ç½®netmask//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "netmask=");
 	if (str)
@@ -1259,7 +1259,7 @@ static void config_set_param()
 				p_device_info->local_netmask_addr[2],
 				p_device_info->local_netmask_addr[3]);
 	}
-	////////ÉèÖÃremote mac//////////////
+	////////è®¾ç½®remote mac//////////////
 	str = (char_t *)uart_buf;
 	str = strstr((char_t *)str, "remote_mac=");
 	if (str)
@@ -1284,6 +1284,41 @@ static void config_set_param()
 				p_device_info->remote_eth_mac_addr[3],
 				p_device_info->remote_eth_mac_addr[4],
 				p_device_info->remote_eth_mac_addr[5]);
+	}
+	////////è®¾ç½®remote ip//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "remote_ip=");
+	if (str)
+	{
+		str = str + strlen("remote_ip=");
+		DBG_PRINTF("\r\n");
+		
+		for (uint8_t index=0; index<4; index++)
+		{
+			stop_str = strstr((char_t *)str, ":");
+			if (stop_str) stop_str[0] = '\0';
+			sscanf(str, "%d", &value);
+			p_device_info->remote_ip_addr[index] = value;
+			str = &stop_str[1];
+		}				
+		update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set REMOTE IP OK!=%d:%d:%d:%d\r\n", 
+				p_device_info->remote_ip_addr[0],
+				p_device_info->remote_ip_addr[1],
+				p_device_info->remote_ip_addr[2],
+				p_device_info->remote_ip_addr[3]);
+	}
+	////////è®¾ç½®remote port//////////////
+	str = (char_t *)uart_buf;
+	str = strstr((char_t *)str, "remote_port=");
+	if (str)
+	{
+		str = str + strlen("remote_port=");
+        DBG_PRINTF("\r\n");
+		sscanf(str, "%d", &value);
+		p_device_info->remote_port = value;
+        update_flag = PLAT_TRUE;
+		DBG_PRINTF("Set Remote Port OK!=[%d]\r\n", p_device_info->remote_port);
 	}
 	//////////////////////////////////////////
 	if (update_flag == PLAT_TRUE)
@@ -1497,7 +1532,7 @@ static void test_uart_rx_cb(void)
 					return;
 			}
 			test_cb.uart_recv_date = PLAT_TRUE;
-			//Ä¬ÈÏ×ªÃüÁîĞĞÊäÈë·½Ê½
+			//é»˜è®¤è½¬å‘½ä»¤è¡Œè¾“å…¥æ–¹å¼
 			test_cb.uart_state = UART_CMD_STATE;
 		}
 		else if (test_cb.uart_state == UART_CMD_STATE)

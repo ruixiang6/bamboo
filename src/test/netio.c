@@ -23,7 +23,7 @@
 #define NETIO_BUF_SIZE              (4 * 1024)
 #define NETIO_USE_STATIC_BUF        0
 
-//NETIO×´Ì¬¶¨Òå
+//NETIOçŠ¶æ€å®šä¹‰
 #define NETIO_STATE_WAIT_FOR_CMD    0
 #define NETIO_STATE_RECV_DATA       1
 #define NETIO_STATE_SEND_DATA       2
@@ -41,7 +41,7 @@ struct netio_state {
   u32_t  time_stamp;
 };
 
-//NETIOÃüÁîĞ­Òé¶¨Òå
+//NETIOå‘½ä»¤åè®®å®šä¹‰
 #define NETIO_CMD_QUIT              0
 #define NETIO_CMD_C2S               1
 #define NETIO_CMD_S2C               2
@@ -49,35 +49,35 @@ struct netio_state {
 
 static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err);
 
-//NETIO¹Ø±Õ
+//NETIOå…³é—­
 static void netio_close(void *arg, struct tcp_pcb *pcb)
 {
   err_t err;
 
   struct netio_state *ns = arg;
-  ns->state = NETIO_STATE_DONE;  	//±ê¼ÇNETIO²»´¦ÓÚÈÎºÎ×´Ì¬
+  ns->state = NETIO_STATE_DONE;  	//æ ‡è®°NETIOä¸å¤„äºä»»ä½•çŠ¶æ€
   tcp_recv(pcb, NULL);
-  err = tcp_close(pcb);				//¹Ø±ÕÁ¬½Ó
+  err = tcp_close(pcb);				//å…³é—­è¿æ¥
 
   if (err != ERR_OK) {
-    tcp_recv(pcb, netio_recv); 		//¹Ø±ÕÊ§°Ü£¬ÉÔºóÖØÊÔ
+    tcp_recv(pcb, netio_recv); 		//å…³é—­å¤±è´¥ï¼Œç¨åé‡è¯•
   } else {
-	//¹Ø±Õ³É¹¦
+	//å…³é—­æˆåŠŸ
 #if NETIO_USE_STATIC_BUF != 1
     if(ns->buf_ptr != NULL){
       mem_free(ns->buf_ptr);
     }
 #endif
-    tcp_arg(pcb, NULL);		//×¢Ïúµô²ÎÊı
-    tcp_poll(pcb, NULL, 0);	//×¢ÏúµôÂÖÑµº¯Êı
-    tcp_sent(pcb, NULL);	//×¢Ïúµô·¢ËÍº¯Êı	
+    tcp_arg(pcb, NULL);		//æ³¨é”€æ‰å‚æ•°
+    tcp_poll(pcb, NULL, 0);	//æ³¨é”€æ‰è½®è®­å‡½æ•°
+    tcp_sent(pcb, NULL);	//æ³¨é”€æ‰å‘é€å‡½æ•°	
     if (arg != NULL) {
-      mem_free(arg);		//ÊÍ·ÅargµÄÄÚ´æ
+      mem_free(arg);		//é‡Šæ”¾argçš„å†…å­˜
     }
   }
 }
 
-//½ÓÊÕÊı¾İ»Øµ÷º¯Êı
+//æ¥æ”¶æ•°æ®å›è°ƒå‡½æ•°
 static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
   struct netio_state *ns = arg;
@@ -87,7 +87,7 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
   u16_t len;
 
   if (p != NULL) {
-    tcp_recved(pcb, p->tot_len); //Í¨ÖªLWIP¿ÉÒÔ»ñÈ¡¸ü¶àÊı¾İ
+    tcp_recved(pcb, p->tot_len); //é€šçŸ¥LWIPå¯ä»¥è·å–æ›´å¤šæ•°æ®
   }
 
   if (err == ERR_OK && q != NULL) {
@@ -97,7 +97,7 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
       data_ptr = q->payload;
       while (data_cntr--) {
         if (ns->state == NETIO_STATE_DONE){
-          netio_close(ns, pcb); //¹Ø±ÕÁ¬½Ó
+          netio_close(ns, pcb); //å…³é—­è¿æ¥
           break;
         } else if (ns->state == NETIO_STATE_WAIT_FOR_CMD) {
           if (ns->cntr < 4) {
@@ -120,8 +120,8 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
                 ns->state = NETIO_STATE_RECV_DATA;
               } else if (ns->cmd == NETIO_CMD_S2C) {
                 ns->state = NETIO_STATE_SEND_DATA;
-				 //¿ªÊ¼Ê±µÄÊ±¼ä
-                ns->time_stamp = OSTimeGet();  //»ñÈ¡Ê±¼ä
+				 //å¼€å§‹æ—¶çš„æ—¶é—´
+                ns->time_stamp = OSTimeGet();  //è·å–æ—¶é—´
 
                 len = tcp_sndbuf(pcb);
                 len = LWIP_MIN(len, ns->data_len - ns->cntr);
@@ -138,7 +138,7 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
                 ns->cntr    += len;
 
               } else {
-                //²»ÄÜÊ¶±ğµÄÃüÁî
+                //ä¸èƒ½è¯†åˆ«çš„å‘½ä»¤
                 ns->cntr = 0;
                 ns->buf_pos = 0;
                 ns->buf_ptr[0] = 0;
@@ -150,7 +150,7 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
             /* in trouble... shouldn't be in this state! */
           }
 
-        } else if (ns->state == NETIO_STATE_RECV_DATA) {  //NETIO´¦ÓÚ½ÓÊÕÊı¾İ×´Ì¬
+        } else if (ns->state == NETIO_STATE_RECV_DATA) {  //NETIOå¤„äºæ¥æ”¶æ•°æ®çŠ¶æ€
 
           if(ns->cntr == 0){
             /* save the first byte of this new round of data
@@ -192,24 +192,24 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
         } /* end of ns->state condition */
       } /* end of while data still in this pbuf */
 
-      q = q->next;  //´¦ÀíÏÂpbufÖĞµÄÊı¾İ
+      q = q->next;  //å¤„ç†ä¸‹pbufä¸­çš„æ•°æ®
     }
 
-    pbuf_free(p);  //ÊÍ·ÅÄÚ´æ
+    pbuf_free(p);  //é‡Šæ”¾å†…å­˜
  
   } else {
-	 //´íÎó»òÕßÁíÒ»¶Ë¹Ø±Õ
+	 //é”™è¯¯æˆ–è€…å¦ä¸€ç«¯å…³é—­
     if (p != NULL) {
-      pbuf_free(p); //ÊÍ·ÅÄÚ´æ
+      pbuf_free(p); //é‡Šæ”¾å†…å­˜
     }
-    netio_close(ns, pcb); //¹Ø±ÕÁ¬½Ó
+    netio_close(ns, pcb); //å…³é—­è¿æ¥
 
   }
   return ERR_OK;
 
 }
 
-//·¢ËÍÊı¾İ»Øµ÷º¯Êı
+//å‘é€æ•°æ®å›è°ƒå‡½æ•°
 static err_t netio_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
   struct netio_state *ns = arg;
@@ -261,7 +261,7 @@ static err_t netio_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
   return ERR_OK;
 }
 
-//ÂÖÑµ»Øµ÷º¯Êı£¬Ã¿2Ãëµ÷ÓÃÒ»´Î
+//è½®è®­å›è°ƒå‡½æ•°ï¼Œæ¯2ç§’è°ƒç”¨ä¸€æ¬¡
 static err_t
 netio_poll(void *arg, struct tcp_pcb *pcb)
 {
@@ -280,7 +280,7 @@ netio_poll(void *arg, struct tcp_pcb *pcb)
 static u8_t netio_buf[NETIO_BUF_SIZE];
 #endif
 
-//½ÓÊÜÁ¬½Ó
+//æ¥å—è¿æ¥
 static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
   struct netio_state * ns;
@@ -311,14 +311,14 @@ static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 
   ns->buf_ptr[0] = 0;
 
-  tcp_arg(pcb, ns);				//×¢²á²ÎÊı
-  tcp_sent(pcb, netio_sent);	//×¢²á·¢ËÍ»Øµ÷º¯Êı
-  tcp_recv(pcb, netio_recv);	//×¢²á½ÓÊÕ»Øµ÷º¯Êı
-  tcp_poll(pcb, netio_poll, 4); //×¢²áÂÖÑµº¯Êı£¬Ã¿2ÃëÂÖÑµÒ»´Î
+  tcp_arg(pcb, ns);				//æ³¨å†Œå‚æ•°
+  tcp_sent(pcb, netio_sent);	//æ³¨å†Œå‘é€å›è°ƒå‡½æ•°
+  tcp_recv(pcb, netio_recv);	//æ³¨å†Œæ¥æ”¶å›è°ƒå‡½æ•°
+  tcp_poll(pcb, netio_poll, 4); //æ³¨å†Œè½®è®­å‡½æ•°ï¼Œæ¯2ç§’è½®è®­ä¸€æ¬¡
   return ERR_OK;
 }
 
-//NETIO³õÊ¼»¯
+//NETIOåˆå§‹åŒ–
 void netio_init(void)
 {
   struct tcp_pcb *pcb;

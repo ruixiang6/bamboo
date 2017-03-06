@@ -2,6 +2,7 @@
 #define _APP_H
 
 #include <test.h>
+#include <nwk_eth.h>
 
 #define APP_GPS_BUF_SIZE			256
 #define APP_GPS_RMC					0
@@ -22,6 +23,8 @@
 
 #define EAST	0
 #define WEST	1
+
+#define APP_SNIFF_HEAD				0xD5C8
 
 extern osel_task_t *app_task_h;
 extern osel_event_t *app_event_h;
@@ -49,19 +52,43 @@ typedef struct
 	char_t altitude[NMEA_ALT_SIZE];
 }NMEA_RMC_GGA_MSG;
 
+typedef struct
+{
+	uint8_t state;
+	uint32_t send_frm_num;
+	uint32_t send_frm_interval;
+	uint32_t send_frm_seq;
+	list_t kbuf_rx_list;
+}app_test_mac_t;
+
+typedef struct
+{
+	int32_t socket_id;
+	struct sockaddr_in s_addr;
+	list_t kbuf_rx_list;
+}app_sniffer_t;
+
+typedef struct
+{
+	uint16_t head;
+	uint16_t length;
+	uint32_t type;
+}app_sniffer_frm_head_t;
+
 #pragma pack()
 
 extern app_audio_t app_audio;
 extern const uint8_t slience_enforce_2400bps_voice[];	//@test.c
 extern NMEA_RMC_GGA_MSG *p_nmea_gps_msg;
 extern uint8_t *app_gps_buf;
-extern list_t app_recv_list;
+extern app_test_mac_t app_test_mac;
+extern app_sniffer_t app_sniffer;
 
 #define APP_EVENT_GPS			(1u<<0)
 #define APP_EVENT_UART			(1u<<1)
 #define APP_EVENT_AUDIO			(1u<<2)
-#define APP_EVENT_TEST			(1u<<7)
-#define APP_EVENT_TEST_MAC		(1u<<6)
+#define APP_EVENT_SNIFFER		(1u<<6)
+#define APP_EVENT_TEST_MAC		(1u<<7)
 
 void app_handler(uint16_t event_type);
 void app_timeout_handler(void);

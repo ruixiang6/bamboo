@@ -77,6 +77,8 @@ void nwk_deinit(void)
 
 void nwk_init(void)
 {
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
+	
 	nwk_task_h = osel_task_create(NWK_TASK, 
     								NULL, 
     								NWK_TASK_STK_SIZE, 
@@ -84,11 +86,13 @@ void nwk_init(void)
 	DBG_ASSERT(nwk_task_h != PLAT_NULL);
 	nwk_event_h = osel_event_create(OSEL_EVENT_TYPE_SEM, 0);
 	DBG_ASSERT(nwk_event_h != PLAT_NULL);	
-
+	//启动以太网和tcpip协议栈，网卡的初始化放在网线有连接的时候
 	nwk_eth_init();
-
-	nwk_mesh_init();
-
+	//在普通模式下启动mesh，其余如监听模式则不需要启动mesh
+	if (GET_MODE_ID(p_device_info->id) == MODE_NORMAL)
+	{
+		nwk_mesh_init();
+	}
 	DBG_TRACE("nwk_init ok\r\n");
 
 

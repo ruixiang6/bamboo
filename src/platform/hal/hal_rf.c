@@ -255,7 +255,7 @@ void hal_rf_init(void)
 	
 	while(1)
 	{
-		//µÈ´ıapb,ofdm,dsssÊ±ÖÓÎÈ¶¨
+		//ç­‰å¾…apb,ofdm,dsssæ—¶é’Ÿç¨³å®š
 		if (HAL_RF_MISC->pll_lock == 0x07) break;
 		DBG_TRACE("Pll clock waiting = %d\r\n", loop);
 		loop++;
@@ -266,11 +266,11 @@ void hal_rf_init(void)
 	};
 	DBG_PRINTF("Baseband Version = 0x%X\r\n", hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION));
 	
-	//»ñµÃ»ù´ø¿ØÖÆ6002µÄspi¿ØÖÆÈ¨	
+	//è·å¾—åŸºå¸¦æ§åˆ¶6002çš„spiæ§åˆ¶æƒ	
 	HAL_RF_MISC->spi_ctrl |= (1u<<1);
     config_lms6002_init();
 	config_lms6002_idle();	
-	//ÊÍ·Å»ù´ø¿ØÖÆ6002µÄspi¿ØÖÆÈ¨	
+	//é‡Šæ”¾åŸºå¸¦æ§åˆ¶6002çš„spiæ§åˆ¶æƒ	
 	HAL_RF_MISC->spi_ctrl &= ~(1u<<1);	
 		
 	//Enable dma channel 2 send ofdm frame
@@ -296,24 +296,24 @@ void hal_rf_init(void)
 	PDMA_enable_irq(PDMA_CHANNEL_3);
     
     p_rf_param = hal_rf_param_get();
-    //rf¹¦·ÅÖµ
+    //rfåŠŸæ”¾å€¼
     hal_rf_misc_set_rf_tx_pow(p_rf_param->pa_power[p_rf_param->use_level]);	
-	//lms¹¦·ÅÖµ
+	//lmsåŠŸæ”¾å€¼
 	hal_rf_misc_set_lms_tx_pow(p_rf_param->ofdm_lms_power[p_rf_param->use_level]<<16|0);
-    //tx_powÖµ
+    //tx_powå€¼
     hal_rf_of_set_reg(HAL_RF_OF_SCL_TX_POW, p_rf_param->ofdm_scl_power[p_rf_param->use_level]);
 
-	//OFDMÖĞ¶ÏÊ¹ÓÃFIC1
+	//OFDMä¸­æ–­ä½¿ç”¨FIC1
 	NVIC_ClearPendingIRQ(FabricIrq1_IRQn);
-	/*×¢²áFIC1ÖĞ¶Ï */
+	/*æ³¨å†ŒFIC1ä¸­æ–­ */
 	NVIC_EnableIRQ(FabricIrq1_IRQn);
-	//MISCÖĞ¶ÏÊ¹ÓÃFIC2
+	//MISCä¸­æ–­ä½¿ç”¨FIC2
 	NVIC_ClearPendingIRQ(FabricIrq2_IRQn);
-	/*×¢²áFIC2ÖĞ¶Ï */
+	/*æ³¨å†ŒFIC2ä¸­æ–­ */
     NVIC_EnableIRQ(FabricIrq2_IRQn);	
-	//¸øPAÉÏµç
+	//ç»™PAä¸Šç”µ
 	PA_PWR_EN;
-	//ÅäÖÃÍêRF¸øµÆÉÏµç
+	//é…ç½®å®ŒRFç»™ç¯ä¸Šç”µ
 	hal_gpio_output(GPIO_LED, 1);
 }
 
@@ -337,14 +337,14 @@ void hal_rf_param_init(void)
 			rf_param.ofdm_lms_power[index] = 0x121e;
 		}
 		rf_param.ofdm_rssi_thred = -90;
-		//ÅĞ¶ÏÆµÂÊ·¶Î§
+		//åˆ¤æ–­é¢‘ç‡èŒƒå›´
 		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 		hal_flash_write(HAL_RF_PARAM_SAVE_ADDR, (uint8_t *)&rf_param, sizeof(hal_rf_param_t));
 	}
 	else
 	{
 		mem_cpy(&rf_param, p_flash_rf_param, sizeof(hal_rf_param_t));
-		//ÅĞ¶ÏÆµÂÊ·¶Î§
+		//åˆ¤æ–­é¢‘ç‡èŒƒå›´
 		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 
 		if (rf_param.use_level == 0xFF)
@@ -365,7 +365,7 @@ void hal_rf_param_init(void)
 	OFDM_CAL_ARRAY[5] = (fp32_t *)OFDM_CAL_ARRAY_1300;
 	OFDM_CAL_ARRAY[6] = (fp32_t *)OFDM_CAL_ARRAY_1300;
 	OFDM_CAL_ARRAY[7] = (fp32_t *)OFDM_CAL_ARRAY_1300;
-	OFDM_CAL_ARRAY[8] = (fp32_t *)OFDM_CAL_ARRAY_1400;
+	OFDM_CAL_ARRAY[8] = (fp32_t *)OFDM_CAL_ARRAY_1300;
 	OFDM_CAL_ARRAY[9] = (fp32_t *)OFDM_CAL_ARRAY_1400;
 	
     DBG_PRINTF("rf_lo(dec)=%f\r\n", rf_param.freq_cal.lo);
@@ -407,7 +407,7 @@ bool_t hal_rf_param_set(hal_rf_param_t *p_rf_param)
 uint8_t hal_rf_param_level(fp64_t rf_lo)
 {
 	uint8_t level;
-	//ÅĞ¶ÏÆµÂÊ·¶Î§
+	//åˆ¤æ–­é¢‘ç‡èŒƒå›´
 	if (rf_lo>=300 && rf_lo<400)
 	{
 		level = 0;
@@ -440,11 +440,11 @@ uint8_t hal_rf_param_level(fp64_t rf_lo)
 	{
 		level = 7;
 	}
-	else if (rf_lo>=1400 && rf_lo<1500)
+	else if (rf_lo>=1300 && rf_lo<1400)
 	{
 		level = 8;
 	}
-	else if (rf_lo>=1500 && rf_lo<1600)
+	else if (rf_lo>=1400 && rf_lo<1500)
 	{
 		level = 9;
 	}
@@ -459,7 +459,7 @@ uint8_t hal_rf_param_level(fp64_t rf_lo)
 /////////////////////////////////////////////////////////////////////////////
 void hal_rf_of_set_reg(uint32_t addr, uint32_t value)
 {
-	//¼ì²éµØÖ·µÄºÏ·¨ĞÔºÍ¿ÉĞ´ĞÔ
+	//æ£€æŸ¥åœ°å€çš„åˆæ³•æ€§å’Œå¯å†™æ€§
 	switch (addr)
 	{
 		case HAL_RF_OF_SCL_FCTR:
@@ -484,7 +484,7 @@ void hal_rf_of_set_reg(uint32_t addr, uint32_t value)
 		case HAL_RF_OF_LOSE_GATE:
 		case HAL_RF_OF_SCL_TX_POW:
 			*(uint32_t *)addr = value;
-			//±£´æÖµ
+			//ä¿å­˜å€¼
 			break;
 		default:break;
 	}
@@ -492,7 +492,7 @@ void hal_rf_of_set_reg(uint32_t addr, uint32_t value)
 
 uint32_t hal_rf_of_get_reg(uint32_t addr)
 {
-	//¼ì²éµØÖ·µÄºÏ·¨ĞÔºÍ¿ÉĞ´ĞÔ
+	//æ£€æŸ¥åœ°å€çš„åˆæ³•æ€§å’Œå¯å†™æ€§
 	switch (addr)
 	{
 		case HAL_RF_OF_REG_VERSION:
@@ -846,7 +846,7 @@ fp32_t hal_rf_ofdm_cal_rssi(bool_t realtime, bool_t *flag)
 	{
 		DBG_PRINTF("C%0.1f|D%d|", cal_value, dbfs_value);
 	}
-	//¼ÆËã¹«Ê½
+	//è®¡ç®—å…¬å¼
 	rssi = cal_value + dbfs_value - 43 + rf_param.ofdm_rssi_offset[rf_param.use_level];
 
 	if (realtime == PLAT_FALSE)
@@ -1050,24 +1050,24 @@ static void config_lms6002_idle()
 {
 	if ((*(uint32_t *)HAL_RF_MISC_SPI_REG_CONF & (1u<<1)))
 	{
-		WRITE_LMS6002(0x05, 0x22);   //IDLEÌ¬
+		WRITE_LMS6002(0x05, 0x22);   //IDLEæ€
 	}
 }
 
 static void LMS6002D_Toplayer(void)
 {		
-	WRITE_LMS6002(0x05, 0x3E);//¶¥²ã£¬½ÓÊÕ£¬·¢Éä¸÷Ä£¿éÈ«¿ª£¬ÒÔ¼°ÅäÖÃÎªËÄÏß´®¿Ú
+	WRITE_LMS6002(0x05, 0x3E);//é¡¶å±‚ï¼Œæ¥æ”¶ï¼Œå‘å°„å„æ¨¡å—å…¨å¼€ï¼Œä»¥åŠé…ç½®ä¸ºå››çº¿ä¸²å£
     delay_ms( 50 );
     READ_LMS6002(0x45);
     
-	WRITE_LMS6002(0x09, 0xC5|PLLOUT_ALWAYS_ENABLE);//PLL ALWAYS OUTPUT!!!!!RXOUTSW¿ª¹Ø±ÕºÏ£¬PLLLCLKOUTÊ¹ÄÜ£¬Rx&Tx DSM SPI clock enabled£¬ÆäËüĞ£×¼Ê±ÖÓÊ¹ÄÜ¶¼²»´ò¿ª
-	WRITE_LMS6002(0x34, 0x06);//·¢Éä¶ËÂË²¨Æ÷Ä£¿é´ò¿ª£¬²¢ÇÒ´ø¿íÉèÖÃÎª7MHZ
-	WRITE_LMS6002(0x54, 0x06);//½ÓÊÕ¶ËÂË²¨Æ÷Ä£¿é´ò¿ª£¬²¢ÇÒ´ø¿íÉèÖÃÎª7MHZ
-	WRITE_LMS6002(0x57, 0x14);//ADC/DACÄ£¿é¹Ø±Õ£¬DACÄÚ²¿Êä³ö¸ºÔØµç×èÉèÎª200Å·Ä·£¬DAC²Î¿¼µçÁ÷µç×èÉèÖÃÎªÍâÖÃ
-	WRITE_LMS6002(0x47, 0x40);//LO bufferµÄÆ«ÖÃµçÁ÷ÉèÖÃÎª4*5/6=3.3mA
-	WRITE_LMS6002(0x59, 0x29);//RX LPFÅäÖÃ:²Î¿¼ÔöÒæ1.75V£¬¹²Ä£µçÑ¹960mV£¬²Î¿¼Buffer1.0X£¬ADCÊäÈëBufferÊ¹ÄÜ
-	WRITE_LMS6002(0x64, 0x1E);//RXVGA2¹²Ä£µçÑ¹ÉèÖÃÎª900mV,ÇÒRXVGA2Ä£¿éÊ¹ÄÜ´ò¿ª
-	WRITE_LMS6002(0x79, 0x37);//¿ØÖÆÆ¬ÉÏLNA¸ºÔØµç×è
+	WRITE_LMS6002(0x09, 0xC5|PLLOUT_ALWAYS_ENABLE);//PLL ALWAYS OUTPUT!!!!!RXOUTSWå¼€å…³é—­åˆï¼ŒPLLLCLKOUTä½¿èƒ½ï¼ŒRx&Tx DSM SPI clock enabledï¼Œå…¶å®ƒæ ¡å‡†æ—¶é’Ÿä½¿èƒ½éƒ½ä¸æ‰“å¼€
+	WRITE_LMS6002(0x34, 0x06);//å‘å°„ç«¯æ»¤æ³¢å™¨æ¨¡å—æ‰“å¼€ï¼Œå¹¶ä¸”å¸¦å®½è®¾ç½®ä¸º7MHZ
+	WRITE_LMS6002(0x54, 0x06);//æ¥æ”¶ç«¯æ»¤æ³¢å™¨æ¨¡å—æ‰“å¼€ï¼Œå¹¶ä¸”å¸¦å®½è®¾ç½®ä¸º7MHZ
+	WRITE_LMS6002(0x57, 0x14);//ADC/DACæ¨¡å—å…³é—­ï¼ŒDACå†…éƒ¨è¾“å‡ºè´Ÿè½½ç”µé˜»è®¾ä¸º200æ¬§å§†ï¼ŒDACå‚è€ƒç”µæµç”µé˜»è®¾ç½®ä¸ºå¤–ç½®
+	WRITE_LMS6002(0x47, 0x40);//LO bufferçš„åç½®ç”µæµè®¾ç½®ä¸º4*5/6=3.3mA
+	WRITE_LMS6002(0x59, 0x29);//RX LPFé…ç½®:å‚è€ƒå¢ç›Š1.75Vï¼Œå…±æ¨¡ç”µå‹960mVï¼Œå‚è€ƒBuffer1.0Xï¼ŒADCè¾“å…¥Bufferä½¿èƒ½
+	WRITE_LMS6002(0x64, 0x1E);//RXVGA2å…±æ¨¡ç”µå‹è®¾ç½®ä¸º900mV,ä¸”RXVGA2æ¨¡å—ä½¿èƒ½æ‰“å¼€
+	WRITE_LMS6002(0x79, 0x37);//æ§åˆ¶ç‰‡ä¸ŠLNAè´Ÿè½½ç”µé˜»
     
 }
 
@@ -1078,23 +1078,23 @@ static uint8_t LMS6002D_TxChainConf(void)
     uint8_t error;
 	uint32_t value;
 
-	//WRITE_LMS6002(0x17, 0xE3 );//TX PLLÅäÖÃ£ºVCO regulatorÅÔÂ·ÇÒ¹Øµô£¬µç×è¶ÌÂ·£¬ÇÒÊä³öÉÏÀ­Æ«ÖÃµçÁ÷ÉèÖÃÎª30uA
- 	WRITE_LMS6002(0x15, rf_param.freq_cal.pll); //·¢ÉäPLLÅäÖÃ
-    WRITE_LMS6002(0x10, rf_param.freq_cal.set1);//·¢ÉäPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄÕûÊı²¿·Ö£¬NINT[8:1]
-    WRITE_LMS6002(0x11, rf_param.freq_cal.set2);//·¢ÉäPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄÕûÊı²¿·ÖNINT[0],ÒÔ¼°³ıÊıµÄĞ¡Êı²¿·ÖNFRAC[22:16]
-    WRITE_LMS6002(0x12, rf_param.freq_cal.set3);//·¢ÉäPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄĞ¡Êı²¿·ÖNFRAC[15:8]
-    WRITE_LMS6002(0x13, rf_param.freq_cal.set4);//·¢ÉäPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄĞ¡Êı²¿·ÖNFRAC[7:0]
+	//WRITE_LMS6002(0x17, 0xE3 );//TX PLLé…ç½®ï¼šVCO regulatoræ—è·¯ä¸”å…³æ‰ï¼Œç”µé˜»çŸ­è·¯ï¼Œä¸”è¾“å‡ºä¸Šæ‹‰åç½®ç”µæµè®¾ç½®ä¸º30uA
+ 	WRITE_LMS6002(0x15, rf_param.freq_cal.pll); //å‘å°„PLLé…ç½®
+    WRITE_LMS6002(0x10, rf_param.freq_cal.set1);//å‘å°„PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„æ•´æ•°éƒ¨åˆ†ï¼ŒNINT[8:1]
+    WRITE_LMS6002(0x11, rf_param.freq_cal.set2);//å‘å°„PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„æ•´æ•°éƒ¨åˆ†NINT[0],ä»¥åŠé™¤æ•°çš„å°æ•°éƒ¨åˆ†NFRAC[22:16]
+    WRITE_LMS6002(0x12, rf_param.freq_cal.set3);//å‘å°„PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„å°æ•°éƒ¨åˆ†NFRAC[15:8]
+    WRITE_LMS6002(0x13, rf_param.freq_cal.set4);//å‘å°„PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„å°æ•°éƒ¨åˆ†NFRAC[7:0]
 
-    WRITE_LMS6002(0x14, 0x8C );//PLLÊ¹ÄÜ´ò¿ª£¬ÇÒÒòÎª¼ÆËã³öÊı¾İµÄĞ¡Êı²¿·ÖNFRACÎª0£¬ËùÒÔDelta sigmaÉèÖÃÎªÅÔÂ·
+    WRITE_LMS6002(0x14, 0x8C );//PLLä½¿èƒ½æ‰“å¼€ï¼Œä¸”å› ä¸ºè®¡ç®—å‡ºæ•°æ®çš„å°æ•°éƒ¨åˆ†NFRACä¸º0ï¼Œæ‰€ä»¥Delta sigmaè®¾ç½®ä¸ºæ—è·¯
 	cmin = 63;
     cmax = 0;
     error = 1;    
 	for(uint8_t loop=0;loop<64;loop++ )
     {
-        WRITE_LMS6002(0x19, 0x80+loop);//Ä¬ÈÏVOVCOREGÅäÖÃÎª1.9V£¬0x19µØÖ·ÖĞµÍ6Î»ÊÇµçÈİµÄÅäÖÃ£¬0~63
+        WRITE_LMS6002(0x19, 0x80+loop);//é»˜è®¤VOVCOREGé…ç½®ä¸º1.9Vï¼Œ0x19åœ°å€ä¸­ä½6ä½æ˜¯ç”µå®¹çš„é…ç½®ï¼Œ0~63
         delay_us(1036);
         value=READ_LMS6002(0x1A);
-         if(value  == 0x03 )   //±È½ÏºóµÄ×´Ì¬¡£ÓĞ¸öÎÊÌâ£¬ÎªÊ²Ã´0x1BÖĞµÄbit3 VCOµÄ±È½ÏÊ¹ÄÜÃ»ÓĞ´ò¿ª£¬Ó¦¸ÃÒª´ò¿ªÁË²Å¿ÉÒÔ¶Á±È½ÏµÄ½á¹û£¿£¿
+         if(value  == 0x03 )   //æ¯”è¾ƒåçš„çŠ¶æ€ã€‚æœ‰ä¸ªé—®é¢˜ï¼Œä¸ºä»€ä¹ˆ0x1Bä¸­çš„bit3 VCOçš„æ¯”è¾ƒä½¿èƒ½æ²¡æœ‰æ‰“å¼€ï¼Œåº”è¯¥è¦æ‰“å¼€äº†æ‰å¯ä»¥è¯»æ¯”è¾ƒçš„ç»“æœï¼Ÿï¼Ÿ
         {
             error = 0;
             if( loop < cmin )
@@ -1111,7 +1111,7 @@ static uint8_t LMS6002D_TxChainConf(void)
     {
         value = (cmin+cmax)/2+1;
     }
-    WRITE_LMS6002(0x19, 0x80+value);//½«Ğ£×¼µÃ³öµÄµçÈİÖµÖØĞÂĞ´Èë
+    WRITE_LMS6002(0x19, 0x80+value);//å°†æ ¡å‡†å¾—å‡ºçš„ç”µå®¹å€¼é‡æ–°å†™å…¥
 
 	return SUCCESS;
 }
@@ -1123,23 +1123,23 @@ static uint8_t LMS6002D_RxChainConf(void)
     uint8_t error;
 	uint32_t value;
 	
-	WRITE_LMS6002( 0x27, 0xE3 );   //RX PLLÅäÖÃ£ºVCO regulatorÅÔÂ·ÇÒ¹Øµô£¬µç×è¶ÌÂ·£¬ÇÒÊä³öÉÏÀ­Æ«ÖÃµçÁ÷ÉèÖÃÎª30uA
+	WRITE_LMS6002( 0x27, 0xE3 );   //RX PLLé…ç½®ï¼šVCO regulatoræ—è·¯ä¸”å…³æ‰ï¼Œç”µé˜»çŸ­è·¯ï¼Œä¸”è¾“å‡ºä¸Šæ‹‰åç½®ç”µæµè®¾ç½®ä¸º30uA
 
-	WRITE_LMS6002(0x25, rf_param.freq_cal.pll);   //½ÓÊÕPLLÅäÖÃ·¶Î§ÄÚ
-    WRITE_LMS6002(0x20, rf_param.freq_cal.set1);//½ÓÊÕPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄÕûÊı²¿·Ö£¬NINT[8:1]
-    WRITE_LMS6002(0x21, rf_param.freq_cal.set2);//½ÓÊÕPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄÕûÊı²¿·ÖNINT[0],ÒÔ¼°³ıÊıµÄĞ¡Êı²¿·ÖNFRAC[22:16]
-    WRITE_LMS6002(0x22, rf_param.freq_cal.set3);//½ÓÊÕPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄĞ¡Êı²¿·ÖNFRAC[15:8]
-    WRITE_LMS6002(0x23, rf_param.freq_cal.set4);//½ÓÊÕPLLÅäÖÃÆµÂÊÖĞ³ıÊıµÄĞ¡Êı²¿·ÖNFRAC[7:0]
-    WRITE_LMS6002( 0x24, 0x8C );   //PLLÊ¹ÄÜ´ò¿ª£¬ÇÒÒòÎª¼ÆËã³öÊı¾İµÄĞ¡Êı²¿·ÖNFRACÎª0£¬ËùÒÔDelta sigmaÉèÖÃÎªÅÔÂ·
+	WRITE_LMS6002(0x25, rf_param.freq_cal.pll);   //æ¥æ”¶PLLé…ç½®èŒƒå›´å†…
+    WRITE_LMS6002(0x20, rf_param.freq_cal.set1);//æ¥æ”¶PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„æ•´æ•°éƒ¨åˆ†ï¼ŒNINT[8:1]
+    WRITE_LMS6002(0x21, rf_param.freq_cal.set2);//æ¥æ”¶PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„æ•´æ•°éƒ¨åˆ†NINT[0],ä»¥åŠé™¤æ•°çš„å°æ•°éƒ¨åˆ†NFRAC[22:16]
+    WRITE_LMS6002(0x22, rf_param.freq_cal.set3);//æ¥æ”¶PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„å°æ•°éƒ¨åˆ†NFRAC[15:8]
+    WRITE_LMS6002(0x23, rf_param.freq_cal.set4);//æ¥æ”¶PLLé…ç½®é¢‘ç‡ä¸­é™¤æ•°çš„å°æ•°éƒ¨åˆ†NFRAC[7:0]
+    WRITE_LMS6002( 0x24, 0x8C );   //PLLä½¿èƒ½æ‰“å¼€ï¼Œä¸”å› ä¸ºè®¡ç®—å‡ºæ•°æ®çš„å°æ•°éƒ¨åˆ†NFRACä¸º0ï¼Œæ‰€ä»¥Delta sigmaè®¾ç½®ä¸ºæ—è·¯
 	cmin = 63;
     cmax = 0;
     error = 1;    
     for( uint8_t loop=0;loop<64;loop++ )
     {
-        WRITE_LMS6002( 0x29, 0x80+loop );//Ä¬ÈÏVOVCOREGÅäÖÃÎª1.9V£¬0x29µØÖ·ÖĞµÍ6Î»ÊÇµçÈİµÄÅäÖÃ£¬0~63
+        WRITE_LMS6002( 0x29, 0x80+loop );//é»˜è®¤VOVCOREGé…ç½®ä¸º1.9Vï¼Œ0x29åœ°å€ä¸­ä½6ä½æ˜¯ç”µå®¹çš„é…ç½®ï¼Œ0~63
       delay_us(36);
         value = READ_LMS6002( 0x2A ); 
-        if( value == 0x03 )            //±È½ÏºóµÄ×´Ì¬¡£ÓĞ¸öÎÊÌâ£¬ÎªÊ²Ã´0x2BÖĞµÄbit3 VCOµÄ±È½ÏÊ¹ÄÜÃ»ÓĞ´ò¿ª£¬Ó¦¸ÃÒª´ò¿ªÁË²Å¿ÉÒÔ¶Á±È½ÏµÄ½á¹û£¿£¿
+        if( value == 0x03 )            //æ¯”è¾ƒåçš„çŠ¶æ€ã€‚æœ‰ä¸ªé—®é¢˜ï¼Œä¸ºä»€ä¹ˆ0x2Bä¸­çš„bit3 VCOçš„æ¯”è¾ƒä½¿èƒ½æ²¡æœ‰æ‰“å¼€ï¼Œåº”è¯¥è¦æ‰“å¼€äº†æ‰å¯ä»¥è¯»æ¯”è¾ƒçš„ç»“æœï¼Ÿï¼Ÿ
         {
             error = 0;
             if( loop < cmin )
@@ -1156,24 +1156,24 @@ static uint8_t LMS6002D_RxChainConf(void)
     {
         value = (cmin+cmax)/2+1;
     }
-    WRITE_LMS6002( 0x29, 0x80+value );//½«Ğ£×¼µÃ³öµÄµçÈİÖµÖØĞÂĞ´Èë
+    WRITE_LMS6002( 0x29, 0x80+value );//å°†æ ¡å‡†å¾—å‡ºçš„ç”µå®¹å€¼é‡æ–°å†™å…¥
 
 	return SUCCESS;
 }
 
 
 /*******************************************************************************
-*º¯ÊıÃû³Æ LMS6002D_DCCalibration( UInt8 addr, UInt8 dc_addr )
-*´´½¨Ê±¼ä £º2010.06.27
-*´´½¨ÈË   £ºSympathique
-*º¯Êı¹¦ÄÜ £ºLMS6002D General DC Calibration
-*ÊäÈë²ÎÊı £ºaddr     Register Address
+*å‡½æ•°åç§° LMS6002D_DCCalibration( UInt8 addr, UInt8 dc_addr )
+*åˆ›å»ºæ—¶é—´ ï¼š2010.06.27
+*åˆ›å»ºäºº   ï¼šSympathique
+*å‡½æ•°åŠŸèƒ½ ï¼šLMS6002D General DC Calibration
+*è¾“å…¥å‚æ•° ï¼šaddr     Register Address
             dc_addr  Calibration Module
-*Êä³ö²ÎÊı £ºÎŞ
-*·µ»ØĞÅÏ¢ £ºCalibration results SUCCESS/FAILED
-*ĞŞ¸ÄÈÕÆÚ £º
-*ĞŞ¸ÄÈË ¡¡£º
-*ĞŞ¸ÄÄÚÈİ £º
+*è¾“å‡ºå‚æ•° ï¼šæ— 
+*è¿”å›ä¿¡æ¯ ï¼šCalibration results SUCCESS/FAILED
+*ä¿®æ”¹æ—¥æœŸ ï¼š
+*ä¿®æ”¹äºº ã€€ï¼š
+*ä¿®æ”¹å†…å®¹ ï¼š
 *******************************************************************************/
 static uint8_t LMS6002D_DCCalibration( uint8_t addr, uint8_t dc_addr )
 {
@@ -1183,18 +1183,18 @@ static uint8_t LMS6002D_DCCalibration( uint8_t addr, uint8_t dc_addr )
     
     for( try_cnt=0;try_cnt<50;try_cnt++ )
     {  
-        WRITE_LMS6002( addr, 0x08|dc_addr );//¹Ø±ÕDC Calibration
+        WRITE_LMS6002( addr, 0x08|dc_addr );//å…³é—­DC Calibration
         delay_ms(1);
-        WRITE_LMS6002( addr, 0x28|dc_addr );//Æô¶¯DC Calibration
+        WRITE_LMS6002( addr, 0x28|dc_addr );//å¯åŠ¨DC Calibration
         delay_ms(1);
-        WRITE_LMS6002( addr, 0x08|dc_addr );//¹Ø±ÕDC Calibration
+        WRITE_LMS6002( addr, 0x08|dc_addr );//å…³é—­DC Calibration
         delay_ms(1);
-        reg_val = READ_LMS6002( addr-2 );   //¶ÁµØÖ·0x01
-        if( reg_val&0x02 )                  //ÅĞ¶ÏÊÇ·ñĞ£×¼Íê³É
+        reg_val = READ_LMS6002( addr-2 );   //è¯»åœ°å€0x01
+        if( reg_val&0x02 )                  //åˆ¤æ–­æ˜¯å¦æ ¡å‡†å®Œæˆ
         {
             continue;
         }
-        if( (reg_val&0x1C)==0x00 || (reg_val&0x1C)==0x1C )   //DC_LOCK[2:0]µÄÖµÎª¡°000¡±»ò¡°111¡±Ê±£¬Ã»ÓĞËø¶¨£¬ÆäËüÖµÊ±±íÃ÷Ëø¶¨
+        if( (reg_val&0x1C)==0x00 || (reg_val&0x1C)==0x1C )   //DC_LOCK[2:0]çš„å€¼ä¸ºâ€œ000â€æˆ–â€œ111â€æ—¶ï¼Œæ²¡æœ‰é”å®šï¼Œå…¶å®ƒå€¼æ—¶è¡¨æ˜é”å®š
         {
             continue;
         }
@@ -1208,16 +1208,16 @@ static uint8_t LMS6002D_DCCalibration( uint8_t addr, uint8_t dc_addr )
 
 }
 /*******************************************************************************
-*º¯ÊıÃû³Æ LMS6002D_DCCalofTuningModule(  )
-*´´½¨Ê±¼ä £º2010.06.27
-*´´½¨ÈË   £ºSympathique
-*º¯Êı¹¦ÄÜ £ºLMS6002D DC offset cancellation of the tuning module
-*ÊäÈë²ÎÊı £ºÎŞ
-*Êä³ö²ÎÊı £ºÎŞ
-*·µ»ØĞÅÏ¢ £ºCalibration results SUCCESS/FAILED
-*ĞŞ¸ÄÈÕÆÚ £º
-*ĞŞ¸ÄÈË ¡¡£º
-*ĞŞ¸ÄÄÚÈİ £º
+*å‡½æ•°åç§° LMS6002D_DCCalofTuningModule(  )
+*åˆ›å»ºæ—¶é—´ ï¼š2010.06.27
+*åˆ›å»ºäºº   ï¼šSympathique
+*å‡½æ•°åŠŸèƒ½ ï¼šLMS6002D DC offset cancellation of the tuning module
+*è¾“å…¥å‚æ•° ï¼šæ— 
+*è¾“å‡ºå‚æ•° ï¼šæ— 
+*è¿”å›ä¿¡æ¯ ï¼šCalibration results SUCCESS/FAILED
+*ä¿®æ”¹æ—¥æœŸ ï¼š
+*ä¿®æ”¹äºº ã€€ï¼š
+*ä¿®æ”¹å†…å®¹ ï¼š
 *******************************************************************************/
 
 static uint8_t LMS6002D_DCCalOfTuningModule(void)
@@ -1227,35 +1227,35 @@ static uint8_t LMS6002D_DCCalOfTuningModule(void)
     uint8_t regval;
     
     regval = READ_LMS6002( 0x09 );
-    WRITE_LMS6002( 0x09, regval|0x20|PLLOUT_ALWAYS_ENABLE );    //½«LPF SPI DCCAL clockÊ¹ÄÜÖÃ1
+    WRITE_LMS6002( 0x09, regval|0x20|PLLOUT_ALWAYS_ENABLE );    //å°†LPF SPI DCCAL clockä½¿èƒ½ç½®1
     
     if( LMS6002D_DCCalibration( 0x03, 0 ) == FAILED)
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );     //Èç¹ûĞ£×¼Ê§°Ü£¬Ôò½«Tx LPF SPI DCCAL clockÊ¹ÄÜÖÃ0£¬¼´Ä¬ÈÏÖµĞ´Èë
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );     //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œåˆ™å°†Tx LPF SPI DCCAL clockä½¿èƒ½ç½®0ï¼Œå³é»˜è®¤å€¼å†™å…¥
         return FAILED;
     }
     delay_us( 32 );
     dccal = READ_LMS6002( 0x00 );
-    WRITE_LMS6002( 0x35, dccal );//½«DC calibrationµÃµ½µÄÖµ¸üĞÂµ½TX LPFÖĞµÄDCO_DACCALµÄÖµ
-    WRITE_LMS6002( 0x55, dccal );//½«DC calibrationµÃµ½µÄÖµ¸üĞÂµ½RX LPFÖĞµÄDCO_DACCALµÄÖµ
+    WRITE_LMS6002( 0x35, dccal );//å°†DC calibrationå¾—åˆ°çš„å€¼æ›´æ–°åˆ°TX LPFä¸­çš„DCO_DACCALçš„å€¼
+    WRITE_LMS6002( 0x55, dccal );//å°†DC calibrationå¾—åˆ°çš„å€¼æ›´æ–°åˆ°RX LPFä¸­çš„DCO_DACCALçš„å€¼
     
-    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );         // Ğ£×¼OKÖ®ºó£¬ÈÔÈ»Òª½«LPF SPI DCCAL clockÊ¹ÄÜÖÃ0£¬¼´Ä¬ÈÏÖµĞ´Èë
+    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );         // æ ¡å‡†OKä¹‹åï¼Œä»ç„¶è¦å°†LPF SPI DCCAL clockä½¿èƒ½ç½®0ï¼Œå³é»˜è®¤å€¼å†™å…¥
     
     return SUCCESS;
     
 }
 
 /*******************************************************************************
-*º¯ÊıÃû³Æ LMS6002D_BandwidthOfTuningModule(  )
-*´´½¨Ê±¼ä £º2010.06.27
-*´´½¨ÈË   £ºSympathique
-*º¯Êı¹¦ÄÜ £ºLMS6002D Execute LPF bandwidth tuning procedure
-*ÊäÈë²ÎÊı £ºÎŞ
-*Êä³ö²ÎÊı £ºÎŞ
-*·µ»ØĞÅÏ¢ £ºÎŞ
-*ĞŞ¸ÄÈÕÆÚ £º
-*ĞŞ¸ÄÈË ¡¡£º
-*ĞŞ¸ÄÄÚÈİ £º
+*å‡½æ•°åç§° LMS6002D_BandwidthOfTuningModule(  )
+*åˆ›å»ºæ—¶é—´ ï¼š2010.06.27
+*åˆ›å»ºäºº   ï¼šSympathique
+*å‡½æ•°åŠŸèƒ½ ï¼šLMS6002D Execute LPF bandwidth tuning procedure
+*è¾“å…¥å‚æ•° ï¼šæ— 
+*è¾“å‡ºå‚æ•° ï¼šæ— 
+*è¿”å›ä¿¡æ¯ ï¼šæ— 
+*ä¿®æ”¹æ—¥æœŸ ï¼š
+*ä¿®æ”¹äºº ã€€ï¼š
+*ä¿®æ”¹å†…å®¹ ï¼š
 *******************************************************************************/
 
 static void LMS6002D_BandwidthOfTuningModule(void)
@@ -1263,31 +1263,31 @@ static void LMS6002D_BandwidthOfTuningModule(void)
     
     uint8_t rccal;
 
-    WRITE_LMS6002( 0x07, 0x05 ); //ÉèÖÃÂË²¨Æ÷´ø¿íÎª4.375MHZ
-    WRITE_LMS6002( 0x07, 0x85 ); //½«EN_CAL_LPFÖÃ1
-    WRITE_LMS6002( 0x06, 0x0D ); //RST_CAL_LPFCAL¸´Î»´ò¿ª£¬¸´Î»Ê±¼äÒª³¬¹ı100ns
-    WRITE_LMS6002( 0x06, 0x0C ); //RST_CAL_LPFCAL¸´Î»¹Øµô
+    WRITE_LMS6002( 0x07, 0x05 ); //è®¾ç½®æ»¤æ³¢å™¨å¸¦å®½ä¸º4.375MHZ
+    WRITE_LMS6002( 0x07, 0x85 ); //å°†EN_CAL_LPFç½®1
+    WRITE_LMS6002( 0x06, 0x0D ); //RST_CAL_LPFCALå¤ä½æ‰“å¼€ï¼Œå¤ä½æ—¶é—´è¦è¶…è¿‡100ns
+    WRITE_LMS6002( 0x06, 0x0C ); //RST_CAL_LPFCALå¤ä½å…³æ‰
     
     rccal = READ_LMS6002( 0x01 );
     rccal = (rccal >> 1) & 0x70;  //??????
-    WRITE_LMS6002( 0x36, 0x80|rccal ); //0x36µØÖ·ÖĞ(¶ÔÓ¦TXLPF)µÄPD_DCOCMP_LPF¡¢PD_DCODAC_LPF¡¢PD_DCOREF_LPF¡¢PD_FIL_LPFÈ«²¿enabled
-    WRITE_LMS6002( 0x56, 0x80|rccal ); //0x56µØÖ·ÖĞ(¶ÔÓ¦RXLPF)µÄPD_DCOCMP_LPF¡¢PD_DCODAC_LPF¡¢PD_DCOREF_LPF¡¢PD_FIL_LPFÈ«²¿enabled
+    WRITE_LMS6002( 0x36, 0x80|rccal ); //0x36åœ°å€ä¸­(å¯¹åº”TXLPF)çš„PD_DCOCMP_LPFã€PD_DCODAC_LPFã€PD_DCOREF_LPFã€PD_FIL_LPFå…¨éƒ¨enabled
+    WRITE_LMS6002( 0x56, 0x80|rccal ); //0x56åœ°å€ä¸­(å¯¹åº”RXLPF)çš„PD_DCOCMP_LPFã€PD_DCODAC_LPFã€PD_DCOREF_LPFã€PD_FIL_LPFå…¨éƒ¨enabled
     
-    WRITE_LMS6002( 0x07, 0x05 ); //×îºóÔÙ½«EN_CAL_LPFÖÃ0
+    WRITE_LMS6002( 0x07, 0x05 ); //æœ€åå†å°†EN_CAL_LPFç½®0
       
 }
 
 /*******************************************************************************
-*º¯ÊıÃû³Æ LMS6002D_DCCalOfTXLPF(  )
-*´´½¨Ê±¼ä £º2010.06.27
-*´´½¨ÈË   £ºSympathique
-*º¯Êı¹¦ÄÜ £ºLMS6002D TXLPF DC offset cancellation of I/Q filter
-*ÊäÈë²ÎÊı £ºÎŞ
-*Êä³ö²ÎÊı £ºÎŞ
-*·µ»ØĞÅÏ¢ £ºCalibration results SUCCESS/FAILED
-*ĞŞ¸ÄÈÕÆÚ £º
-*ĞŞ¸ÄÈË ¡¡£º
-*ĞŞ¸ÄÄÚÈİ £º
+*å‡½æ•°åç§° LMS6002D_DCCalOfTXLPF(  )
+*åˆ›å»ºæ—¶é—´ ï¼š2010.06.27
+*åˆ›å»ºäºº   ï¼šSympathique
+*å‡½æ•°åŠŸèƒ½ ï¼šLMS6002D TXLPF DC offset cancellation of I/Q filter
+*è¾“å…¥å‚æ•° ï¼šæ— 
+*è¾“å‡ºå‚æ•° ï¼šæ— 
+*è¿”å›ä¿¡æ¯ ï¼šCalibration results SUCCESS/FAILED
+*ä¿®æ”¹æ—¥æœŸ ï¼š
+*ä¿®æ”¹äºº ã€€ï¼š
+*ä¿®æ”¹å†…å®¹ ï¼š
 *******************************************************************************/
 
 static uint8_t LMS6002D_DCCalOfTXLPF(void)
@@ -1296,39 +1296,39 @@ static uint8_t LMS6002D_DCCalOfTXLPF(void)
     uint8_t regval;
     
     regval = READ_LMS6002( 0x09 );
-    WRITE_LMS6002( 0x09, regval|0x02|PLLOUT_ALWAYS_ENABLE );  //½«TX LPF SPI DCCAL clock enabled
+    WRITE_LMS6002( 0x09, regval|0x02|PLLOUT_ALWAYS_ENABLE );  //å°†TX LPF SPI DCCAL clock enabled
 
     delay_ms( 10 );
     
     if( LMS6002D_DCCalibration( 0x33, 0 )==FAILED)           //TX LPF dc offset cancellation for I filter
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );  //Èç¹ûĞ£×¼Ê§°Ü£¬½«TX LPF SPI DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );  //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œå°†TX LPF SPI DCCAL clock disenabled
         return FAILED;    
     }
     delay_ms( 10 );
-    if( LMS6002D_DCCalibration( 0x33, 1 )==FAILED )          //TX LPF dc offset cancellation for Q filter£¬
+    if( LMS6002D_DCCalibration( 0x33, 1 )==FAILED )          //TX LPF dc offset cancellation for Q filterï¼Œ
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );  //Èç¹ûĞ£×¼Ê§°Ü£¬½«TX LPF SPI DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );  //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œå°†TX LPF SPI DCCAL clock disenabled
         return FAILED;  
     }
     delay_ms( 10 );
     
-    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );      //Èç¹ûĞ£×¼³É¹¦£¬ÈÔÈ»½«TX LPF SPI DCCAL clock disenabled
+    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );      //å¦‚æœæ ¡å‡†æˆåŠŸï¼Œä»ç„¶å°†TX LPF SPI DCCAL clock disenabled
 
 	return SUCCESS;    
 }
 
 /*******************************************************************************
-*º¯ÊıÃû³Æ LMS6002D_DCCalOfRXLPF(  )
-*´´½¨Ê±¼ä £º2010.06.27
-*´´½¨ÈË   £ºSympathique
-*º¯Êı¹¦ÄÜ £ºLMS6002D TXLPF DC offset cancellation of I/Q filter
-*ÊäÈë²ÎÊı £ºÎŞ
-*Êä³ö²ÎÊı £ºÎŞ
-*·µ»ØĞÅÏ¢ £ºCalibration results SUCCESS/FAILED
-*ĞŞ¸ÄÈÕÆÚ £º
-*ĞŞ¸ÄÈË ¡¡£º
-*ĞŞ¸ÄÄÚÈİ £º
+*å‡½æ•°åç§° LMS6002D_DCCalOfRXLPF(  )
+*åˆ›å»ºæ—¶é—´ ï¼š2010.06.27
+*åˆ›å»ºäºº   ï¼šSympathique
+*å‡½æ•°åŠŸèƒ½ ï¼šLMS6002D TXLPF DC offset cancellation of I/Q filter
+*è¾“å…¥å‚æ•° ï¼šæ— 
+*è¾“å‡ºå‚æ•° ï¼šæ— 
+*è¿”å›ä¿¡æ¯ ï¼šCalibration results SUCCESS/FAILED
+*ä¿®æ”¹æ—¥æœŸ ï¼š
+*ä¿®æ”¹äºº ã€€ï¼š
+*ä¿®æ”¹å†…å®¹ ï¼š
 *******************************************************************************/
 
 static uint8_t LMS6002D_DCCalOfRXLPF(void)
@@ -1339,39 +1339,39 @@ static uint8_t LMS6002D_DCCalOfRXLPF(void)
     delay_ms( 1 );
     regval = READ_LMS6002( 0x09 );
     delay_ms( 1 );
-    WRITE_LMS6002( 0x09, regval|0x08|PLLOUT_ALWAYS_ENABLE ); //½«RX LPF SPI DCCAL clock enabled
+    WRITE_LMS6002( 0x09, regval|0x08|PLLOUT_ALWAYS_ENABLE ); //å°†RX LPF SPI DCCAL clock enabled
     
     delay_ms( 1 );
     
     if( LMS6002D_DCCalibration( 0x53, 0 )==FAILED )         //RX LPF dc offset cancellation for I filter
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //Èç¹ûĞ£×¼Ê§°Ü£¬½«RX LPF SPI DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œå°†RX LPF SPI DCCAL clock disenabled
         return FAILED;    
     }
     delay_ms( 1 );
     if( LMS6002D_DCCalibration( 0x53, 1 )==FAILED )         //RX LPF dc offset cancellation for Q filter
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //Èç¹ûĞ£×¼Ê§°Ü£¬½«RX LPF SPI DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œå°†RX LPF SPI DCCAL clock disenabled
         return FAILED;  
     }
     delay_ms( 1 );
     
-    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );     //Èç¹ûĞ£×¼³É¹¦£¬ÈÔÈ»½«TX LPF SPI DCCAL clock disenabled
+    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );     //å¦‚æœæ ¡å‡†æˆåŠŸï¼Œä»ç„¶å°†TX LPF SPI DCCAL clock disenabled
     return SUCCESS;
     
 }
 
 /*******************************************************************************
-*º¯ÊıÃû³Æ LMS6002D_DCCalOfRXVGA2(  )
-*´´½¨Ê±¼ä £º2010.06.27
-*´´½¨ÈË   £ºSympathique
-*º¯Êı¹¦ÄÜ £ºLMS6002D RXVGA2 DC offset cancellation of I/Q filter
-*ÊäÈë²ÎÊı £ºÎŞ
-*Êä³ö²ÎÊı £ºÎŞ
-*·µ»ØĞÅÏ¢ £ºCalibration results SUCCESS/FAILED
-*ĞŞ¸ÄÈÕÆÚ £º
-*ĞŞ¸ÄÈË ¡¡£º
-*ĞŞ¸ÄÄÚÈİ £º
+*å‡½æ•°åç§° LMS6002D_DCCalOfRXVGA2(  )
+*åˆ›å»ºæ—¶é—´ ï¼š2010.06.27
+*åˆ›å»ºäºº   ï¼šSympathique
+*å‡½æ•°åŠŸèƒ½ ï¼šLMS6002D RXVGA2 DC offset cancellation of I/Q filter
+*è¾“å…¥å‚æ•° ï¼šæ— 
+*è¾“å‡ºå‚æ•° ï¼šæ— 
+*è¿”å›ä¿¡æ¯ ï¼šCalibration results SUCCESS/FAILED
+*ä¿®æ”¹æ—¥æœŸ ï¼š
+*ä¿®æ”¹äºº ã€€ï¼š
+*ä¿®æ”¹å†…å®¹ ï¼š
 *******************************************************************************/
 
 static uint8_t LMS6002D_DCCalOfRXVGA2(void)
@@ -1381,56 +1381,56 @@ static uint8_t LMS6002D_DCCalOfRXVGA2(void)
     
     delay_ms( 1 );
     regval = READ_LMS6002( 0x09 );
-    WRITE_LMS6002( 0x09, regval|0x10|PLLOUT_ALWAYS_ENABLE );//½«RX VGA2 DCCAL clock enabled
+    WRITE_LMS6002( 0x09, regval|0x10|PLLOUT_ALWAYS_ENABLE );//å°†RX VGA2 DCCAL clock enabled
     
     delay_ms( 1 );
     if( LMS6002D_DCCalibration( 0x63, 0 )==FAILED )         //RX VGA2 DC offset cancellation for DC reference module
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //Èç¹ûĞ£×¼Ê§°Ü£¬Ôò½«RX VGA2 DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œåˆ™å°†RX VGA2 DCCAL clock disenabled
         return FAILED;   
     }
     delay_ms( 1 );
     if( LMS6002D_DCCalibration( 0x63, 1 )==FAILED )         //RX VGA2 DC offset cancellation for VGA2A I channel
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //Èç¹ûĞ£×¼Ê§°Ü£¬Ôò½«RX VGA2 DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œåˆ™å°†RX VGA2 DCCAL clock disenabled
         return FAILED;    
     }
     delay_ms( 1 );
     if( LMS6002D_DCCalibration( 0x63, 2 )==FAILED )         //RX VGA2 DC offset cancellation for VGA2A Q channel
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //Èç¹ûĞ£×¼Ê§°Ü£¬Ôò½«RX VGA2 DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œåˆ™å°†RX VGA2 DCCAL clock disenabled
         return FAILED;  
     }
     delay_ms( 1 );
     if( LMS6002D_DCCalibration( 0x63, 3 )==FAILED )         //RX VGA2 DC offset cancellation for VGA2B I channel
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //Èç¹ûĞ£×¼Ê§°Ü£¬Ôò½«RX VGA2 DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œåˆ™å°†RX VGA2 DCCAL clock disenabled
         return FAILED;  
     }
     delay_ms( 1 );
     if( LMS6002D_DCCalibration( 0x63, 4 )==FAILED )         //RX VGA2 DC offset cancellation for VGA2B Q channel
     {  
-        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //Èç¹ûĞ£×¼Ê§°Ü£¬Ôò½«RX VGA2 DCCAL clock disenabled
+        WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE ); //å¦‚æœæ ¡å‡†å¤±è´¥ï¼Œåˆ™å°†RX VGA2 DCCAL clock disenabled
         return FAILED;   
     }
     delay_ms( 1 );
-    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );     //Èç¹ûĞ£×¼³É¹¦£¬ÈÔÈ»½«RX VGA2 DCCAL clock disenabled
+    WRITE_LMS6002( 0x09, regval|PLLOUT_ALWAYS_ENABLE );     //å¦‚æœæ ¡å‡†æˆåŠŸï¼Œä»ç„¶å°†RX VGA2 DCCAL clock disenabled
     return SUCCESS;
     
 }
 
 
 /*******************************************************************************
-*º¯ÊıÃû³Æ LMS6002D_TxCalLoLeakage
-*´´½¨Ê±¼ä £º2014.04.01
-*´´½¨ÈË   £ºherrychien
-*º¯Êı¹¦ÄÜ £ºLMS6002D calibrate tx LO leakage cancellation
-*ÊäÈë²ÎÊı £ºÎŞ
-*Êä³ö²ÎÊı £ºÎŞ
-*·µ»ØĞÅÏ¢ £ºCalibration results SUCCESS/FAILED
-*ĞŞ¸ÄÈÕÆÚ £º
-*ĞŞ¸ÄÈË ¡¡£º
-*ĞŞ¸ÄÄÚÈİ £º
+*å‡½æ•°åç§° LMS6002D_TxCalLoLeakage
+*åˆ›å»ºæ—¶é—´ ï¼š2014.04.01
+*åˆ›å»ºäºº   ï¼šherrychien
+*å‡½æ•°åŠŸèƒ½ ï¼šLMS6002D calibrate tx LO leakage cancellation
+*è¾“å…¥å‚æ•° ï¼šæ— 
+*è¾“å‡ºå‚æ•° ï¼šæ— 
+*è¿”å›ä¿¡æ¯ ï¼šCalibration results SUCCESS/FAILED
+*ä¿®æ”¹æ—¥æœŸ ï¼š
+*ä¿®æ”¹äºº ã€€ï¼š
+*ä¿®æ”¹å†…å®¹ ï¼š
 *******************************************************************************/
 static uint8_t LMS6002D_TxCalLoLeakage(void)
 {
@@ -1665,58 +1665,58 @@ static uint8_t LMS6002D_TxCalLoLeakage(void)
 
 static void LMS6002D_EnterLoopback(void)
 {
-    //ÏÂÃæÊÇÍ¨¹ıBB»·»ØÀ´µÄÊı¾İ£¬¾­¹ıENV/PKDETECT¿ª¹Ø£¬LBEN_OPIN¿ª¹Ø
+    //ä¸‹é¢æ˜¯é€šè¿‡BBç¯å›æ¥çš„æ•°æ®ï¼Œç»è¿‡ENV/PKDETECTå¼€å…³ï¼ŒLBEN_OPINå¼€å…³
     /*
-    WRITE_LMS6002(0x05, 0x3E);   //¶¥²ã£¬·¢Éä£¬½ÓÊÕÒÔ¼°ËÄÏß´®¿ÚÅäÖÃ
-    WRITE_LMS6002(0x08, 0x10);   //»·»ØÄ£Ê½£ºTXMIXÊä³öÁ¬½Óµ½LNA1
-    //WRITE_LMS6002(0x64, 0x1C);   //RXVGA2Ä£¿é¹Ø±Õ
-    WRITE_LMS6002(0x09, 0x85|PLLOUT_ALWAYS_ENABLE);//RXOUTSW¿ª¹Ø¹Ø±Õ£¬PLLCLKOUT enabled,RX DSM SPI clock enabled,TX DSM SPI clock enabled
+    WRITE_LMS6002(0x05, 0x3E);   //é¡¶å±‚ï¼Œå‘å°„ï¼Œæ¥æ”¶ä»¥åŠå››çº¿ä¸²å£é…ç½®
+    WRITE_LMS6002(0x08, 0x10);   //ç¯å›æ¨¡å¼ï¼šTXMIXè¾“å‡ºè¿æ¥åˆ°LNA1
+    //WRITE_LMS6002(0x64, 0x1C);   //RXVGA2æ¨¡å—å…³é—­
+    WRITE_LMS6002(0x09, 0x85|PLLOUT_ALWAYS_ENABLE);//RXOUTSWå¼€å…³å…³é—­ï¼ŒPLLCLKOUT enabled,RX DSM SPI clock enabled,TX DSM SPI clock enabled
 	WRITE_LMS6002(0x0B, 0x08);   //RF loop back switch powered down
     //WRITE_LMS6002(0x34, 0x22);
     WRITE_LMS6002(0x34, 0x00);   //TX LPF powered down
     //WRITE_LMS6002(0x54, 0x22);
     WRITE_LMS6002(0x54, 0x00);   //RX LPF powered down
     WRITE_LMS6002(0x40, 0x02);   //TXRF modules enabled
-    WRITE_LMS6002(0x41, 0x1F);   //TXVGA1ÔöÒæÅäÖÃÎª-4dB
+    WRITE_LMS6002(0x41, 0x1F);   //TXVGA1å¢ç›Šé…ç½®ä¸º-4dB
     WRITE_LMS6002(0x44, 0x00);   //PA1 ON,PA2 OFF,RF loop back powerd up,envelop/peak detector
-    //WRITE_LMS6002(0x45, 0x00); //TXVGA2ÔöÒæÅäÖÃÎª0dB
+    //WRITE_LMS6002(0x45, 0x00); //TXVGA2å¢ç›Šé…ç½®ä¸º0dB
     WRITE_LMS6002(0x45, 0x01);   //AUXPA envelop detector output
     WRITE_LMS6002(0x46, 0xFF);   //LOOPBBEN[1:0]switch closed  0x0C
     WRITE_LMS6002(0x47, 0x61);   //
-    WRITE_LMS6002(0x4C, 0x07);   //ÉèÖÃAUXPAµÄÔöÒæ
-    WRITE_LMS6002(0x4D, 0x80);   //ÉèÖÃAUXPAµÄÔöÒæ
-    WRITE_LMS6002(0x57, 0x94);   //ADC/DACÄ£¿éenabled
-    WRITE_LMS6002(0x5A, 0x30);   //Rx Fsync PolarityÎª0
+    WRITE_LMS6002(0x4C, 0x07);   //è®¾ç½®AUXPAçš„å¢ç›Š
+    WRITE_LMS6002(0x4D, 0x80);   //è®¾ç½®AUXPAçš„å¢ç›Š
+    WRITE_LMS6002(0x57, 0x94);   //ADC/DACæ¨¡å—enabled
+    WRITE_LMS6002(0x5A, 0x30);   //Rx Fsync Polarityä¸º0
 	WRITE_LMS6002(0x65, 0x0A);
-    //WRITE_LMS6002(0x65, 0x09);   //ÓĞÊı¾İÏÔÊ¾
+    //WRITE_LMS6002(0x65, 0x09);   //æœ‰æ•°æ®æ˜¾ç¤º
     WRITE_LMS6002(0x75, 0xC0);
     WRITE_LMS6002(0x76, 0x78);
-    //WRITE_LMS6002(0x76, 0x78);   //ÓĞÊı¾İÏÔÊ¾
+    //WRITE_LMS6002(0x76, 0x78);   //æœ‰æ•°æ®æ˜¾ç¤º
    	WRITE_LMS6002(0x77, 0x00);
    	*/
     
-    //ÏÂÃæÊÇ½«PA»·»ØÀ´µÄÊı¾İ   ²âÊÔ³öLOĞ¹Â©Îª-50dbc£¬²»ĞèÒªÖ´ĞĞ·¢ÉäÃüÁî
+    //ä¸‹é¢æ˜¯å°†PAç¯å›æ¥çš„æ•°æ®   æµ‹è¯•å‡ºLOæ³„æ¼ä¸º-50dbcï¼Œä¸éœ€è¦æ‰§è¡Œå‘å°„å‘½ä»¤
 
-    WRITE_LMS6002(0x05, 0x3E);   //¶¥²ã£¬·¢Éä£¬½ÓÊÕÒÔ¼°ËÄÏß´®¿ÚÅäÖÃ
-    WRITE_LMS6002(0x75, 0xC0);   //LNA ¹Ø±Õ
-    WRITE_LMS6002(0x08, 0x01);   //»·»ØÄ£Ê½£ºTXMIXÊä³öÁ¬½Óµ½LNA1
-    WRITE_LMS6002(0x64, 0x1E);   //RXVGA2Ä£¿é´ò¿ª
-    WRITE_LMS6002(0x09, 0x85|PLLOUT_ALWAYS_ENABLE);//RXOUTSW¿ª¹Ø¹Ø±Õ£¬PLLCLKOUT enabled,RX DSM SPI clock enabled,TX DSM SPI clock enabled
+    WRITE_LMS6002(0x05, 0x3E);   //é¡¶å±‚ï¼Œå‘å°„ï¼Œæ¥æ”¶ä»¥åŠå››çº¿ä¸²å£é…ç½®
+    WRITE_LMS6002(0x75, 0xC0);   //LNA å…³é—­
+    WRITE_LMS6002(0x08, 0x01);   //ç¯å›æ¨¡å¼ï¼šTXMIXè¾“å‡ºè¿æ¥åˆ°LNA1
+    WRITE_LMS6002(0x64, 0x1E);   //RXVGA2æ¨¡å—æ‰“å¼€
+    WRITE_LMS6002(0x09, 0x85|PLLOUT_ALWAYS_ENABLE);//RXOUTSWå¼€å…³å…³é—­ï¼ŒPLLCLKOUT enabled,RX DSM SPI clock enabled,TX DSM SPI clock enabled
 	WRITE_LMS6002(0x0B, 0x09);   //RF loop back switch powered down
     WRITE_LMS6002(0x34, 0x22);
     //WRITE_LMS6002(0x34, 0x00);   //TX LPF powered down
     WRITE_LMS6002(0x54, 0x22);
     //WRITE_LMS6002(0x54, 0x00);   //RX LPF powered down
     WRITE_LMS6002(0x40, 0x02);   //TXRF modules enabled
-    WRITE_LMS6002(0x41, 0x1F);   //TXVGA1ÔöÒæÅäÖÃÎª-14dB
+    WRITE_LMS6002(0x41, 0x1F);   //TXVGA1å¢ç›Šé…ç½®ä¸º-14dB
     WRITE_LMS6002(0x44, 0x09);   //PA1 OFF,PA2 OFF,RF loop back powerd up,envelop/peak detector
     WRITE_LMS6002(0x45, 0x00);   //AUXPA envelop detector output
     WRITE_LMS6002(0x46, 0x00);   //LOOPBBEN[1:0]switch closed  0x0C
     WRITE_LMS6002(0x47, 0x61);   //
     WRITE_LMS6002(0x4C, 0x07);   //
     WRITE_LMS6002(0x4D, 0x80);   //
-    WRITE_LMS6002(0x57, 0x94);   //ADC/DACÄ£¿éenabled
-    WRITE_LMS6002(0x5A, 0x30);   //Rx Fsync PolarityÎª0
+    WRITE_LMS6002(0x57, 0x94);   //ADC/DACæ¨¡å—enabled
+    WRITE_LMS6002(0x5A, 0x30);   //Rx Fsync Polarityä¸º0
 	WRITE_LMS6002(0x65, 0x0A);
     WRITE_LMS6002(0x76, 0x78);
    	WRITE_LMS6002(0x77, 0x00);    
@@ -1725,7 +1725,7 @@ static void LMS6002D_EnterLoopback(void)
 static void LMS6002D_ExitLoopback(void)
 {
 	WRITE_LMS6002(0x08, 0x00);  
-    WRITE_LMS6002(0x75, 0xD0);   //LNA ¹Ø±Õ
+    WRITE_LMS6002(0x75, 0xD0);   //LNA å…³é—­
 	WRITE_LMS6002(0x0B, 0x08);
     WRITE_LMS6002(0x44, 0x0B);    
 }

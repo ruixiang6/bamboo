@@ -80,7 +80,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 					else
 					{
                          //提高ARP的优先级属性
-                        pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                        pakcet_info->frm_ctrl.qos_level = QOS_H;
 						pakcet_info->target_id = BROADCAST_ID;
 						return DEST_MESH;
 					}
@@ -103,7 +103,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 					{
 						pakcet_info->target_id = BROADCAST_ID;
                         //优先级较低
-                        pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
+                        pakcet_info->frm_ctrl.qos_level = QOS_L;
 						return DEST_IP|DEST_MESH;
 					}
 					else if (p_ip_hdr->dest.addr == ipaddr.addr)
@@ -128,7 +128,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                 {
                     case ETHTYPE_ARP:
                         //高优先级
-                        pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                        pakcet_info->frm_ctrl.qos_level = QOS_H;
                         break;
                     case ETHTYPE_IP:
                         p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -136,12 +136,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                         if (IPH_PROTO(p_ip_hdr) == IP_PROTO_ICMP || IPH_PROTO(p_ip_hdr) == IP_PROTO_IGMP)
                         {
                             //高优先级
-                            pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                            pakcet_info->frm_ctrl.qos_level = QOS_H;
                         }
                         else
                         {
                             //中优先级
-                            pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
+                            pakcet_info->frm_ctrl.qos_level = QOS_M;
                         }
                         break;
                     default: return 0;
@@ -169,12 +169,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
             if (htons(p_eth_hdr->type) == ETHTYPE_ARP)
             {
                 //高优先级
-                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                pakcet_info->frm_ctrl.qos_level = QOS_H;
             }
             else
             {
                 //优先级较低
-                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_L);
+               pakcet_info->frm_ctrl.qos_level = QOS_L;
             }
 			pakcet_info->target_id = BROADCAST_ID;
 			return DEST_MESH | DEST_ETH;
@@ -195,7 +195,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                     {
                         case ETHTYPE_ARP:
                             //高优先级
-                            pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                            pakcet_info->frm_ctrl.qos_level = QOS_H;
                             break;
                         case ETHTYPE_IP:
                             p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -203,12 +203,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                             if (IPH_PROTO(p_ip_hdr) == IP_PROTO_ICMP || IPH_PROTO(p_ip_hdr) == IP_PROTO_IGMP)
                             {
                                 //高优先级
-                                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_H);
+                                pakcet_info->frm_ctrl.qos_level = QOS_H;
                             }
                             else
                             {
                                 //中优先级
-                                pakcet_info->type = MAC_FRM_TYPE_ASM(0, 0, 0, QOS_M);
+                                pakcet_info->frm_ctrl.qos_level = QOS_M;
                             }
                             break;
                         default: return 0;
@@ -233,10 +233,10 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		pakcet_info->src_id = p_mac_frm_head->src_dev_id;
 		pakcet_info->dest_id = p_mac_frm_head->dest_dev_id;
 		pakcet_info->seq_num = p_mac_frm_head->seq_ctrl.seq_num;
-		pakcet_info->type = p_mac_frm_head->frm_ctrl.type;
+		pakcet_info->frm_ctrl = p_mac_frm_head->frm_ctrl;
 		pakcet_info->snr = p_mac_frm_head->phy;
 
-		if (MAC_FRM_TYPE_PROB(pakcet_info->type) == PROB)
+		if (pakcet_info->frm_ctrl.probe_flag == PROBE)
 		{
 			if ((pakcet_info->sender_id == pakcet_info->src_id) && (pakcet_info->target_id == pakcet_info->dest_id) && (pakcet_info->target_id == BROADCAST_ID))
 			{
@@ -393,6 +393,15 @@ static void nwk_eth_rx_handler(void)
 		kbuf = nwk_eth_recv_asyn();
 		if (kbuf)
 		{
+            //如果为SNIFFEER直接转到本机ip协议上
+            if (GET_MODE_ID(p_device_info->id) == MODE_SINFFER)
+            {
+                //经过判断处理后，确定提交本地tcpip协议栈
+				nwk_tcpip_input(kbuf->offset, kbuf->valid_len);
+                kbuf_free(kbuf);
+                return;
+            }
+            
 			output_type = nwk_pkt_transfer(SRC_ETH, kbuf, &packet_info);
 			if (output_type & DEST_IP)
 			{
