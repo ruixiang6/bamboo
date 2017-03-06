@@ -65,14 +65,14 @@ typedef struct
 typedef struct
 {
 	uint32_t machine_state:			8,
-			 uart_recv_date:		1,//»ñµÃ´®¿ÚÊı¾İ
-			 uart_state:			1,//´®¿Ú×´Ì¬
-			 rf_inited:				1,//³õÊ¼»¯rf½Ó¿Ú
-			 rf_state:				2,//rf×´Ì¬
-			 rf_recv_data:			1,//rf½ÓÊÕµ½Ö¡
-			 rf_recv_inside_first:	1,//rf½ÓÊÕĞÅºÅÔ´µÚÒ»Ö¡
-			 rf_send_data:  		1,//rf·¢ËÍ
-     		 rf_time_out:      		1,//³¬Ê±
+			 uart_recv_date:		1,//è·å¾—ä¸²å£æ•°æ®
+			 uart_state:			1,//ä¸²å£çŠ¶æ€
+			 rf_inited:				1,//åˆå§‹åŒ–rfæ¥å£
+			 rf_state:				2,//rfçŠ¶æ€
+			 rf_recv_data:			1,//rfæ¥æ”¶åˆ°å¸§
+			 rf_recv_inside_first:	1,//rfæ¥æ”¶ä¿¡å·æºç¬¬ä¸€å¸§
+			 rf_send_data:  		1,//rfå‘é€
+     		 rf_time_out:      		1,//è¶…æ—¶
 			 dummy:					15;
 }test_cb_t;
 

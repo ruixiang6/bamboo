@@ -379,6 +379,15 @@ static void nwk_eth_rx_handler(void)
 		kbuf = nwk_eth_recv_asyn();
 		if (kbuf)
 		{
+            //如果为SNIFFEER直接转到本机ip协议上
+            if (GET_MODE_ID(p_device_info->id) == MODE_SINFFER)
+            {
+                //经过判断处理后，确定提交本地tcpip协议栈
+				nwk_tcpip_input(kbuf->offset, kbuf->valid_len);
+                kbuf_free(kbuf);
+                return;
+            }
+            
 			output_type = nwk_pkt_transfer(SRC_ETH, kbuf, &packet_info);
 			if (output_type & DEST_IP)
 			{

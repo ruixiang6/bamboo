@@ -7,6 +7,7 @@
 #include "lwip/netif.h"
 #include "lwip/pbuf.h"
 #include "lwip/ip.h"
+#include "lwip/sockets.h"
 #include "netif/etharp.h"
 
 
