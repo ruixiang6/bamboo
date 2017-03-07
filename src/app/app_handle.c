@@ -3,9 +3,10 @@
 #include <app.h>
 #include <device.h>
 #include <test.h>
-#include <mac.h>
 #include <nwk.h>
+#include <nwk_eth.h>
 #include <nwk_mesh.h>
+#include <mac.h>
 
 #define APP_RECV_TIMEOUT	0xFF
 
@@ -581,7 +582,7 @@ static void app_test_nwk_proc(uint16_t timeout_cnt_ms)
 	}
 	else
 	{
-		if (timeout_cnt_ms % 5 == 0)
+		if (timeout_cnt_ms % 5000 == 0)
 		{
 			nwk_print();
 		}
@@ -662,7 +663,8 @@ static void app_sniffer_handler(void)
 	mac_frm_head_t *p_mac_frm_head;
 	mac_frm_head_t *p_mac_frm_head_copy;
 	kbuf_t *kbuf_copy = PLAT_NULL;
-	app_sniffer_frm_head_t *p_sniffer_frm_head;	
+	app_sniffer_frm_head_t *p_sniffer_frm_head;
+    uint16_t offset_len;
 	OSEL_DECL_CRITICAL();
 
 	do
@@ -692,13 +694,14 @@ static void app_sniffer_handler(void)
 						//copy头信息
 						mem_cpy(p_mac_frm_head_copy, p_mac_frm_head, sizeof(mac_frm_head_t));
 						//减去probe_data_t,得到原有数据的长度
-						p_mac_frm_head->frm_len = p_mac_frm_head->frm_len - sizeof(probe_data_t);
+						offset_len = p_mac_frm_head->frm_len - sizeof(probe_data_t);
 						//copy这ctrl_data_t部分数据
 						kbuf_copy->offset = kbuf_copy->offset+sizeof(mac_frm_head_t);
 						kbuf->offset = kbuf->offset+sizeof(mac_frm_head_t);
 						//copy probe部分
-						mem_cpy(kbuf_copy->offset, kbuf->offset+p_mac_frm_head->frm_len, sizeof(probe_data_t));
+						mem_cpy(kbuf_copy->offset, kbuf->offset+offset_len, sizeof(probe_data_t));
 						//将帧类型变为纯PROB的数据包
+                        p_mac_frm_head_copy->frm_ctrl.qos_level = NONE;
 						p_mac_frm_head_copy->frm_ctrl.probe_flag = PROBE;
 						p_mac_frm_head_copy->dest_dev_id = BROADCAST_ID;
 						p_mac_frm_head_copy->target_id = BROADCAST_ID;
@@ -707,6 +710,7 @@ static void app_sniffer_handler(void)
 						//发送数据
 						p_sniffer_frm_head->head = APP_SNIFF_HEAD;
 						p_sniffer_frm_head->length = kbuf_copy->valid_len;
+                        p_sniffer_frm_head->type = 0;
 						kbuf_copy->valid_len = sizeof(app_sniffer_frm_head_t)+kbuf_copy->valid_len;
 						app_sniffer_send(kbuf_copy);
 						kbuf_free(kbuf_copy);
@@ -743,6 +747,7 @@ static void app_sniffer_handler(void)
 					//发送数据
 					p_sniffer_frm_head->head = APP_SNIFF_HEAD;
 					p_sniffer_frm_head->length = kbuf->valid_len;
+                    p_sniffer_frm_head->type = 0;
 					kbuf->valid_len = sizeof(app_sniffer_frm_head_t)+kbuf->valid_len;
 					app_sniffer_send(kbuf);
                     kbuf_free(kbuf);

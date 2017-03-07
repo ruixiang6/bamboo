@@ -1,8 +1,9 @@
 #include <device.h>
 #include <nwk.h>
+#include <mac.h>
 #include <nwk_eth.h>
 #include <route.h>
-#include <mac.h>
+
 
 //以太网交互的接口队列
 static list_t nwk_eth_tx_list;

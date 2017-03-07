@@ -3,6 +3,7 @@
 
 #include <platform.h>
 #include <kbuf.h>
+#include <nwk_eth.h>
 #include <mac.h>
 
 
@@ -25,13 +26,9 @@
 #define NODE_MAX_NUM		32
 #define NWK_PROBE_TIMEOUT	200000
 
-
 #pragma pack(1)
 
-
 #pragma pack()
-
-
 
 extern osel_task_t *nwk_task_h;
 extern osel_event_t *nwk_event_h;

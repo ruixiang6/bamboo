@@ -130,14 +130,14 @@ void mac_ofdm_recv_cb(void)
 		kbuf->offset += sizeof(app_sniffer_frm_head_t);
 	}
 	
-	phy_ofdm_read(kbuf->offset, sizeof(mac_frm_head_t));
+	phy_ofdm_read(kbuf->offset, sizeof(packet_chksum_t));
 
 	p_mac_head = (mac_frm_head_t *)kbuf->offset;
 
 	chksum = p_mac_head->chksum;
 	p_mac_head->chksum = 0;
 
-	if (chksum != check16_sum((uint8_t *)p_mac_head, sizeof(mac_frm_head_t)))
+	if (chksum != check16_sum((uint8_t *)p_mac_head, sizeof(packet_chksum_t)))
 	{
 		kbuf_free(kbuf);
 		return;

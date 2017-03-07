@@ -50,6 +50,8 @@ void app_init(void)
 
 	//初始化测试
 	mem_set(&app_test_nwk, 0 , sizeof(app_test_nwk_t));
+	//测试阶段先直接打开
+	app_test_nwk.debug_flag = PLAT_TRUE;
 	mem_set(&app_test_mac, 0 , sizeof(app_test_mac_t));
 	list_init(&app_test_mac.kbuf_rx_list);
 	//初始化监听
