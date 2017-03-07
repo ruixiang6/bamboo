@@ -145,10 +145,9 @@ void mac_ofdm_recv_cb(void)
    
 	if (p_mac_head->phy+1<=MAX_PHY_OFDM_FRM_MULTI)//max = 1888Bytes
 	{
-		kbuf->valid_len = (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;
+		kbuf->valid_len = (p_mac_head->phy+1)*HAL_RF_OF_REG_MAX_RAM_SIZE;		
+		phy_ofdm_read(kbuf->offset, kbuf->valid_len);
 		p_mac_head->phy = (uint8_t)phy_ofdm_snr();
-		phy_ofdm_read(kbuf->offset+sizeof(mac_frm_head_t), kbuf->valid_len-sizeof(mac_frm_head_t));
-
 		if (GET_MODE_ID(p_device_info->id) == MODE_SINFFER)
 		{
 			//只要是监听设备则发到app层处理

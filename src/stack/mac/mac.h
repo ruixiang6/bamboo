@@ -48,6 +48,7 @@ typedef struct
 			 qos_level:		2,
 			 to_ds:			1,
 			 from_ds:		1,
+			 more_frag:		1,
 			 retry:			1,
 			 pwr_mgmt:		1,
 			 more_data:		1,

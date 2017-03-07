@@ -142,6 +142,7 @@ static void mac_of_tx_handler(void)
 	{
 		probe_cnt = 0;
 		kbuf_probe = probe_frame_fetch();
+		mem_clr(&send_info, sizeof(packet_info_t));
 	}
 	else
 	{
@@ -183,13 +184,25 @@ static void mac_of_tx_handler(void)
 			//添加探针信息
 			if (kbuf_probe)
 			{
-				//将probe_data_t拷贝到数据包的后面
-				mem_cpy(kbuf->base+kbuf->valid_len, kbuf_probe->offset, sizeof(probe_data_t));
-				kbuf->valid_len += sizeof(probe_data_t);
 				p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
-				p_mac_frm_head->frm_len += sizeof(probe_data_t);
-				//添加一个PROBE位
-				p_mac_frm_head->frm_ctrl.probe_flag = PROBE;
+				//如果物理发送的长度，大于实际长度后，并且可以放下probe_data_t的长度
+				if (kbuf->valid_len - p_mac_frm_head->frm_len - sizeof(mac_frm_head_t)>=sizeof(probe_data_t))
+				{
+					//添加一个PROBE位
+					p_mac_frm_head->frm_ctrl.probe_flag = PROBE;
+					kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+					//将probe_data_t拷贝到数据包的后面
+					mem_cpy(kbuf->offset+p_mac_frm_head->frm_len, kbuf_probe->offset, sizeof(probe_data_t));
+					p_mac_frm_head->frm_len += sizeof(probe_data_t);
+
+					p_mac_frm_head->chksum = 0;
+					p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(mac_frm_head_t));
+				}
+				else
+				{
+					//没有机会发送则使得probe_cnt直接赋值，下次再发送
+					probe_cnt = MAC_SEND_PROBE_US/MAC_SEND_INTERVAL_US;					
+				}
 			}			
 			mac_rdy_snd_kbuf = kbuf;
 			
