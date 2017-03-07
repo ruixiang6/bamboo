@@ -447,6 +447,13 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		kbuf_free(kbuf);
 		return PLAT_FALSE;
 	}
+
+	if (p_mac_frm_head->src_dev_id == GET_DEV_ID(p_device_info->id)
+		|| p_mac_frm_head->sender_id == GET_DEV_ID(p_device_info->id))
+	{
+		kbuf_free(kbuf);
+		return PLAT_FALSE;
+	}
 	
 	if (p_mac_frm_head->dest_dev_id == GET_DEV_ID(p_device_info->id)
 		|| p_mac_frm_head->dest_dev_id == BROADCAST_ID)
