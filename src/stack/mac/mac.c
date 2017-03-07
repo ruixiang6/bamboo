@@ -137,7 +137,7 @@ void mac_ofdm_recv_cb(void)
 	chksum = p_mac_head->chksum;
 	p_mac_head->chksum = 0;
 
-	if (chksum != check16_sum((uint8_t *)p_mac_head, sizeof(mac_frm_head_t)))
+	if (chksum != check16_sum((uint8_t *)p_mac_head, sizeof(packet_chksum_t)))
 	{
 		kbuf_free(kbuf);
 		return;

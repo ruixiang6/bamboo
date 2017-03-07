@@ -56,7 +56,7 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 	p_mac_frm_head->frm_ctrl = p_send_info->frm_ctrl;
 	//计算checksum
 	p_mac_frm_head->chksum = 0;
-	p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(mac_frm_head_t));
+	p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(packet_chksum_t));
 	//如果这个帧是纯PROB那就直接返回，不入队列
 	if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE
 		&& p_mac_frm_head->frm_ctrl.qos_level == NONE)
@@ -194,9 +194,9 @@ static void mac_of_tx_handler(void)
 					//将probe_data_t拷贝到数据包的后面
 					mem_cpy(kbuf->offset+p_mac_frm_head->frm_len, kbuf_probe->offset, sizeof(probe_data_t));
 					p_mac_frm_head->frm_len += sizeof(probe_data_t);
-
+					//重新校验帧头
 					p_mac_frm_head->chksum = 0;
-					p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(mac_frm_head_t));
+					p_mac_frm_head->chksum = check16_sum(kbuf->base, sizeof(packet_chksum_t));
 				}
 				else
 				{

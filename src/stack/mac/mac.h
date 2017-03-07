@@ -114,9 +114,17 @@ typedef struct
 	uint8_t snr;
 }packet_info_t;
 
+#define CHECK_OFFSET_LEN    (14+2) //多校验16字节（主要用于普通数据的eth_hdr中mac地址和数据对齐）
+
+typedef struct
+{
+	mac_frm_head_t mac_head;
+	uint8_t inc_chk[CHECK_OFFSET_LEN];    
+}packet_chksum_t;
+
 #pragma pack()
 
-#define MAC_QOS_LIST_MAX_NUM	5	
+#define MAC_QOS_LIST_MAX_NUM	3	
 
 extern mac_send_t mac_send_entity[MAC_QOS_LIST_MAX_NUM];
 extern list_t mac_ofdm_recv_list;
