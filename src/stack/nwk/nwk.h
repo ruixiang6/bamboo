@@ -36,7 +36,7 @@
 extern osel_task_t *nwk_task_h;
 extern osel_event_t *nwk_event_h;
 
-
+extern void nwk_print(void);
 extern uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *packet_info);
 extern void nwk_handler(uint16_t event_type);
 extern void nwk_deinit(void);

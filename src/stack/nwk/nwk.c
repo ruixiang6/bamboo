@@ -14,36 +14,6 @@ osel_task_t *nwk_task_h;
 osel_event_t *nwk_event_h;
 
 
-#define PRINT_TASK_STK_SIZE			256
-#define PRINT_TASK_PRIO				OSEL_TASK_PRIO(5)
-
-OSEL_DECLARE_TASK(PRINT_TASK, param);
-
-osel_task_t *print_task_h;
-osel_event_t *print_event_h;
-
-
-OSEL_DECLARE_TASK(PRINT_TASK, param)
-{
-	(void)param;
-	osel_event_res_t res;
-	
-	DBG_TRACE("PRINT_TASK!\r\n");
-
-	osel_systick_delay(100);
-	
-	while (1)
-	{		
-		osel_systick_delay(5000);
-		neighbor_table_print();
-		route_table_print();
-
-		DBG_PRINTF("%d\r\n", kbuf_get_num(KBUF_BIG_TYPE));
-	}
-}
-
-
-
 OSEL_DECLARE_TASK(NWK_TASK, param)
 {
 	(void)param;
@@ -93,14 +63,6 @@ void nwk_init(void)
 	{
 		nwk_mesh_init();
 	}
-	DBG_TRACE("nwk_init ok\r\n");
-
-
-	print_task_h = osel_task_create(PRINT_TASK, 
-    								NULL, 
-    								PRINT_TASK_STK_SIZE, 
-    								PRINT_TASK_PRIO);
-	DBG_ASSERT(print_task_h != PLAT_NULL);
-	
+	DBG_TRACE("nwk_init ok\r\n");	
 }
 

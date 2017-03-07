@@ -14,6 +14,7 @@ osel_task_t *app_task_h;
 osel_event_t *app_event_h;
 app_audio_t app_audio;
 app_test_mac_t app_test_mac;
+app_test_nwk_t app_test_nwk;
 app_sniffer_t app_sniffer;
 
 void gui_hook_func(void);//per2ms
@@ -48,6 +49,7 @@ void app_init(void)
 	hal_uart_rx_irq_enable(UART_DEBUG, uart_recv_callback);
 
 	//初始化测试
+	mem_set(&app_test_nwk, 0 , sizeof(app_test_nwk_t));
 	mem_set(&app_test_mac, 0 , sizeof(app_test_mac_t));
 	list_init(&app_test_mac.kbuf_rx_list);
 	//初始化监听

@@ -19,6 +19,7 @@ static void app_audio_out_proc(void);
 static void app_audio_in_proc(void);
 static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type);
 
+static void app_test_nwk_proc(uint16_t timeout_cnt_ms);
 static void app_test_mac_proc(uint16_t timeout_cnt_ms);
 static void app_test_mac_handler(void);
 
@@ -67,7 +68,8 @@ void app_timeout_handler(void)
 	count++;
 
 	app_test_mac_proc(count);
-	
+
+	app_test_nwk_proc(count);
 }
 
 static void app_gps_handler(void)
@@ -182,6 +184,21 @@ static void app_uart_handler(void)
 			DBG_PRINTF("Send=%d\r\n", app_test_mac.send_frm_seq);
 			return;
 		}
+
+		p_start =  strstr((char_t*)temp_buf, "printon");
+		if (p_start)
+		{
+			app_test_nwk.debug_flag = PLAT_TRUE;
+			return;
+		}
+
+		p_start =  strstr((char_t*)temp_buf, "printoff");
+		if (p_start)
+		{			
+			app_test_nwk.debug_flag = PLAT_FALSE;
+			return;
+		}
+
 	}
 }
 
@@ -552,6 +569,22 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 	else if (p_nmea_gps_msg->flag[0] == 'A')
 	{
 		update_rtc_flag++;
+	}
+}
+
+
+static void app_test_nwk_proc(uint16_t timeout_cnt_ms)
+{
+	if (app_test_nwk.debug_flag != PLAT_TRUE)
+	{
+		return;
+	}
+	else
+	{
+		if (timeout_cnt_ms % 5 == 0)
+		{
+			nwk_print();
+		}
 	}
 }
 

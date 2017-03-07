@@ -8,6 +8,12 @@
 #include <device.h>
 
 
+void nwk_print(void)
+{
+	neighbor_table_print();
+	route_table_print();	
+}
+
 
 //return 1:send to mesh
 //return 2:send to local_ip

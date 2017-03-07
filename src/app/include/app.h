@@ -61,6 +61,10 @@ typedef struct
 	list_t kbuf_rx_list;
 }app_test_mac_t;
 
+typedef struct {
+	uint8_t debug_flag;
+} app_test_nwk_t;
+
 typedef struct
 {
 	int32_t socket_id;
@@ -81,6 +85,7 @@ extern app_audio_t app_audio;
 extern const uint8_t slience_enforce_2400bps_voice[];	//@test.c
 extern NMEA_RMC_GGA_MSG *p_nmea_gps_msg;
 extern uint8_t *app_gps_buf;
+extern app_test_nwk_t app_test_nwk;
 extern app_test_mac_t app_test_mac;
 extern app_sniffer_t app_sniffer;
 
