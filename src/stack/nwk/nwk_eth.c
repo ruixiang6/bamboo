@@ -333,7 +333,8 @@ static void nwk_tcpip_init(void)
 static bool_t nwk_eth_hw_init(void)
 {
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
-	hal_eth_mcb_t mcb;	
+	hal_eth_mcb_t mcb;
+	OSEL_DECL_CRITICAL();
 
     mcb.mac[0] = p_device_info->local_eth_mac_addr[0];
     mcb.mac[1] = p_device_info->local_eth_mac_addr[1];
@@ -347,8 +348,10 @@ static bool_t nwk_eth_hw_init(void)
 	mcb.rx_func = nwk_eth_recv_cb;
 	mcb.rx_list = &nwk_eth_rx_list;
 
+	OSEL_ENTER_CRITICAL();
 	list_init(&nwk_eth_tx_list);
 	list_init(&nwk_eth_rx_list);
+	OSEL_EXIT_CRITICAL();
 	
 	return hal_eth_init(&mcb);
 }
@@ -356,9 +359,25 @@ static bool_t nwk_eth_hw_init(void)
 
 void nwk_idle_hook(void)
 {
+	static uint32_t detect_cnt = 0;
+	
 	if (nwk_eth_flag == PLAT_FALSE)
 	{
 		nwk_eth_flag = nwk_eth_hw_init();
+	}
+	else
+	{
+		detect_cnt++;
+		if (detect_cnt==0xFFFFF) 
+		{
+			detect_cnt = 0;
+			nwk_eth_flag = hal_eth_link_state();
+			if (nwk_eth_flag == PLAT_FALSE)
+			{
+				DBG_TRACE("Eth disconnect\r\n");
+				nwk_eth_deinit();
+			}
+		}
 	}
 }
 
@@ -367,6 +386,9 @@ void nwk_eth_deinit(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
 	
+	OSEL_DECL_CRITICAL();
+
+	OSEL_ENTER_CRITICAL();
 	do
 	{
 		kbuf = (kbuf_t *)list_front_get(&nwk_eth_rx_list);
@@ -379,6 +401,8 @@ void nwk_eth_deinit(void)
 		if (kbuf) kbuf_free(kbuf);
 	} while(kbuf);
 
+	OSEL_EXIT_CRITICAL();
+		
 	hal_eth_deinit();
 }
 

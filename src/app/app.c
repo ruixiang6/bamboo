@@ -84,6 +84,8 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 										p_device_info->remote_ip_addr[1]<<8|
 										p_device_info->remote_ip_addr[0];
 		}
+		//作为监听设备，则不打开调试
+		app_test_nwk.debug_flag = PLAT_FALSE;
 	}
 
 	while (1)
