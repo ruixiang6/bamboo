@@ -33,9 +33,6 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 	if (src_type == SRC_ETH)
 	{
 		p_eth_hdr = (eth_hdr_t *)kbuf->offset;
-		
-		//从内网收到数据，则源mac的pc必定连接本节点，所以地址表中添加此条对应项
-		addr_table_add(p_eth_hdr->src.addr, GET_DEV_ID(p_device_info->id));
 			
 		//先过滤，如果远端mac需要过滤
 		if (p_device_info->remote_eth_mac_addr[0] != 0xFF
@@ -79,6 +76,13 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
                     ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
                     ipaddr2_1 = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
+
+					//从内网收到ARP数据，则源mac的pc必定连接本节点，所以地址表中添加此条对应项
+					if (p_etharp_hdr->sipaddr.addrw[0] == ipaddr2_0)
+					{
+						addr_table_add(p_eth_hdr->src.addr, (uint8_t *)&p_etharp_hdr->sipaddr, GET_DEV_ID(p_device_info->id));
+					}
+					
 					if (p_etharp_hdr->dipaddr.addrw[0] == ipaddr2_0
 						&& p_etharp_hdr->dipaddr.addrw[1] == ipaddr2_1)
 					{                       
@@ -294,15 +298,17 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			
 			switch(htons(p_eth_hdr->type))
 			{
-				case ETHTYPE_ARP:
-					
-					//从mesh外网收到ARP广播数据，记录源mac的pc与其节点，地址表中添加此条对应项
-					addr_table_add(p_eth_hdr->src.addr, pakcet_info->sender_id);
-					
+				case ETHTYPE_ARP:					
 					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
                     ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
                     ipaddr2_1 = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
 					
+					//从mesh外网收到ARP广播数据，记录源mac的pc与其节点，地址表中添加此条对应项
+					if (p_etharp_hdr->sipaddr.addrw[0] == ipaddr2_0)
+					{
+						addr_table_add(p_eth_hdr->src.addr, (uint8_t *)&p_etharp_hdr->sipaddr, pakcet_info->sender_id);
+					}
+										
 					if (p_etharp_hdr->dipaddr.addrw[0] == ipaddr2_0
 						&& p_etharp_hdr->dipaddr.addrw[1] == ipaddr2_1)
 					{
@@ -345,9 +351,15 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 				switch(htons(p_eth_hdr->type))
 				{
 					case ETHTYPE_ARP:
-						
-						//从mesh外网收到ARP广播数据，记录源mac的pc与其节点，地址表中添加此条对应项
-						addr_table_add(p_eth_hdr->src.addr, pakcet_info->sender_id);
+						p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
+                    	ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
+                    	ipaddr2_1 = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
+
+						//从mesh外网收到ARP响应数据，记录源mac的pc与其节点，地址表中添加此条对应项
+						if (p_etharp_hdr->sipaddr.addrw[0] == ipaddr2_0)
+						{
+							addr_table_add(p_eth_hdr->src.addr, (uint8_t *)&p_etharp_hdr->sipaddr, pakcet_info->sender_id);
+						}
 						break;
 					default: break;				
 				}

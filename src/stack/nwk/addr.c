@@ -65,7 +65,7 @@ void addr_table_del(uint8_t *paddr)
 }
 
 
-void addr_table_add(uint8_t *paddr, uint8_t id)
+void addr_table_add(uint8_t *p_addr, uint8_t *p_ip, uint8_t id)
 {	
 	addr_queue_item_t *p_aqi = PLAT_NULL;
 
@@ -73,9 +73,14 @@ void addr_table_add(uint8_t *paddr, uint8_t id)
 	{
 		if (p_aqi)
 		{
-			if ((p_aqi->addr[0] == paddr[0]) && (p_aqi->addr[1] == paddr[1]) && (p_aqi->addr[2] == paddr[2])
-				&& (p_aqi->addr[3] == paddr[3]) && (p_aqi->addr[4] == paddr[4]) && (p_aqi->addr[5] == paddr[5]))
+			if ((p_aqi->addr[0] == p_addr[0]) && (p_aqi->addr[1] == p_addr[1]) && (p_aqi->addr[2] == p_addr[2])
+				&& (p_aqi->addr[3] == p_addr[3]) && (p_aqi->addr[4] == p_addr[4]) && (p_aqi->addr[5] == p_addr[5]))
 			{
+				p_aqi->ip[0] = p_ip[0];
+				p_aqi->ip[1] = p_ip[1];
+				p_aqi->ip[2] = p_ip[2];
+				p_aqi->ip[3] = p_ip[3];
+				
 				p_aqi->id = id;
 
 				return;
@@ -86,13 +91,18 @@ void addr_table_add(uint8_t *paddr, uint8_t id)
 	p_aqi = addr_queue_alloc();
 	if (p_aqi) 
 	{
-		p_aqi->addr[0] = paddr[0];
-		p_aqi->addr[1] = paddr[1];
-		p_aqi->addr[2] = paddr[2];
-		p_aqi->addr[3] = paddr[3];
-		p_aqi->addr[4] = paddr[4];
-		p_aqi->addr[5] = paddr[5];
+		p_aqi->addr[0] = p_addr[0];
+		p_aqi->addr[1] = p_addr[1];
+		p_aqi->addr[2] = p_addr[2];
+		p_aqi->addr[3] = p_addr[3];
+		p_aqi->addr[4] = p_addr[4];
+		p_aqi->addr[5] = p_addr[5];
 		
+		p_aqi->ip[0] = p_ip[0];
+		p_aqi->ip[1] = p_ip[1];
+		p_aqi->ip[2] = p_ip[2];
+		p_aqi->ip[3] = p_ip[3];
+
 		p_aqi->id = id;
 		
 		list_behind_put(&p_aqi->list, &addr_queue_list);
@@ -100,7 +110,7 @@ void addr_table_add(uint8_t *paddr, uint8_t id)
 }
 
 
-void addr_table_query(uint8_t *paddr, uint8_t *p_id)
+void addr_table_query(uint8_t *p_addr, uint8_t *p_id)
 {
 	addr_queue_item_t *p_aqi = PLAT_NULL;
 	
@@ -108,8 +118,8 @@ void addr_table_query(uint8_t *paddr, uint8_t *p_id)
 	{
 		if (p_aqi)
 		{
-			if ((p_aqi->addr[0] == paddr[0]) && (p_aqi->addr[1] == paddr[1]) && (p_aqi->addr[2] == paddr[2])
-				&& (p_aqi->addr[3] == paddr[3]) && (p_aqi->addr[4] == paddr[4]) && (p_aqi->addr[5] == paddr[5]))
+			if ((p_aqi->addr[0] == p_addr[0]) && (p_aqi->addr[1] == p_addr[1]) && (p_aqi->addr[2] == p_addr[2])
+				&& (p_aqi->addr[3] == p_addr[3]) && (p_aqi->addr[4] == p_addr[4]) && (p_aqi->addr[5] == p_addr[5]))
 			{
 				*p_id = p_aqi->id;
 
@@ -132,16 +142,20 @@ void addr_table_init(void)
 static addr_table_t addr_table;
 
 
-void addr_table_add(uint8_t *paddr, uint8_t id)
+void addr_table_add(uint8_t *p_addr, uint8_t *p_ip, uint8_t id)
 {	
 	uint8_t i = 0;
 
 	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++)
 	{
-		if ((addr_table.item[i].addr[0] == paddr[0]) && (addr_table.item[i].addr[1] == paddr[1]) 
-			&& (addr_table.item[i].addr[2] == paddr[2]) && (addr_table.item[i].addr[3] == paddr[3]) 
-			&& (addr_table.item[i].addr[4] == paddr[4]) && (addr_table.item[i].addr[5] == paddr[5]))
+		if ((addr_table.item[i].addr[0] == p_addr[0]) && (addr_table.item[i].addr[1] == p_addr[1]) 
+			&& (addr_table.item[i].addr[2] == p_addr[2]) && (addr_table.item[i].addr[3] == p_addr[3]) 
+			&& (addr_table.item[i].addr[4] == p_addr[4]) && (addr_table.item[i].addr[5] == p_addr[5]))
 		{
+			addr_table.item[i].ip[0] = p_ip[0];
+			addr_table.item[i].ip[1] = p_ip[1];
+			addr_table.item[i].ip[2] = p_ip[2];
+			addr_table.item[i].ip[3] = p_ip[3];
 			addr_table.item[i].id = id;
 
 			return;
@@ -150,13 +164,18 @@ void addr_table_add(uint8_t *paddr, uint8_t id)
 			&& (addr_table.item[i].addr[2] == 0) && (addr_table.item[i].addr[3] == 0) 
 			&& (addr_table.item[i].addr[4] ==0) && (addr_table.item[i].addr[5] == 0))
 		{
-			addr_table.item[i].addr[0] = paddr[0];
-			addr_table.item[i].addr[1] = paddr[1];
-			addr_table.item[i].addr[2] = paddr[2];
-			addr_table.item[i].addr[3] = paddr[3];
-			addr_table.item[i].addr[4] = paddr[4];
-			addr_table.item[i].addr[5] = paddr[5];	
-
+			addr_table.item[i].addr[0] = p_addr[0];
+			addr_table.item[i].addr[1] = p_addr[1];
+			addr_table.item[i].addr[2] = p_addr[2];
+			addr_table.item[i].addr[3] = p_addr[3];
+			addr_table.item[i].addr[4] = p_addr[4];
+			addr_table.item[i].addr[5] = p_addr[5];	
+			
+			addr_table.item[i].ip[0] = p_ip[0];
+			addr_table.item[i].ip[1] = p_ip[1];
+			addr_table.item[i].ip[2] = p_ip[2];
+			addr_table.item[i].ip[3] = p_ip[3];
+		
 			addr_table.item[i].id = id;
 
 			return;
@@ -167,7 +186,7 @@ void addr_table_add(uint8_t *paddr, uint8_t id)
 }
 
 
-void addr_table_query(uint8_t *paddr, uint8_t *p_id)
+void addr_table_query(uint8_t *p_addr, uint8_t *p_id)
 {
 	uint8_t i = 0;
 
@@ -175,9 +194,9 @@ void addr_table_query(uint8_t *paddr, uint8_t *p_id)
 
 	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++)
 	{
-		if ((addr_table.item[i].addr[0] == paddr[0]) && (addr_table.item[i].addr[1] == paddr[1]) 
-			&& (addr_table.item[i].addr[2] == paddr[2]) && (addr_table.item[i].addr[3] == paddr[3]) 
-			&& (addr_table.item[i].addr[4] == paddr[4]) && (addr_table.item[i].addr[5] == paddr[5]))
+		if ((addr_table.item[i].addr[0] == p_addr[0]) && (addr_table.item[i].addr[1] == p_addr[1]) 
+			&& (addr_table.item[i].addr[2] == p_addr[2]) && (addr_table.item[i].addr[3] == p_addr[3]) 
+			&& (addr_table.item[i].addr[4] == p_addr[4]) && (addr_table.item[i].addr[5] == p_addr[5]))
 		{
 			*p_id = addr_table.item[i].id;
 
@@ -202,6 +221,11 @@ void addr_table_init(void)
 		addr_table.item[i].addr[4] = 0;
 		addr_table.item[i].addr[5] = 0;
 
+		addr_table.item[i].ip[0] = 0;
+		addr_table.item[i].ip[1] = 0;
+		addr_table.item[i].ip[2] = 0;
+		addr_table.item[i].ip[3] = 0;
+		
 		addr_table.item[i].id = 0;
 		addr_table.item[i].timeout = 0;	
 	}
