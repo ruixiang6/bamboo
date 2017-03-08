@@ -7,6 +7,7 @@
 #include "lwip/netif.h"
 #include "lwip/pbuf.h"
 #include "lwip/ip.h"
+#include "lwip/udp.h"
 #include "lwip/sockets.h"
 #include "netif/etharp.h"
 
@@ -16,6 +17,8 @@ typedef struct pbuf pbuf_t;
 typedef struct eth_hdr eth_hdr_t;
 typedef struct etharp_hdr etharp_hdr_t;
 typedef struct ip_hdr ip_hdr_t;
+typedef struct udp_hdr udp_hdr_t;
+
 
 #pragma pack(1)
 
