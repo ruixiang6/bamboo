@@ -145,6 +145,7 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 		if (hal_fpga_tim_exist())
 		{
 			phy_tmr_array[index].count = 12.5*delay_us;
+            hal_fpga_tim_int_clear(index);
 			hal_fpga_tim_int_enable(index);
 			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
 		}
@@ -182,7 +183,7 @@ bool_t phy_tmr_stop(uint8_t id)
 		{			
 			hal_fpga_tim_int_disable(index);
 			hal_fpga_tim_int_clear(index);
-			hal_fpga_tim_set_value(index, 0);
+			hal_fpga_tim_set_value(index, 0);			
 		}
 		else
 		{
@@ -217,14 +218,16 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 		if (hal_fpga_tim_exist())
 		{
 			cur_cnt = hal_fpga_tim_get_value(index);
-			phy_tmr_array[index].count = cur_cnt+(25*delay_us);	
+			phy_tmr_array[index].count = cur_cnt+(12.5*delay_us);
+			hal_fpga_tim_int_clear(index);
 			hal_fpga_tim_int_enable(index);
 			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
 		}
 		else
 		{
 			cur_cnt = hal_rf_misc_get_timer(index);
-			phy_tmr_array[index].count = delay_us+cur_cnt;			
+			phy_tmr_array[index].count = delay_us+cur_cnt;
+			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
 			hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
 			hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
 		}
@@ -252,11 +255,13 @@ bool_t phy_tmr_repeat(uint8_t id)
 	{
 		if (hal_fpga_tim_exist())
 		{
+			hal_fpga_tim_int_clear(index);
 			hal_fpga_tim_int_enable(index);
 			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
 		}
 		else
-		{			
+		{
+			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
 			hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
 			hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
 		}
@@ -329,12 +334,23 @@ uint16_t phy_ofdm_snr(void)
     return snr;
 }
 
+uint8_t id = 0;
+
+void phy_test(void)
+{
+	DBG_PRINTF("Timer\r\n");
+}
+
 void phy_init(void)
 {
+	uint16_t version;
 	/* 射频初始化 */
 	hal_rf_init();
-
-	if (phy_version()>=0x5022)
+	
+	version = phy_version();
+	
+	DBG_PRINTF("Baseband Version = 0x%X\r\n", version);
+	if (version>=0x5022)
 	{
 		//版本高于0x5020时，可以使用此定时来替代基带定时器
 		hal_fpga_tim_init();

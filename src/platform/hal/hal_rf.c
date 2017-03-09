@@ -264,7 +264,7 @@ void hal_rf_init(void)
 		  	hal_board_reset();
 		}
 	};
-	DBG_PRINTF("Baseband Version = 0x%X\r\n", hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION));	
+		
 	//获得基带控制6002的spi控制权	
 	HAL_RF_MISC->spi_ctrl |= (1u<<1);
     config_lms6002_init();
