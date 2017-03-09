@@ -230,6 +230,26 @@ void addr_table_init(void)
 		addr_table.item[i].timeout = 0;	
 	}
 }
+
+
+void addr_table_print(void)
+{
+	uint8_t i = 0;
+
+	DBG_PRINTF("ab:\r\n");
+	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++) 
+	{
+		if (addr_table.item[i].id > 0)
+		{
+			DBG_PRINTF("%d.%d.%d.%d %x-%x-%x-%x-%x-%x %x\r\n", 
+				addr_table.item[i].ip[0], addr_table.item[i].ip[1], addr_table.item[i].ip[2], addr_table.item[i].ip[3], 
+				addr_table.item[i].addr[0], addr_table.item[i].addr[1], addr_table.item[i].addr[2], 
+				addr_table.item[i].addr[3], addr_table.item[i].addr[4], addr_table.item[i].addr[5], 
+				addr_table.item[i].id);
+		}
+	}
+}
+
 #endif
 
 
