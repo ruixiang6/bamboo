@@ -136,6 +136,8 @@ static void mac_of_tx_handler(void)
 	static uint8_t probe_cnt = 0;
 
 	phy_tmr_repeat(mac_timer.send_id);
+
+	//DBG_PRINTF("+");
 	probe_cnt++;
 
 	if (probe_cnt>=MAC_SEND_PROBE_US/MAC_SEND_INTERVAL_US)

@@ -93,6 +93,8 @@ void mac_send_cb(void)
 	uint16_t object = MAC_EVENT_OF_TX;
     
 	osel_event_set(mac_event_h, &object);
+
+	//DBG_PRINTF("-");
 }
 
 void mac_idle_cb(void)

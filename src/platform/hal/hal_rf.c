@@ -264,12 +264,7 @@ void hal_rf_init(void)
 		  	hal_board_reset();
 		}
 	};
-	DBG_PRINTF("Baseband Version = 0x%X\r\n", hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION));
-	//版本高于0x5020时，可以使用此定时来替代基带定时器
-	if (hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION)>=0x5022)
-	{
-		hal_fpga_tim_init();
-	}
+	DBG_PRINTF("Baseband Version = 0x%X\r\n", hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION));	
 	//获得基带控制6002的spi控制权	
 	HAL_RF_MISC->spi_ctrl |= (1u<<1);
     config_lms6002_init();

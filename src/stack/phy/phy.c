@@ -144,7 +144,7 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 	{		
 		if (hal_fpga_tim_exist())
 		{
-			phy_tmr_array[index].count = 25*delay_us;
+			phy_tmr_array[index].count = 12.5*delay_us;
 			hal_fpga_tim_int_enable(index);
 			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
 		}
@@ -333,6 +333,13 @@ void phy_init(void)
 {
 	/* 射频初始化 */
 	hal_rf_init();
+
+	if (phy_version()>=0x5022)
+	{
+		//版本高于0x5020时，可以使用此定时来替代基带定时器
+		hal_fpga_tim_init();
+		DBG_PRINTF("Fpga Timer\r\n");
+	}
 }
 
 void phy_deinit(void)
@@ -346,4 +353,8 @@ void phy_deinit(void)
 	hal_rf_of_int_disable(HAL_RF_OF_RX_FIN_INT);
 }
 
+uint16_t phy_version(void)
+{
+	return hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION);
+}
 

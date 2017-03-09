@@ -32,6 +32,8 @@ void phy_tmr_init(void);
 
 void phy_deinit(void);
 
+uint16_t phy_version(void);
+
 uint8_t phy_tmr_alloc(fpv_t func);
 bool_t phy_tmr_free(uint8_t id);
 bool_t phy_tmr_start(uint8_t id, uint32_t delay_us);
