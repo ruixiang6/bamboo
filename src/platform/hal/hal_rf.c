@@ -128,7 +128,7 @@ static struct
 static struct
 {
 	hal_rf_misc_t *hw;
-	fpv_t tmr_handler[8];
+	fpv_t tmr_handler[HAL_FPGA_TIM_NUM];
 } misc_handler = 
 {
 	.hw = HAL_RF_MISC
@@ -265,7 +265,11 @@ void hal_rf_init(void)
 		}
 	};
 	DBG_PRINTF("Baseband Version = 0x%X\r\n", hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION));
-	
+	//版本高于0x5020时，可以使用此定时来替代基带定时器
+	if (hal_rf_of_get_reg(HAL_RF_OF_REG_VERSION)>=0x5022)
+	{
+		hal_fpga_tim_init();
+	}
 	//获得基带控制6002的spi控制权	
 	HAL_RF_MISC->spi_ctrl |= (1u<<1);
     config_lms6002_init();
@@ -274,26 +278,26 @@ void hal_rf_init(void)
 	HAL_RF_MISC->spi_ctrl &= ~(1u<<1);	
 		
 	//Enable dma channel 2 send ofdm frame
-	PDMA_configure
-	(
-		PDMA_CHANNEL_2,
-		PDMA_TO_FIC_0_DMAREADY_0,
-		PDMA_HIGH_PRIORITY | PDMA_WORD_TRANSFER | PDMA_INC_DEST_FOUR_BYTES | PDMA_INC_SRC_FOUR_BYTES,
-		PDMA_DEFAULT_WRITE_ADJ
-	);
-	PDMA_set_irq_handler(PDMA_CHANNEL_2, rf_ofdm_send_dma_isr);		
-	PDMA_enable_irq(PDMA_CHANNEL_2);
+	//PDMA_configure
+	//(
+	//	PDMA_CHANNEL_2,
+	//	PDMA_TO_FIC_0_DMAREADY_0,
+	//	PDMA_HIGH_PRIORITY | PDMA_WORD_TRANSFER | PDMA_INC_DEST_FOUR_BYTES | PDMA_INC_SRC_FOUR_BYTES,
+	//	PDMA_DEFAULT_WRITE_ADJ
+	//);
+	//PDMA_set_irq_handler(PDMA_CHANNEL_2, rf_ofdm_send_dma_isr);		
+	//PDMA_enable_irq(PDMA_CHANNEL_2);
 
 	//Enable dma channel 3 recv ofdm frame
-	PDMA_configure
-	(
-		PDMA_CHANNEL_3,
-		PDMA_FROM_FIC_0_DMAREADY_1,
-		PDMA_HIGH_PRIORITY | PDMA_WORD_TRANSFER | PDMA_INC_DEST_FOUR_BYTES | PDMA_INC_SRC_FOUR_BYTES,
-		PDMA_DEFAULT_WRITE_ADJ
-	);
-	PDMA_set_irq_handler(PDMA_CHANNEL_3, rf_ofdm_recv_dma_isr);		
-	PDMA_enable_irq(PDMA_CHANNEL_3);
+	//PDMA_configure
+	//(
+	//	PDMA_CHANNEL_3,
+	//	PDMA_FROM_FIC_0_DMAREADY_1,
+	//	PDMA_HIGH_PRIORITY | PDMA_WORD_TRANSFER | PDMA_INC_DEST_FOUR_BYTES | PDMA_INC_SRC_FOUR_BYTES,
+	//	PDMA_DEFAULT_WRITE_ADJ
+	//);
+	//PDMA_set_irq_handler(PDMA_CHANNEL_3, rf_ofdm_recv_dma_isr);		
+	//PDMA_enable_irq(PDMA_CHANNEL_3);
     
     p_rf_param = hal_rf_param_get();
     //rf功放值
@@ -962,7 +966,6 @@ void FabricIrq2_IRQHandler(void)
 		}
 	}
 }
-
 
 static void config_lms6002_init()
 {

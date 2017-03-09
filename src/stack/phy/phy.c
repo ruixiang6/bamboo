@@ -26,31 +26,67 @@ void phy_ofdm_init(fpv_t send_func, fpv_t recv_func)
 void phy_tmr_init(void)
 {
 	uint8_t index;
-	
-	for(index=0; index<MAX_PHY_TMR_NUM; index++)
+
+	if (hal_fpga_tim_exist())
 	{
-		phy_tmr_array[index].tmr_int = 1u<<index;
-		hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
-		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);		
-		phy_tmr_array[index].count = 0;
-		phy_tmr_array[index].used = PLAT_FALSE;
+		for(index=0; index<MAX_PHY_TMR_NUM; index++)
+		{
+			phy_tmr_array[index].tmr_int = index;
+			hal_fpga_tim_disable(index);
+			hal_fpga_tim_int_unreg(index);
+			hal_fpga_tim_int_clear(index);			
+			hal_fpga_tim_int_disable(index);		
+			phy_tmr_array[index].count = 0;
+			phy_tmr_array[index].used = PLAT_FALSE;
+		}
 	}
+	else
+	{
+		for(index=0; index<MAX_PHY_TMR_NUM; index++)
+		{
+			phy_tmr_array[index].tmr_int = 1u<<index;
+			hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
+			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);		
+			phy_tmr_array[index].count = 0;
+			phy_tmr_array[index].used = PLAT_FALSE;
+		}
+	}
+	
 }
 
 uint8_t phy_tmr_alloc(fpv_t func)
 {
 	uint8_t index;
-	
-	for(index=0; index<MAX_PHY_TMR_NUM; index++)
+
+	if (hal_fpga_tim_exist())
 	{
-		if (phy_tmr_array[index].used == PLAT_FALSE)
+		for(index=0; index<MAX_PHY_TMR_NUM; index++)
 		{
-			phy_tmr_array[index].count = 0;
-			phy_tmr_array[index].used = PLAT_TRUE;
-			hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, func);
-			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);						
-			return index+1;
+			if (phy_tmr_array[index].used == PLAT_FALSE)
+			{
+				phy_tmr_array[index].count = 0;
+				phy_tmr_array[index].used = PLAT_TRUE;
+				hal_fpga_tim_int_reg(index, func);
+				hal_fpga_tim_enable(index);
+				hal_fpga_tim_int_clear(index);
+				hal_fpga_tim_int_enable(index);
+				return index+1;
+			}
+		}
+	}
+	else
+	{
+		for(index=0; index<MAX_PHY_TMR_NUM; index++)
+		{
+			if (phy_tmr_array[index].used == PLAT_FALSE)
+			{
+				phy_tmr_array[index].count = 0;
+				phy_tmr_array[index].used = PLAT_TRUE;
+				hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, func);
+				hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);						
+				return index+1;
+			}
 		}
 	}
 
@@ -63,14 +99,24 @@ bool_t phy_tmr_free(uint8_t id)
 
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
 
-	index = id-1;
+	index = id-1;	
 	
 	if (phy_tmr_array[index].used)
 	{
-		hal_rf_misc_set_timer(index, 0);
-		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
+		if (hal_fpga_tim_exist())
+		{
+			hal_fpga_tim_disable(index);
+			hal_fpga_tim_int_clear(index);
+			hal_fpga_tim_int_disable(index);
+			hal_fpga_tim_int_unreg(index);
+		}
+		else
+		{
+			hal_rf_misc_set_timer(index, 0);
+			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_int_reg_handler(phy_tmr_array[index].tmr_int, PLAT_NULL);
+		}
 		phy_tmr_array[index].count = 0;
 		phy_tmr_array[index].used = PLAT_FALSE;
 		return PLAT_TRUE;
@@ -88,7 +134,6 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 
 	if (id>MAX_PHY_TMR_NUM || id==0) 
 	{
-		DBG_PRINTF("F");
 		return PLAT_FALSE;
 	}
 
@@ -96,10 +141,19 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 
 	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used && delay_us)
-	{
-		phy_tmr_array[index].count = delay_us;
-		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
+	{		
+		if (hal_fpga_tim_exist())
+		{
+			phy_tmr_array[index].count = 25*delay_us;
+			hal_fpga_tim_int_enable(index);
+			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
+		}
+		else
+		{
+			phy_tmr_array[index].count = delay_us;
+			hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
+		}
 		OSEL_EXIT_CRITICAL();		
 		return PLAT_TRUE;
 	}
@@ -124,9 +178,18 @@ bool_t phy_tmr_stop(uint8_t id)
 	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used)
 	{
-		hal_rf_misc_set_timer(index, 0);
-		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);		
+		if (hal_fpga_tim_exist())
+		{			
+			hal_fpga_tim_int_disable(index);
+			hal_fpga_tim_int_clear(index);
+			hal_fpga_tim_set_value(index, 0);
+		}
+		else
+		{
+			hal_rf_misc_set_timer(index, 0);
+			hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_int_disable(phy_tmr_array[index].tmr_int);
+		}
 		phy_tmr_array[index].count = 0;
 		OSEL_EXIT_CRITICAL();
 		return PLAT_TRUE;
@@ -141,7 +204,7 @@ bool_t phy_tmr_stop(uint8_t id)
 bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 {
 	OSEL_DECL_CRITICAL();
-	uint32_t cur_us;
+	uint32_t cur_cnt;
 	uint8_t index;
 
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
@@ -151,11 +214,20 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used && delay_us)
 	{
-		cur_us = hal_rf_misc_get_timer(index);
-		phy_tmr_array[index].count = delay_us+cur_us;
-		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_set_timer(index, delay_us+cur_us);
+		if (hal_fpga_tim_exist())
+		{
+			cur_cnt = hal_fpga_tim_get_value(index);
+			phy_tmr_array[index].count = cur_cnt+(25*delay_us);	
+			hal_fpga_tim_int_enable(index);
+			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
+		}
+		else
+		{
+			cur_cnt = hal_rf_misc_get_timer(index);
+			phy_tmr_array[index].count = delay_us+cur_cnt;			
+			hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
+		}
 		OSEL_EXIT_CRITICAL();
 		return PLAT_TRUE;
 	}
@@ -178,9 +250,16 @@ bool_t phy_tmr_repeat(uint8_t id)
 	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used && phy_tmr_array[index].count)
 	{
-		hal_rf_misc_int_clear(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
-		hal_rf_misc_set_timer(index, phy_tmr_array[index].count);        
+		if (hal_fpga_tim_exist())
+		{
+			hal_fpga_tim_int_enable(index);
+			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
+		}
+		else
+		{			
+			hal_rf_misc_int_enable(phy_tmr_array[index].tmr_int);
+			hal_rf_misc_set_timer(index, phy_tmr_array[index].count);
+		}
 		OSEL_EXIT_CRITICAL();
        	return PLAT_TRUE;
 	}

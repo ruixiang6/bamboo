@@ -486,7 +486,7 @@ static void test_ofdm_recv(test_rf_ofdm_t *p_test_ofdm)
 
 	switch (p_test_ofdm->mode)
 	{
-		case TEST_OFDM_RECV_SIG_DEV:	DBG_PRINTF("Signal Device Test!\r\n");
+		case TEST_OFDM_RECV_SIG_DEV: DBG_PRINTF("Signal Device Test!\r\n");
 			break;
 		case TEST_OFDM_RECV_P2P: DBG_PRINTF("P2P Test!\r\n");
 			break;

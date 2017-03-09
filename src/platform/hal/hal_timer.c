@@ -268,3 +268,225 @@ void hal_rtc_get(hal_rtc_block_t *rtc_block)
 	MSS_RTC_get_calendar_count((mss_rtc_calendar_t *)rtc_block);
 #endif
 }
+
+static struct
+{
+	bool_t used_flag;
+	hal_fpga_timer_t *hw[HAL_FPGA_TIM_NUM];
+	fpv_t tmr_handler[HAL_FPGA_TIM_NUM];
+}tim_handler = 
+{
+	.used_flag = PLAT_FALSE,
+	.hw[0] = HAL_FPGA_TIM0,
+	.hw[1] = HAL_FPGA_TIM1,
+	.hw[2] = HAL_FPGA_TIM2,
+	.hw[3] = HAL_FPGA_TIM3,
+	.hw[4] = HAL_FPGA_TIM4,
+	.hw[5] = HAL_FPGA_TIM5,
+	.hw[6] = HAL_FPGA_TIM6,
+	.hw[7] = HAL_FPGA_TIM7,
+	.tmr_handler[0] = PLAT_NULL,
+	.tmr_handler[1] = PLAT_NULL,
+	.tmr_handler[2] = PLAT_NULL,
+	.tmr_handler[3] = PLAT_NULL,
+	.tmr_handler[4] = PLAT_NULL,
+	.tmr_handler[5] = PLAT_NULL,
+	.tmr_handler[6] = PLAT_NULL,
+	.tmr_handler[7] = PLAT_NULL
+};
+
+void hal_fpga_tim_init(void)
+{
+	NVIC_ClearPendingIRQ(FabricIrq3_IRQn);
+    NVIC_EnableIRQ(FabricIrq3_IRQn);
+
+	NVIC_ClearPendingIRQ(FabricIrq4_IRQn);
+    NVIC_EnableIRQ(FabricIrq4_IRQn);
+
+	NVIC_ClearPendingIRQ(FabricIrq5_IRQn);
+    NVIC_EnableIRQ(FabricIrq5_IRQn);
+
+	NVIC_ClearPendingIRQ(FabricIrq6_IRQn);
+    NVIC_EnableIRQ(FabricIrq6_IRQn);
+
+	NVIC_ClearPendingIRQ(FabricIrq7_IRQn);
+    NVIC_EnableIRQ(FabricIrq7_IRQn);
+
+	NVIC_ClearPendingIRQ(FabricIrq8_IRQn);
+    NVIC_EnableIRQ(FabricIrq8_IRQn);
+
+	NVIC_ClearPendingIRQ(FabricIrq9_IRQn);
+    NVIC_EnableIRQ(FabricIrq9_IRQn);
+
+	NVIC_ClearPendingIRQ(FabricIrq10_IRQn);
+    NVIC_EnableIRQ(FabricIrq10_IRQn);
+
+	tim_handler.used_flag = PLAT_TRUE;	
+}
+
+bool_t hal_fpga_tim_exist(void)
+{
+	return tim_handler.used_flag;
+}
+
+void hal_fpga_tim_enable(uint8_t index)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.hw[index]->control |= (1u<<0);
+		tim_handler.hw[index]->control |= (1u<<2);
+	}
+}
+
+void hal_fpga_tim_disable(uint8_t index)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.hw[index]->control &= ~(1u<<2);
+		tim_handler.hw[index]->control &= ~(1u<<0);
+	}
+}
+
+void hal_fpga_tim_int_enable(uint8_t index)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.hw[index]->control |= (1u<<1);
+	}
+}
+
+void hal_fpga_tim_int_disable(uint8_t index)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.hw[index]->control &= ~(1u<<1);
+	}
+}
+
+void hal_fpga_tim_int_reg(uint8_t index, fpv_t func)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.tmr_handler[index] = func;
+	}
+}
+
+void hal_fpga_tim_int_unreg(uint8_t index)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.tmr_handler[index] = PLAT_NULL;
+	}
+}
+
+void hal_fpga_tim_int_clear(uint8_t index)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.hw[index]->int_clr |= (1u<<0);
+	}
+}
+
+uint32_t hal_fpga_tim_get_value(uint8_t index)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		return tim_handler.hw[index]->value;
+	}
+    else
+    {
+        return 0;
+    }
+}
+
+void hal_fpga_tim_set_value(uint8_t index, uint32_t value)
+{
+	if (index<HAL_FPGA_TIM_NUM)
+	{
+		tim_handler.hw[index]->load = value;
+	}
+}
+
+
+//timer0
+void FabricIrq3_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(0);
+
+	if (tim_handler.tmr_handler[0])
+	{
+		(*(tim_handler.tmr_handler[0]))();
+	}
+}
+//timer1
+void FabricIrq4_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(1);
+
+	if (tim_handler.tmr_handler[1])
+	{
+		(*(tim_handler.tmr_handler[1]))();
+	}
+}
+//timer2
+void FabricIrq5_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(2);
+
+	if (tim_handler.tmr_handler[2])
+	{
+		(*(tim_handler.tmr_handler[2]))();
+	}
+}
+//timer3
+void FabricIrq6_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(3);
+
+	if (tim_handler.tmr_handler[3])
+	{
+		(*(tim_handler.tmr_handler[3]))();
+	}
+}
+//timer4
+void FabricIrq7_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(4);
+
+	if (tim_handler.tmr_handler[4])
+	{
+		(*(tim_handler.tmr_handler[4]))();
+	}
+}
+//timer5
+void FabricIrq8_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(5);
+
+	if (tim_handler.tmr_handler[5])
+	{
+		(*(tim_handler.tmr_handler[5]))();
+	}
+}
+//timer6
+void FabricIrq9_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(6);
+
+	if (tim_handler.tmr_handler[6])
+	{
+		(*(tim_handler.tmr_handler[6]))();
+	}
+}
+//timer7
+void FabricIrq10_IRQHandler(void)
+{
+	hal_fpga_tim_int_clear(7);
+
+	if (tim_handler.tmr_handler[7])
+	{
+		(*(tim_handler.tmr_handler[7]))();
+	}
+}
+
+

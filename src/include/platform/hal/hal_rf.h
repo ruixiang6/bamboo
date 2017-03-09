@@ -127,7 +127,7 @@
 #define HAL_RF_OF_COARSE_SYNC_INT		(1u<<2)
 #define HAL_RF_OF_TX_FIN_INT			(1u<<1)
 #define HAL_RF_OF_TX_START_INT			(1u<<0)
-//////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
 
 typedef struct
 {
@@ -227,71 +227,72 @@ typedef struct
 #define HAL_RF_OFDM     ((hal_rf_ofdm_t *) HAL_RF_OF_BASE_ADDR)
 #define HAL_RF_MISC 	((hal_rf_misc_t *) HAL_RF_MISC_BASE_ADDR)
 
-//³õÊ¼»¯RF
+
+//åˆå§‹åŒ–RF
 void hal_rf_init(void);
 ///////////////////////////////////////////////////////////////////
-//OFDMÏµÍ³API
-//ÅäÖÃOFDM¼Ä´æÆ÷Öµ
+//OFDMç³»ç»ŸAPI
+//é…ç½®OFDMå¯„å­˜å™¨å€¼
 void hal_rf_of_set_reg(uint32_t addr, uint32_t value);
-//»ñµÃOFDM¼Ä´æÆ÷Öµ
+//èŽ·å¾—OFDMå¯„å­˜å™¨å€¼
 uint32_t hal_rf_of_get_reg(uint32_t addr);
-//¸´Î»OFDMµÄÂß¼­
+//å¤ä½OFDMçš„é€»è¾‘
 void hal_rf_of_reset(void);
-//Ê¹ÄÜOFDMÖÐ¶Ï
+//ä½¿èƒ½OFDMä¸­æ–­
 void hal_rf_of_int_enable(uint32_t int_type);
-//¹Ø±ÕOFDMÖÐ¶Ï
+//å…³é—­OFDMä¸­æ–­
 void hal_rf_of_int_disable(uint32_t int_type);
-//Çå³ýOFDMÖÐ¶Ï
+//æ¸…é™¤OFDMä¸­æ–­
 void hal_rf_of_int_clear(uint32_t int_type);
-//×¢²áÖÐ¶Ïº¯Êý
+//æ³¨å†Œä¸­æ–­å‡½æ•°
 void hal_rf_of_int_reg_handler(uint32_t int_type, fpv_t handler);
-//ÉèÖÃDMA½ÓÊÕ»òÕß·¢ËÍÍ¨µÀ
+//è®¾ç½®DMAæŽ¥æ”¶æˆ–è€…å‘é€é€šé“
 bool_t hal_rf_of_set_dma_ram(uint8_t type, void *buf, uint32_t size);
-//»ñµÃDMA½ÓÊÕ»òÕß·¢ËÍÍ¨µÀµÄµØÖ·
+//èŽ·å¾—DMAæŽ¥æ”¶æˆ–è€…å‘é€é€šé“çš„åœ°å€
 uint8_t *hal_rf_of_get_dma_ram(uint8_t type, uint32_t *size);
-//³õÊ¼»¯AGC
+//åˆå§‹åŒ–AGC
 bool_t hal_rf_of_agc_init(uint8_t val);
-//·¢ËÍÊý¾ÝÖÁtx_ram
+//å‘é€æ•°æ®è‡³tx_ram
 bool_t hal_rf_of_write_ram(void *buf, uint32_t size);
-//½ÓÊÕÊý¾Ý´Órx_ram
+//æŽ¥æ”¶æ•°æ®ä»Žrx_ram
 bool_t hal_rf_of_read_ram(void *buf, uint32_t size);
-//ÉèÖÃRF×´Ì¬
+//è®¾ç½®RFçŠ¶æ€
 bool_t hal_rf_of_set_state(uint8_t state);
-//²éÑ¯RF×´Ì¬
+//æŸ¥è¯¢RFçŠ¶æ€
 uint8_t hal_rf_of_get_state(void);
-//»ñµÃOFDM×´Ì¬
+//èŽ·å¾—OFDMçŠ¶æ€
 fp32_t hal_rf_ofdm_cal_agc(bool_t realtime);
-//»ñµÃOFDM×´Ì¬
+//èŽ·å¾—OFDMçŠ¶æ€
 uint32_t hal_rf_ofdm_cal_pow(bool_t realtime);
-//»ñµÃOFDM×´Ì¬
+//èŽ·å¾—OFDMçŠ¶æ€
 fp32_t hal_rf_ofdm_cal_rssi(bool_t realtime, bool_t *flag);
-//»ñµÃOFDM×´Ì¬
+//èŽ·å¾—OFDMçŠ¶æ€
 fp32_t hal_rf_ofdm_cal_sn(void);
 
 ///////////////////////////////////////////////////////////////////
-//Ê¹ÄÜÊ±Ï¶ÖÐ¶Ï
+//ä½¿èƒ½æ—¶éš™ä¸­æ–­
 void hal_rf_misc_int_enable(uint32_t int_type);
-//¹Ø±ÕÊ±Ï¶ÖÐ¶Ï
+//å…³é—­æ—¶éš™ä¸­æ–­
 void hal_rf_misc_int_disable(uint32_t int_type);
-//Çå³ýÊ±Ï¶ÖÐ¶Ï
+//æ¸…é™¤æ—¶éš™ä¸­æ–­
 void hal_rf_misc_int_clear(uint32_t int_type);
-//×¢²áÖÐ¶Ïº¯Êý
+//æ³¨å†Œä¸­æ–­å‡½æ•°
 void hal_rf_misc_int_reg_handler(uint32_t int_type, fpv_t handler);
-//ÉèÖÃ¶¨Ê±Æ÷
+//è®¾ç½®å®šæ—¶å™¨
 void hal_rf_misc_set_timer(uint8_t index, uint32_t value);
-//¶ÁÈ¡¶¨Ê±Æ÷
+//è¯»å–å®šæ—¶å™¨
 uint32_t hal_rf_misc_get_timer(uint8_t index);
-//ÉèÖÃPA×´Ì¬
+//è®¾ç½®PAçŠ¶æ€
 void hal_rf_misc_set_pa_ctrl(uint8_t state);
-//»ñµÃPA×´Ì¬
+//èŽ·å¾—PAçŠ¶æ€
 uint8_t hal_rf_misc_get_pa_ctrl(void);
-//ÉèÖÃrf·¢Éä¹¦ÂÊ
+//è®¾ç½®rfå‘å°„åŠŸçŽ‡
 void hal_rf_misc_set_rf_tx_pow(uint16_t pow);
-//ÉèÖÃlms·¢Éä¹¦ÂÊ
+//è®¾ç½®lmså‘å°„åŠŸçŽ‡
 void hal_rf_misc_set_lms_tx_pow(uint32_t pow);
-//ÉèÖÃÂË²¨Æ÷ÇÐ»»
+//è®¾ç½®æ»¤æ³¢å™¨åˆ‡æ¢
 void hal_rf_misc_set_rf_switch(uint16_t sw);
-//ÉèÖÃÂË²¨Æ÷´ø¿í
+//è®¾ç½®æ»¤æ³¢å™¨å¸¦å®½
 void hal_rf_misc_set_lms_bw_cfg(uint32_t bw);
 
 bool_t hal_rf_misc_calib_freq(hal_rf_freq_t *freq);
@@ -303,4 +304,5 @@ hal_rf_param_t *hal_rf_param_get(void);
 bool_t hal_rf_param_set(hal_rf_param_t *rf_param);
 
 uint8_t hal_rf_param_level(fp64_t rf_lo);
+
 #endif

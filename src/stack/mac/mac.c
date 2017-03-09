@@ -14,6 +14,7 @@ osel_event_t *mac_event_h;
 mac_timer_t mac_timer;
 kbuf_t *mac_rdy_snd_kbuf = PLAT_NULL;
 
+/////////////////////////////////////////////////////////////////////////////
 void mac_init(void)
 {
   	/*创建 MAC 任务 */   
@@ -76,7 +77,7 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 		//phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);
 		//phy_tmr_start(mac_timer.csma_id, MAC_PKT_DIFS_US);
 	}
-	
+    
 	while(1)
 	{
 		res = osel_event_wait(mac_event_h, OSEL_WAIT_FOREVER);
