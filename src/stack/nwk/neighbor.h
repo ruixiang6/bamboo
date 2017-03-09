@@ -3,7 +3,7 @@
 
 #include <nwk.h>
 
-#define NEIGHBOR_TIMEOUT				3
+#define NEIGHBOR_TIMEOUT				10
 #define NEIGHBOR_SNR_LEVEL				70
 
 

@@ -138,9 +138,12 @@ void nwk_mesh_deinit(void)
 
 void nwk_mesh_init(void)
 {
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
+	
 	list_init(&nwk_mesh_rx_list);
 
 	addr_table_init();
+	addr_table_add(p_device_info->local_eth_mac_addr, p_device_info->local_ip_addr, GET_DEV_ID(p_device_info->id));
 	broadcast_rcv_table_init();
 	neighbor_table_init();
 	route_table_init();
