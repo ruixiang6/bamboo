@@ -321,7 +321,7 @@ void hal_fpga_tim_init(void)
 	NVIC_ClearPendingIRQ(FabricIrq10_IRQn);
     NVIC_EnableIRQ(FabricIrq10_IRQn);
 
-	tim_handler.used_flag = PLAT_TRUE;	
+	tim_handler.used_flag = PLAT_TRUE;
 }
 
 bool_t hal_fpga_tim_exist(void)
@@ -350,7 +350,7 @@ void hal_fpga_tim_disable(uint8_t index)
 void hal_fpga_tim_int_enable(uint8_t index)
 {
 	if (index<HAL_FPGA_TIM_NUM)
-	{
+	{		
 		tim_handler.hw[index]->control |= (1u<<1);
 	}
 }

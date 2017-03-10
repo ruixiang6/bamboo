@@ -69,8 +69,8 @@ uint8_t phy_tmr_alloc(fpv_t func)
 				phy_tmr_array[index].used = PLAT_TRUE;
 				hal_fpga_tim_int_reg(index, func);
 				hal_fpga_tim_enable(index);
-				hal_fpga_tim_int_clear(index);
-				hal_fpga_tim_int_enable(index);
+				//hal_fpga_tim_int_clear(index);
+				//hal_fpga_tim_int_enable(index);
 				return index+1;
 			}
 		}
@@ -99,7 +99,7 @@ bool_t phy_tmr_free(uint8_t id)
 
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
 
-	index = id-1;	
+	index = id-1;
 	
 	if (phy_tmr_array[index].used)
 	{
@@ -211,7 +211,7 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 	if (id>MAX_PHY_TMR_NUM || id==0) return PLAT_FALSE;
 
 	index = id-1;
-
+	
 	OSEL_ENTER_CRITICAL();
 	if (phy_tmr_array[index].used && delay_us)
 	{
