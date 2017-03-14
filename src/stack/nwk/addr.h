@@ -53,6 +53,7 @@ extern void addr_table_query(uint8_t *p_addr, uint8_t *p_id);
 extern void addr_table_init(void);
 extern void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq);
 extern bool_t broadcast_rcv_table_judge(uint8_t src_id, uint8_t frame_seq);
+extern void addr_table_get_mount(uint8_t id, uint8_t *p);
 extern void broadcast_rcv_table_init(void);
 
 

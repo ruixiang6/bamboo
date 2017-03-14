@@ -177,6 +177,18 @@ void route_table_init(void)
 }
 
 
+void route_table_to_app(uint8_t *p)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < NODE_MAX_NUM; i++)
+	{
+		p[i*2] = route_table.item[i].next_id;
+		p[i*2+1] = route_table.item[i].hop;
+	}	
+}
+
+
 void route_table_print(void)
 {
 	uint8_t i = 0;

@@ -35,7 +35,7 @@ extern void neighbor_field_fill(neighbor_field_t *p_nf);
 extern bool_t neighbor_table_flush(uint8_t id);
 extern bool_t neighbor_table_add(uint8_t id, uint8_t snr, uint8_t snr_tx);
 extern void neighbor_table_init(void);
-
+extern void neighbor_table_print(void);
 
 #endif
 

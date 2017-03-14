@@ -42,6 +42,8 @@ extern void route_table_del(uint8_t next_id);
 extern void route_table_add(uint8_t dst_id, uint8_t next_id, uint8_t hop, uint8_t seq, uint8_t flag);
 extern uint8_t route_table_query(uint8_t dst_id, uint8_t *p_hop, uint8_t *p_seq);
 extern void route_table_init(void);
+extern void route_table_to_app(uint8_t *p);
+extern void route_table_print(void);
 
 #endif
 
