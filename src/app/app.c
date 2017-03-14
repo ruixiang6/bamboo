@@ -63,6 +63,7 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 	(void)param;
 	bool_t res;
 	int32_t sock_noblock = 1;
+	int32_t optval = 1;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	
 	DBG_TRACE("APP_TASK!\r\n");
@@ -101,10 +102,16 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 			app_msgt.s_addr_bc.sin_family = AF_INET;
 			app_msgt.s_addr_bc.sin_port = htons(APP_MSGT_DEFAULT_PORT);
 			app_msgt.s_addr_bc.sin_addr.s_addr = 0xff<<24|
-												p_device_info->remote_ip_addr[2]<<16|
-												p_device_info->remote_ip_addr[1]<<8|
-												p_device_info->remote_ip_addr[0];
+												p_device_info->local_ip_addr[2]<<16|
+												p_device_info->local_ip_addr[1]<<8|
+												p_device_info->local_ip_addr[0];
 
+/*
+			if (setsockopt(app_msgt.socket_id, SOL_SOCKET, SO_BROADCAST, (void *)&optval, sizeof(optval)) < 0)
+			{
+				DBG_TRACE("msgt socket setsockopt err!\r\n");
+			}
+*/
 			if (ioctlsocket(app_msgt.socket_id, FIONBIO, &sock_noblock) < 0)
 			{
 				DBG_TRACE("msgt socket ioctlsocket err!\r\n");
