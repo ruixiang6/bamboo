@@ -10,8 +10,8 @@
 
 void nwk_print(void)
 {
-	neighbor_table_print();
-	route_table_print();
+	//neighbor_table_print();
+	//route_table_print();
 	//addr_table_print();
 }
 
@@ -133,6 +133,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 					else if ((p_ip_hdr->dest.addr & *(uint32_t *)p_device_info->local_netmask_addr)
 						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
 					{
+						DBG_PRINTF("r");
 						//查询地址表，获取mac地址
 						addr_table_query_by_ip((uint8_t *)&p_ip_hdr->dest.addr, mac_addr, &pakcet_info->target_id);
 						if (pakcet_info->target_id > 0)
@@ -165,8 +166,9 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 						else
 						{
 							//表中找不到目标IP，此处可以构造一个ARP发过去，或是触发一个向目标IP发包的事件
-							bulid_arp_pkt(kbuf, p_ip_hdr->dest.addr);
-							return DEST_ETH | DEST_MESH;
+							//bulid_arp_pkt(kbuf, p_ip_hdr->dest.addr);
+							//return DEST_ETH | DEST_MESH;
+							return 0;
 						}
 						
 					}
@@ -176,12 +178,12 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 					{
 						//此处查询网关表，确定目的IP段的网关设备是否和本机有连接，如果有则改变源目的MAC，将数据转交
 						//目前测试，暂时直接填写
-						p_eth_hdr->dest.addr[0] = 0x11;
-						p_eth_hdr->dest.addr[1] = 0x22;
-						p_eth_hdr->dest.addr[2] = 0x33;
-						p_eth_hdr->dest.addr[3] = 0x44;
-						p_eth_hdr->dest.addr[4] = 0x55;
-						p_eth_hdr->dest.addr[5] = 0x66;
+						p_eth_hdr->dest.addr[0] = 0x4c;
+						p_eth_hdr->dest.addr[1] = 0xc0;
+						p_eth_hdr->dest.addr[2] = 0xa8;
+						p_eth_hdr->dest.addr[3] = 0xc;
+						p_eth_hdr->dest.addr[4] = 0xd1;
+						p_eth_hdr->dest.addr[5] = 0x9b;
 						
 						p_eth_hdr->src.addr[0] = p_device_info->local_eth_mac_addr[0];
 						p_eth_hdr->src.addr[1] = p_device_info->local_eth_mac_addr[1];
@@ -189,6 +191,8 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 						p_eth_hdr->src.addr[3] = p_device_info->local_eth_mac_addr[3];
 						p_eth_hdr->src.addr[4] = p_device_info->local_eth_mac_addr[4];
 						p_eth_hdr->src.addr[5] = p_device_info->local_eth_mac_addr[5];
+
+						DBG_PRINTF("s");
 
 						return DEST_ETH;
 					}
@@ -214,28 +218,39 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
                     ipaddr2_0 = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
                     ipaddr2_1 = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
 
-					//从内网收到ARP数据，则源mac的pc必定连接本节点，所以地址表中添加此条对应项
-					if (p_etharp_hdr->sipaddr.addrw[0] == ipaddr2_0)
+					//非本网段的设备发的ARP广播，本节点不处理
+					if ((*(uint32_t *)&p_etharp_hdr->sipaddr & *(uint32_t *)p_device_info->local_netmask_addr)
+						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
 					{
 						addr_table_add(p_eth_hdr->src.addr, (uint8_t *)&p_etharp_hdr->sipaddr, GET_DEV_ID(p_device_info->id));
-					}
-					
-					if (p_etharp_hdr->dipaddr.addrw[0] == ipaddr2_0
-						&& p_etharp_hdr->dipaddr.addrw[1] == ipaddr2_1)
-					{                       
-						return DEST_IP;
+
+						if (p_etharp_hdr->dipaddr.addrw[0] == ipaddr2_0 && p_etharp_hdr->dipaddr.addrw[1] == ipaddr2_1)
+						{                       
+							return DEST_IP;
+						}
+						else
+						{
+	                         //提高ARP的优先级属性
+	                        pakcet_info->frm_ctrl.qos_level = QOS_H;
+							pakcet_info->target_id = BROADCAST_ID;
+							return DEST_MESH;
+						}
 					}
 					else
 					{
-                         //提高ARP的优先级属性
-                        pakcet_info->frm_ctrl.qos_level = QOS_H;
-						pakcet_info->target_id = BROADCAST_ID;
-						return DEST_MESH;
+						return 0;
 					}
-					break;
 				case ETHTYPE_IP:
 					p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
 					if (IPH_V(p_ip_hdr) != 4) return 0;
+
+					//非本网段的IP广播，本节点不负责处理
+					if ((p_ip_hdr->src.addr & *(uint32_t *)p_device_info->local_netmask_addr)
+						!= (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
+					{
+						return 0;
+					}
+						
 					if (IPH_PROTO(p_ip_hdr) == IP_PROTO_UDP)
 					{
 						//拦截nbns和brower协议的包
