@@ -203,8 +203,32 @@ void addr_table_query(uint8_t *p_addr, uint8_t *p_id)
 			return;
 		}
 	}
+}
 
-	//DBG_PRINTF("addr_table_query error\r\n");
+
+void addr_table_query_by_ip(uint8_t *p_ip, uint8_t *p_addr, uint8_t *p_id)
+{
+	uint8_t i = 0;
+
+	*p_id = 0;
+
+	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++)
+	{
+		if ((addr_table.item[i].ip[0] == p_ip[0]) && (addr_table.item[i].ip[1] == p_ip[1]) 
+			&& (addr_table.item[i].ip[2] == p_ip[2]) && (addr_table.item[i].ip[3] == p_ip[3]))
+		{
+			p_addr[0] = addr_table.item[i].addr[0];
+			p_addr[1] = addr_table.item[i].addr[1];
+			p_addr[2] = addr_table.item[i].addr[2];
+			p_addr[3] = addr_table.item[i].addr[3];
+			p_addr[4] = addr_table.item[i].addr[4];
+			p_addr[5] = addr_table.item[i].addr[5];
+
+			*p_id = addr_table.item[i].id;
+
+			return;
+		}
+	}
 }
 
 

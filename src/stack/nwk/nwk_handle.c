@@ -16,6 +16,60 @@ void nwk_print(void)
 }
 
 
+void bulid_arp_pkt(kbuf_t *kbuf, uint32_t dst_ip)
+{
+	eth_hdr_t *p_eth_hdr = PLAT_NULL;
+	etharp_hdr_t *p_etharp_hdr = PLAT_NULL;
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
+
+	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
+	
+	kbuf->valid_len = sizeof(eth_hdr_t) + sizeof(etharp_hdr_t);
+	p_eth_hdr = (eth_hdr_t *)kbuf->offset;
+	p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr + sizeof(eth_hdr_t));
+
+	p_eth_hdr->src.addr[0] = p_device_info->local_eth_mac_addr[0];
+	p_eth_hdr->src.addr[1] = p_device_info->local_eth_mac_addr[1];
+	p_eth_hdr->src.addr[2] = p_device_info->local_eth_mac_addr[2];
+	p_eth_hdr->src.addr[3] = p_device_info->local_eth_mac_addr[3];
+	p_eth_hdr->src.addr[4] = p_device_info->local_eth_mac_addr[4];
+	p_eth_hdr->src.addr[5] = p_device_info->local_eth_mac_addr[5];
+	p_eth_hdr->dest.addr[0] = 0xff;
+	p_eth_hdr->dest.addr[1] = 0xff;
+	p_eth_hdr->dest.addr[2] = 0xff;
+	p_eth_hdr->dest.addr[3] = 0xff;
+	p_eth_hdr->dest.addr[4] = 0xff;
+	p_eth_hdr->dest.addr[5] = 0xff;
+	p_eth_hdr->type = 0x0608;
+
+	p_etharp_hdr->hwtype = 0x0100;
+	p_etharp_hdr->proto = 0x0008;
+	p_etharp_hdr->hwlen = 6;
+	p_etharp_hdr->protolen = 4;
+	p_etharp_hdr->opcode = 0x0100;
+	p_etharp_hdr->hwtype = 0x0100;
+
+	p_etharp_hdr->shwaddr.addr[0] = p_device_info->local_eth_mac_addr[0];
+	p_etharp_hdr->shwaddr.addr[1] = p_device_info->local_eth_mac_addr[1];
+	p_etharp_hdr->shwaddr.addr[2] = p_device_info->local_eth_mac_addr[2];
+	p_etharp_hdr->shwaddr.addr[3] = p_device_info->local_eth_mac_addr[3];
+	p_etharp_hdr->shwaddr.addr[4] = p_device_info->local_eth_mac_addr[4];
+	p_etharp_hdr->shwaddr.addr[5] = p_device_info->local_eth_mac_addr[5];
+
+	p_etharp_hdr->dhwaddr.addr[0] = 0;
+	p_etharp_hdr->dhwaddr.addr[1] = 0;
+	p_etharp_hdr->dhwaddr.addr[2] = 0;
+	p_etharp_hdr->dhwaddr.addr[3] = 0;
+	p_etharp_hdr->dhwaddr.addr[4] = 0;
+	p_etharp_hdr->dhwaddr.addr[5] = 0;		
+
+	p_etharp_hdr->sipaddr.addrw[0] = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
+	p_etharp_hdr->sipaddr.addrw[1] = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
+	p_etharp_hdr->dipaddr.addrw[0] = dst_ip & 0xffff;
+	p_etharp_hdr->dipaddr.addrw[1] = (dst_ip >> 16) & 0xffff;
+}
+
+
 //return 1:send to mesh
 //return 2:send to local_ip
 //return 4:send to eth
@@ -28,6 +82,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 	udp_hdr_t *p_udp_hdr = PLAT_NULL;
 	ip_addr_t ipaddr, netmask;
     uint16_t ipaddr2_0, ipaddr2_1;
+	uint8_t mac_addr[6];
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
 	//数据包来自内网的设备，如PC
@@ -53,7 +108,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 				return 0;
 			}			
 		}
-		///////////////////////////////////////
+		//目的mac是本机，还需进一步判断IP，确定是不是网关转发
 		if (p_eth_hdr->dest.addr[0] == p_device_info->local_eth_mac_addr[0]
 			&& p_eth_hdr->dest.addr[1] == p_device_info->local_eth_mac_addr[1]
 			&& p_eth_hdr->dest.addr[2] == p_device_info->local_eth_mac_addr[2]
@@ -62,7 +117,88 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			&& p_eth_hdr->dest.addr[5] == p_device_info->local_eth_mac_addr[5])
 
 		{
-			return DEST_IP;
+			switch (htons(p_eth_hdr->type))
+			{
+				case ETHTYPE_ARP:
+					return DEST_IP;
+				case ETHTYPE_IP:
+					p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr + sizeof(eth_hdr_t));
+					if (IPH_V(p_ip_hdr) != 4) return 0;
+					//如果目的IP是本机，则提交给本机上层协议栈
+					if (p_ip_hdr->dest.addr == *(uint32_t *)p_device_info->local_ip_addr)
+					{
+						return DEST_IP;
+					}
+					//如果目的IP和本机是同网段，说明已经经过网关转换
+					else if ((p_ip_hdr->dest.addr & *(uint32_t *)p_device_info->local_netmask_addr)
+						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
+					{
+						//查询地址表，获取mac地址
+						addr_table_query_by_ip((uint8_t *)&p_ip_hdr->dest.addr, mac_addr, &pakcet_info->target_id);
+						if (pakcet_info->target_id > 0)
+						{
+							p_eth_hdr->dest.addr[0] = mac_addr[0];
+							p_eth_hdr->dest.addr[1] = mac_addr[1];
+							p_eth_hdr->dest.addr[2] = mac_addr[2];
+							p_eth_hdr->dest.addr[3] = mac_addr[3];
+							p_eth_hdr->dest.addr[4] = mac_addr[4];
+							p_eth_hdr->dest.addr[5] = mac_addr[5];
+							
+							p_eth_hdr->src.addr[0] = p_device_info->local_eth_mac_addr[0];
+							p_eth_hdr->src.addr[1] = p_device_info->local_eth_mac_addr[1];
+							p_eth_hdr->src.addr[2] = p_device_info->local_eth_mac_addr[2];
+							p_eth_hdr->src.addr[3] = p_device_info->local_eth_mac_addr[3];
+							p_eth_hdr->src.addr[4] = p_device_info->local_eth_mac_addr[4];
+							p_eth_hdr->src.addr[5] = p_device_info->local_eth_mac_addr[5];
+								
+							if (pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
+							{
+								//目标IP正是本节点的挂载设备，转至eth
+								return DEST_ETH;
+							}
+							else
+							{
+								//目标IP不是李节点的挂载设备，转至mesh
+								return DEST_MESH;
+							}
+						}
+						else
+						{
+							//表中找不到目标IP，此处可以构造一个ARP发过去，或是触发一个向目标IP发包的事件
+							bulid_arp_pkt(kbuf, p_ip_hdr->dest.addr);
+							return DEST_ETH | DEST_MESH;
+						}
+						
+					}
+					//如果目的IP和本机不是同网段，但源IP是同网段，说明本机是网关，需要经过网关转换
+					else if ((p_ip_hdr->src.addr & *(uint32_t *)p_device_info->local_netmask_addr)
+						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
+					{
+						//此处查询网关表，确定目的IP段的网关设备是否和本机有连接，如果有则改变源目的MAC，将数据转交
+						//目前测试，暂时直接填写
+						p_eth_hdr->dest.addr[0] = 0x11;
+						p_eth_hdr->dest.addr[1] = 0x22;
+						p_eth_hdr->dest.addr[2] = 0x33;
+						p_eth_hdr->dest.addr[3] = 0x44;
+						p_eth_hdr->dest.addr[4] = 0x55;
+						p_eth_hdr->dest.addr[5] = 0x66;
+						
+						p_eth_hdr->src.addr[0] = p_device_info->local_eth_mac_addr[0];
+						p_eth_hdr->src.addr[1] = p_device_info->local_eth_mac_addr[1];
+						p_eth_hdr->src.addr[2] = p_device_info->local_eth_mac_addr[2];
+						p_eth_hdr->src.addr[3] = p_device_info->local_eth_mac_addr[3];
+						p_eth_hdr->src.addr[4] = p_device_info->local_eth_mac_addr[4];
+						p_eth_hdr->src.addr[5] = p_device_info->local_eth_mac_addr[5];
+
+						return DEST_ETH;
+					}
+					else
+					{
+						return 0;
+					}
+				default: return 0;
+			}
+
 		}
 		else if (p_eth_hdr->dest.addr[0] == 0xFF
 			&& p_eth_hdr->dest.addr[1] == 0xFF
@@ -71,7 +207,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			&& p_eth_hdr->dest.addr[4] == 0xFF
 			&& p_eth_hdr->dest.addr[5] == 0xFF)
 		{
-			switch(htons(p_eth_hdr->type))
+			switch (htons(p_eth_hdr->type))
 			{
 				case ETHTYPE_ARP:
 					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -146,7 +282,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			addr_table_query(p_eth_hdr->dest.addr, &pakcet_info->target_id);
 			if ((pakcet_info->target_id > 0) && (pakcet_info->target_id <= NODE_MAX_NUM) && (pakcet_info->target_id != GET_DEV_ID(p_device_info->id)))
 			{
-                switch(htons(p_eth_hdr->type))
+                switch (htons(p_eth_hdr->type))
                 {
                     case ETHTYPE_ARP:
                         //高优先级
@@ -207,13 +343,13 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			addr_table_query(p_eth_hdr->dest.addr, &pakcet_info->target_id);
 			if ((pakcet_info->target_id > 0) && (pakcet_info->target_id <= NODE_MAX_NUM))
 			{
-				if(pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
+				if (pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
 				{
                     return DEST_ETH;
 				}
                 else					
 				{
-                    switch(htons(p_eth_hdr->type))
+                    switch (htons(p_eth_hdr->type))
                     {
                         case ETHTYPE_ARP:
                             //高优先级
@@ -297,7 +433,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 				broadcast_rcv_table_add(pakcet_info->sender_id, pakcet_info->seq_num);
 			}
 			
-			switch(htons(p_eth_hdr->type))
+			switch (htons(p_eth_hdr->type))
 			{
 				case ETHTYPE_ARP:					
 					p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -349,7 +485,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 		{
 			if (pakcet_info->target_id == GET_DEV_ID(p_device_info->id))
 			{
-				switch(htons(p_eth_hdr->type))
+				switch (htons(p_eth_hdr->type))
 				{
 					case ETHTYPE_ARP:
 						p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr+sizeof(eth_hdr_t));
@@ -442,7 +578,7 @@ static void nwk_eth_rx_handler(void)
 			if (output_type & DEST_MESH)
 			{
 				packet_info.sender_id = GET_DEV_ID(p_device_info->id);
-				packet_info.src_id = GET_DEV_ID(p_device_info->id);                
+				packet_info.src_id = GET_DEV_ID(p_device_info->id);
 				if (packet_info.target_id == BROADCAST_ID)
 				{
 					packet_info.seq_num = broadcast_frame_seq++;
@@ -465,6 +601,12 @@ static void nwk_eth_rx_handler(void)
 				{
 					kbuf_free(kbuf);
 				}
+			}
+			//表明本机为网关，收到发至另一网段的数据，进行换头处理后再扔到网卡，以期另一网段的网关设备收到
+			else if (output_type & DEST_ETH)
+			{
+				//异步发送给nwk的eth
+				nwk_eth_send_asyn(kbuf);
 			}
 			else
 			{
