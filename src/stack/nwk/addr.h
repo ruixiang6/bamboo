@@ -9,6 +9,7 @@
 #define ADDR_LENGTH					6
 #define IP_LENGTH					4
 #define ADDR_TABLE_MAX_NUM			64
+#define GATEWAY_TABLE_MAX_NUM		5
 
 
 #pragma pack(1)
@@ -34,6 +35,15 @@ typedef struct _addr_table_t {
 } addr_table_t;
 #endif
 
+typedef struct _gateway_table_item_t {
+	uint8_t addr[ADDR_LENGTH];
+	uint32_t net_segment;
+} gateway_table_item_t;
+
+typedef struct _gateway_table_t {
+	gateway_table_item_t item[GATEWAY_TABLE_MAX_NUM];
+} gateway_table_t;
+
 typedef struct _broadcast_rcv_table_item_t {
 	uint8_t frame_seq;
 	uint8_t status;
@@ -51,7 +61,11 @@ typedef struct _broadcast_rcv_table_t {
 extern void addr_table_add(uint8_t *p_addr, uint8_t *p_ip, uint8_t id);
 extern void addr_table_query(uint8_t *p_addr, uint8_t *p_id);
 extern void addr_table_query_by_ip(uint8_t *p_ip, uint8_t *p_addr, uint8_t *p_id);
+extern void addr_table_get_mount(uint8_t id, uint8_t *p);
 extern void addr_table_init(void);
+extern bool_t gateway_table_query(uint8_t *p_addr, uint32_t net_segment);
+extern void gateway_table_add(uint8_t *p_addr, uint32_t net_segment);
+extern void gateway_table_init(void);
 extern void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq);
 extern bool_t broadcast_rcv_table_judge(uint8_t src_id, uint8_t frame_seq);
 extern void addr_table_get_mount(uint8_t id, uint8_t *p);

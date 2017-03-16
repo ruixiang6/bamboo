@@ -2,6 +2,11 @@
 #include <addr.h>
 
 
+
+static gateway_table_t gateway_table;
+static broadcast_rcv_table_t broadcast_rcv_table;
+
+
 #if ADDR_TABLE_MODE_QUEUE
 
 static list_t addr_queue_list;
@@ -305,7 +310,80 @@ void addr_table_print(void)
 #endif
 
 
-static broadcast_rcv_table_t broadcast_rcv_table;
+bool_t gateway_table_query(uint8_t *p_addr, uint32_t net_segment)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		if ((gateway_table.item[i].net_segment == net_segment) && (net_segment > 0))
+		{
+			p_addr[0] = gateway_table.item[i].addr[0];
+			p_addr[1] = gateway_table.item[i].addr[1];
+			p_addr[2] = gateway_table.item[i].addr[2];
+			p_addr[3] = gateway_table.item[i].addr[3];
+			p_addr[4] = gateway_table.item[i].addr[4];
+			p_addr[5] = gateway_table.item[i].addr[5];
+
+			return PLAT_TRUE;
+		}
+	}
+
+	return PLAT_FALSE;
+}
+
+
+void gateway_table_add(uint8_t *p_addr, uint32_t net_segment)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		if (gateway_table.item[i].net_segment == net_segment)
+		{
+			gateway_table.item[i].addr[0] = p_addr[0];
+			gateway_table.item[i].addr[1] = p_addr[1];
+			gateway_table.item[i].addr[2] = p_addr[2];
+			gateway_table.item[i].addr[3] = p_addr[3];
+			gateway_table.item[i].addr[4] = p_addr[4];
+			gateway_table.item[i].addr[5] = p_addr[5];
+
+			return;
+		}
+		else if (gateway_table.item[i].net_segment == 0)
+		{
+			gateway_table.item[i].net_segment = net_segment;
+			gateway_table.item[i].addr[0] = p_addr[0];
+			gateway_table.item[i].addr[1] = p_addr[1];
+			gateway_table.item[i].addr[2] = p_addr[2];
+			gateway_table.item[i].addr[3] = p_addr[3];
+			gateway_table.item[i].addr[4] = p_addr[4];
+			gateway_table.item[i].addr[5] = p_addr[5];
+
+			return;
+		}
+	}
+	
+	DBG_PRINTF("gateway_table_add error\r\n");
+
+}
+
+
+void gateway_table_init(void)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		gateway_table.item[i].net_segment = 0;
+		gateway_table.item[i].addr[0] = 0;
+		gateway_table.item[i].addr[1] = 0;
+		gateway_table.item[i].addr[2] = 0;
+		gateway_table.item[i].addr[3] = 0;
+		gateway_table.item[i].addr[4] = 0;
+		gateway_table.item[i].addr[5] = 0;
+	}
+}
 
 
 void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq)

@@ -83,6 +83,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 	ip_addr_t ipaddr, netmask;
     uint16_t ipaddr2_0, ipaddr2_1;
 	uint8_t mac_addr[6];
+	bool_t ret = PLAT_FALSE;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
 	//数据包来自内网的设备，如PC
@@ -133,7 +134,6 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 					else if ((p_ip_hdr->dest.addr & *(uint32_t *)p_device_info->local_netmask_addr)
 						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
 					{
-						DBG_PRINTF("r");
 						//查询地址表，获取mac地址
 						addr_table_query_by_ip((uint8_t *)&p_ip_hdr->dest.addr, mac_addr, &pakcet_info->target_id);
 						if (pakcet_info->target_id > 0)
@@ -177,6 +177,8 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
 					{
 						//此处查询网关表，确定目的IP段的网关设备是否和本机有连接，如果有则改变源目的MAC，将数据转交
+						//ret = gateway_table_query(p_eth_hdr->dest.addr, (p_ip_hdr->dest.addr & *(uint32_t *)p_device_info->local_netmask_addr))
+						//if (ret == PLAT_FALSE) return 0;
 						//目前测试，暂时直接填写
 						p_eth_hdr->dest.addr[0] = 0x4c;
 						p_eth_hdr->dest.addr[1] = 0xc0;
@@ -191,8 +193,6 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 						p_eth_hdr->src.addr[3] = p_device_info->local_eth_mac_addr[3];
 						p_eth_hdr->src.addr[4] = p_device_info->local_eth_mac_addr[4];
 						p_eth_hdr->src.addr[5] = p_device_info->local_eth_mac_addr[5];
-
-						DBG_PRINTF("s");
 
 						return DEST_ETH;
 					}
@@ -429,7 +429,48 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 			&& p_eth_hdr->dest.addr[5] == p_device_info->local_eth_mac_addr[5])
 
 		{
-			return DEST_IP;
+			switch (htons(p_eth_hdr->type))
+			{
+				case ETHTYPE_ARP:
+					return DEST_IP;
+				case ETHTYPE_IP:
+					p_ip_hdr = (ip_hdr_t *)((uint8_t *)p_eth_hdr + sizeof(eth_hdr_t));
+					if (IPH_V(p_ip_hdr) != 4) return 0;
+					//如果目的IP是本机，则提交给本机上层协议栈
+					if (p_ip_hdr->dest.addr == *(uint32_t *)p_device_info->local_ip_addr)
+					{
+						return DEST_IP;
+					}
+					//如果目的IP和本机不是同网段，但源IP是同网段，说明本机是网关，需要经过网关转换
+					else if ((p_ip_hdr->src.addr & *(uint32_t *)p_device_info->local_netmask_addr)
+						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
+					{
+						//此处查询网关表，确定目的IP段的网关设备是否和本机有连接，如果有则改变源目的MAC，将数据转交
+						//ret = gateway_table_query(p_eth_hdr->dest.addr, (p_ip_hdr->dest.addr & *(uint32_t *)p_device_info->local_netmask_addr))
+						//if (ret == PLAT_FALSE) return 0;
+						//目前测试，暂时直接填写
+						p_eth_hdr->dest.addr[0] = 0x4c;
+						p_eth_hdr->dest.addr[1] = 0xc0;
+						p_eth_hdr->dest.addr[2] = 0xa8;
+						p_eth_hdr->dest.addr[3] = 0xc;
+						p_eth_hdr->dest.addr[4] = 0xd1;
+						p_eth_hdr->dest.addr[5] = 0x9b;
+						
+						p_eth_hdr->src.addr[0] = p_device_info->local_eth_mac_addr[0];
+						p_eth_hdr->src.addr[1] = p_device_info->local_eth_mac_addr[1];
+						p_eth_hdr->src.addr[2] = p_device_info->local_eth_mac_addr[2];
+						p_eth_hdr->src.addr[3] = p_device_info->local_eth_mac_addr[3];
+						p_eth_hdr->src.addr[4] = p_device_info->local_eth_mac_addr[4];
+						p_eth_hdr->src.addr[5] = p_device_info->local_eth_mac_addr[5];
+
+						return DEST_ETH;
+					}
+					else
+					{
+						return 0;
+					}
+				default: return 0;
+			}
 		}
 		else if (p_eth_hdr->dest.addr[0] == 0xFF
 			&& p_eth_hdr->dest.addr[1] == 0xFF
