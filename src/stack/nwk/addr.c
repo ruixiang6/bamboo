@@ -349,11 +349,11 @@ void gateway_table_add(uint8_t *p_addr, uint32_t net_segment)
 			gateway_table.item[i].addr[4] = p_addr[4];
 			gateway_table.item[i].addr[5] = p_addr[5];
 
-			hal_flash_write(GATEWAY_TABLE_SAVE_ADDR + i*sizeof(gateway_table_item_t), (uint8_t *)&gateway_table + i*sizeof(gateway_table_item_t), sizeof(gateway_table_item_t));
-
-			return;
+			break;
 		}
 	}
+
+	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
 }
 
 
@@ -373,11 +373,11 @@ void gateway_table_del(uint32_t net_segment)
 			gateway_table.item[i].addr[4] = 0;
 			gateway_table.item[i].addr[5] = 0;
 
-			hal_flash_write(GATEWAY_TABLE_SAVE_ADDR + i*sizeof(gateway_table_item_t), (uint8_t *)&gateway_table + i*sizeof(gateway_table_item_t), sizeof(gateway_table_item_t));
-
-			return;
+			break;
 		}
 	}
+
+	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
 }
 
 
