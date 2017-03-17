@@ -16,60 +16,6 @@ void nwk_print(void)
 }
 
 
-void bulid_arp_pkt(kbuf_t *kbuf, uint32_t dst_ip)
-{
-	eth_hdr_t *p_eth_hdr = PLAT_NULL;
-	etharp_hdr_t *p_etharp_hdr = PLAT_NULL;
-	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
-
-	kbuf->offset = kbuf->base + sizeof(mac_frm_head_t);
-	
-	kbuf->valid_len = sizeof(eth_hdr_t) + sizeof(etharp_hdr_t);
-	p_eth_hdr = (eth_hdr_t *)kbuf->offset;
-	p_etharp_hdr = (etharp_hdr_t *)((uint8_t *)p_eth_hdr + sizeof(eth_hdr_t));
-
-	p_eth_hdr->src.addr[0] = p_device_info->local_eth_mac_addr[0];
-	p_eth_hdr->src.addr[1] = p_device_info->local_eth_mac_addr[1];
-	p_eth_hdr->src.addr[2] = p_device_info->local_eth_mac_addr[2];
-	p_eth_hdr->src.addr[3] = p_device_info->local_eth_mac_addr[3];
-	p_eth_hdr->src.addr[4] = p_device_info->local_eth_mac_addr[4];
-	p_eth_hdr->src.addr[5] = p_device_info->local_eth_mac_addr[5];
-	p_eth_hdr->dest.addr[0] = 0xff;
-	p_eth_hdr->dest.addr[1] = 0xff;
-	p_eth_hdr->dest.addr[2] = 0xff;
-	p_eth_hdr->dest.addr[3] = 0xff;
-	p_eth_hdr->dest.addr[4] = 0xff;
-	p_eth_hdr->dest.addr[5] = 0xff;
-	p_eth_hdr->type = 0x0608;
-
-	p_etharp_hdr->hwtype = 0x0100;
-	p_etharp_hdr->proto = 0x0008;
-	p_etharp_hdr->hwlen = 6;
-	p_etharp_hdr->protolen = 4;
-	p_etharp_hdr->opcode = 0x0100;
-	p_etharp_hdr->hwtype = 0x0100;
-
-	p_etharp_hdr->shwaddr.addr[0] = p_device_info->local_eth_mac_addr[0];
-	p_etharp_hdr->shwaddr.addr[1] = p_device_info->local_eth_mac_addr[1];
-	p_etharp_hdr->shwaddr.addr[2] = p_device_info->local_eth_mac_addr[2];
-	p_etharp_hdr->shwaddr.addr[3] = p_device_info->local_eth_mac_addr[3];
-	p_etharp_hdr->shwaddr.addr[4] = p_device_info->local_eth_mac_addr[4];
-	p_etharp_hdr->shwaddr.addr[5] = p_device_info->local_eth_mac_addr[5];
-
-	p_etharp_hdr->dhwaddr.addr[0] = 0;
-	p_etharp_hdr->dhwaddr.addr[1] = 0;
-	p_etharp_hdr->dhwaddr.addr[2] = 0;
-	p_etharp_hdr->dhwaddr.addr[3] = 0;
-	p_etharp_hdr->dhwaddr.addr[4] = 0;
-	p_etharp_hdr->dhwaddr.addr[5] = 0;		
-
-	p_etharp_hdr->sipaddr.addrw[0] = p_device_info->local_ip_addr[1]<<8|p_device_info->local_ip_addr[0];
-	p_etharp_hdr->sipaddr.addrw[1] = p_device_info->local_ip_addr[3]<<8|p_device_info->local_ip_addr[2];
-	p_etharp_hdr->dipaddr.addrw[0] = dst_ip & 0xffff;
-	p_etharp_hdr->dipaddr.addrw[1] = (dst_ip >> 16) & 0xffff;
-}
-
-
 //return 1:send to mesh
 //return 2:send to local_ip
 //return 4:send to eth
@@ -166,9 +112,9 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 						else
 						{
 							//表中找不到目标IP，此处可以构造一个ARP发过去，或是触发一个向目标IP发包的事件
-							//bulid_arp_pkt(kbuf, p_ip_hdr->dest.addr);
-							//return DEST_ETH | DEST_MESH;
-							return 0;
+							manual_arp_send(&p_ip_hdr->dest);
+							return DEST_ETH | DEST_MESH;
+							//return 0;
 						}
 						
 					}

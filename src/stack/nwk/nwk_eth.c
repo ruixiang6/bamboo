@@ -13,6 +13,12 @@ static bool_t nwk_eth_flag = PLAT_FALSE;
 //TCPIP交互的结构
 static nwk_tcpip_t nwk_tcpip;
 
+void manual_arp_send(ip_addr_t *p_ipaddr)
+{
+	etharp_output(&nwk_tcpip, NULL, p_ipaddr);
+}
+
+
 static void nwk_eth_send_cb(void *arg)
 {
 	kbuf_t *kbuf = (kbuf_t *)arg;
