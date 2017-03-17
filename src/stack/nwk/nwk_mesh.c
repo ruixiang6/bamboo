@@ -148,6 +148,8 @@ void nwk_mesh_init(void)
 	neighbor_table_init();
 	route_table_init();
 	affiliate_table_init();
+
+	gateway_table_init();
 		
 	probe_frame_init();
 	

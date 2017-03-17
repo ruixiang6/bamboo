@@ -339,18 +339,7 @@ void gateway_table_add(uint8_t *p_addr, uint32_t net_segment)
 
 	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
 	{
-		if (gateway_table.item[i].net_segment == net_segment)
-		{
-			gateway_table.item[i].addr[0] = p_addr[0];
-			gateway_table.item[i].addr[1] = p_addr[1];
-			gateway_table.item[i].addr[2] = p_addr[2];
-			gateway_table.item[i].addr[3] = p_addr[3];
-			gateway_table.item[i].addr[4] = p_addr[4];
-			gateway_table.item[i].addr[5] = p_addr[5];
-
-			return;
-		}
-		else if (gateway_table.item[i].net_segment == 0)
+		if ((gateway_table.item[i].net_segment == net_segment) || (gateway_table.item[i].net_segment == 0))
 		{
 			gateway_table.item[i].net_segment = net_segment;
 			gateway_table.item[i].addr[0] = p_addr[0];
@@ -360,29 +349,60 @@ void gateway_table_add(uint8_t *p_addr, uint32_t net_segment)
 			gateway_table.item[i].addr[4] = p_addr[4];
 			gateway_table.item[i].addr[5] = p_addr[5];
 
+			hal_flash_write(GATEWAY_TABLE_SAVE_ADDR + i*sizeof(gateway_table_item_t), (uint8_t *)&gateway_table + i*sizeof(gateway_table_item_t), sizeof(gateway_table_item_t));
+
 			return;
 		}
 	}
-	
-	DBG_PRINTF("gateway_table_add error\r\n");
+}
 
+
+void gateway_table_del(uint32_t net_segment)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		if (gateway_table.item[i].net_segment == net_segment)
+		{
+			gateway_table.item[i].net_segment = 0;
+			gateway_table.item[i].addr[0] = 0;
+			gateway_table.item[i].addr[1] = 0;
+			gateway_table.item[i].addr[2] = 0;
+			gateway_table.item[i].addr[3] = 0;
+			gateway_table.item[i].addr[4] = 0;
+			gateway_table.item[i].addr[5] = 0;
+
+			hal_flash_write(GATEWAY_TABLE_SAVE_ADDR + i*sizeof(gateway_table_item_t), (uint8_t *)&gateway_table + i*sizeof(gateway_table_item_t), sizeof(gateway_table_item_t));
+
+			return;
+		}
+	}
+}
+
+
+void gateway_table_clear(void)
+{
+	mem_clr((uint8_t *)&gateway_table, sizeof(gateway_table_t));
+	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
 }
 
 
 void gateway_table_init(void)
 {
 	uint8_t i = 0;
+	gateway_table_t *p_gateway_table = (gateway_table_t *)GATEWAY_TABLE_SAVE_ADDR;
 
+	mem_cpy((uint8_t *)&gateway_table, (uint8_t *)p_gateway_table, sizeof(gateway_table_t));
+
+	DBG_PRINTF("gateway table:\r\n");
 	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
 	{
-		gateway_table.item[i].net_segment = 0;
-		gateway_table.item[i].addr[0] = 0;
-		gateway_table.item[i].addr[1] = 0;
-		gateway_table.item[i].addr[2] = 0;
-		gateway_table.item[i].addr[3] = 0;
-		gateway_table.item[i].addr[4] = 0;
-		gateway_table.item[i].addr[5] = 0;
+		DBG_PRINTF("%x--%x:%x:%x:%x:%x:%x\r\n", gateway_table.item[i].net_segment, 
+			gateway_table.item[i].addr[0], gateway_table.item[i].addr[1], gateway_table.item[i].addr[2],
+			gateway_table.item[i].addr[3], gateway_table.item[i].addr[4], gateway_table.item[i].addr[5]);			
 	}
+	DBG_PRINTF("\r\n");
 }
 
 

@@ -11,6 +11,9 @@
 #define ADDR_TABLE_MAX_NUM			64
 #define GATEWAY_TABLE_MAX_NUM		5
 
+#define GATEWAY_TABLE_SAVE_ADDR	(HAL_FLASH_BASE_ADDR+HAL_FLASH_SIZE*2)
+#define GATEWAY_TABLE_MAX_SIZE	HAL_FLASH_SIZE
+
 
 #pragma pack(1)
 
@@ -65,6 +68,8 @@ extern void addr_table_get_mount(uint8_t id, uint8_t *p);
 extern void addr_table_init(void);
 extern bool_t gateway_table_query(uint8_t *p_addr, uint32_t net_segment);
 extern void gateway_table_add(uint8_t *p_addr, uint32_t net_segment);
+extern void gateway_table_del(uint32_t net_segment);
+extern void gateway_table_clear(void);
 extern void gateway_table_init(void);
 extern void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq);
 extern bool_t broadcast_rcv_table_judge(uint8_t src_id, uint8_t frame_seq);
