@@ -154,6 +154,6 @@ void nwk_mesh_init(void)
 	probe_frame_init();
 	
 	probe_timer_id = hal_timer_free(probe_timer_id);
-	probe_timer_id = hal_timer_alloc(NWK_PROBE_TIMEOUT, probe_timer_cb);
+	probe_timer_id = hal_timer_alloc(NWK_PROBE_TIMEOUT*10, probe_timer_cb);
 }
 
