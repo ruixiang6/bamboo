@@ -1061,21 +1061,21 @@
         </option>
         <option>
           <name>OGCoreOrChip</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GRuntimeLibSelect</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>GRuntimeLibSelectSlave</name>
           <version>0</version>
-          <state>1</state>
+          <state>2</state>
         </option>
         <option>
           <name>RTDescription</name>
-          <state>Use the normal configuration of the C/C++ runtime library. No locale interface, C locale, no file descriptor support, no multibytes in printf and scanf, and no hex floats in strtod.</state>
+          <state>Use the full configuration of the C/C++ runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
         </option>
         <option>
           <name>OGProductVersion</name>
@@ -1095,15 +1095,15 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>Default	None</state>
+          <state>M2S050	Microsemi M2S050</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>GEndianModeBE</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OGBufferedTerminalOutput</name>
@@ -1129,16 +1129,16 @@
         </option>
         <option>
           <name>RTConfigPath2</name>
-          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Normal.h</state>
+          <state>$TOOLKIT_DIR$\INC\c\DLib_Config_Full.h</state>
         </option>
         <option>
           <name>GBECoreSlave</name>
           <version>22</version>
-          <state>0</state>
+          <state>38</state>
         </option>
         <option>
           <name>OGUseCmsis</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OGUseCmsisDspLib</name>
@@ -1151,11 +1151,11 @@
         <option>
           <name>CoreVariant</name>
           <version>22</version>
-          <state>0</state>
+          <state>38</state>
         </option>
         <option>
           <name>GFPUDeviceSlave</name>
-          <state>Default	None</state>
+          <state>M2S050	Microsemi M2S050</state>
         </option>
         <option>
           <name>FPU2</name>
@@ -1174,7 +1174,7 @@
         <option>
           <name>GFPUCoreSlave2</name>
           <version>22</version>
-          <state>0</state>
+          <state>38</state>
         </option>
       </data>
     </settings>
@@ -1248,7 +1248,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111110</state>
+          <state>00000000</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -1264,11 +1264,11 @@
         </option>
         <option>
           <name>IExtraOptionsCheck</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IExtraOptions</name>
-          <state></state>
+          <state>--no_path_in_file_macros</state>
         </option>
         <option>
           <name>CCLangConformance</name>
@@ -1316,7 +1316,58 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
-          <state></state>
+          <state>$PROJ_DIR$/../</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/CMSIS</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/CMSIS/startup_iar</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_hpdma</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_pdma</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_i2c</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_nvm</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_sys_services</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_timer</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_watchdog</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_uart</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_spi</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_rtc</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_gpio</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_usb</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers/mss_ethernet_mac</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers_config</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/drivers_config/sys_config</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/hal</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/hal/CortexM3</state>
+          <state>$PROJ_DIR$/../src/platform/hal/Microsemi/hal/CortexM3/EWARM</state>
+          <state>$PROJ_DIR$\..\src\include\platform\</state>
+          <state>$PROJ_DIR$\..\src\include\platform\hal\</state>
+          <state>$PROJ_DIR$\..\src\include\platform\osel\</state>
+          <state>$PROJ_DIR$\..\src\include\platform\lib\</state>
+          <state>$PROJ_DIR$\..\src\platform\hal\uC-CPU\</state>
+          <state>$PROJ_DIR$\..\src\platform\hal\uC-CPU\Config\</state>
+          <state>$PROJ_DIR$\..\src\platform\hal\uC-CPU\ARM-Cortex-M3\IAR\</state>
+          <state>$PROJ_DIR$\..\src\platform\lib\uC-LIB\</state>
+          <state>$PROJ_DIR$\..\src\platform\lib\uC-LIB\Config\</state>
+          <state>$PROJ_DIR$\..\src\platform\lib\uC-LIB\Ports\ARM-Cortex-M3\IAR\</state>
+          <state>$PROJ_DIR$\..\src\platform\osel\uCOS-II\Source\</state>
+          <state>$PROJ_DIR$\..\src\platform\osel\uCOS-II\Config\</state>
+          <state>$PROJ_DIR$\..\src\platform\osel\uCOS-II\Ports\ARM-Cortex-M3\IAR\</state>
+          <state>$PROJ_DIR$\..\src\include\stack\</state>
+          <state>$PROJ_DIR$\..\src\stack\common\</state>
+          <state>$PROJ_DIR$\..\src\stack\phy\</state>
+          <state>$PROJ_DIR$\..\src\stack\mac\</state>
+          <state>$PROJ_DIR$\..\src\stack\nwk\</state>
+          <state>$PROJ_DIR$\..\src\stack\nwk\lwip-1.4.1\include</state>
+          <state>$PROJ_DIR$\..\src\stack\nwk\lwip-1.4.1\include\ipv4</state>
+          <state>$PROJ_DIR$\..\src\stack\nwk\lwip-1.4.1\port</state>
+          <state>$PROJ_DIR$\..\src\test\</state>
+          <state>$PROJ_DIR$\..\src\gui\Config\</state>
+          <state>$PROJ_DIR$\..\src\gui\GUI\Core\</state>
+          <state>$PROJ_DIR$\..\src\gui\GUI\LCDDriver\</state>
+          <state>$PROJ_DIR$\..\src\gui\GUI\Widget\</state>
+          <state>$PROJ_DIR$\..\src\gui\GUI\WM\</state>
+          <state>$PROJ_DIR$\..\src\gui\GUI\MemDev\</state>
+          <state>$PROJ_DIR$\..\src\include\gui\</state>
+          <state>$PROJ_DIR$\..\src\app\include\</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1336,7 +1387,7 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
@@ -1345,7 +1396,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>1</state>
         </option>
         <option>
           <name>CompilerMisraRules98</name>
@@ -1604,7 +1655,7 @@
         <option>
           <name>OOCOutputFormat</name>
           <version>3</version>
-          <state>0</state>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -1612,7 +1663,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state></state>
+          <state>project.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -1620,7 +1671,7 @@
         </option>
         <option>
           <name>OOCObjCopyEnable</name>
-          <state>0</state>
+          <state>1</state>
         </option>
       </data>
     </settings>
@@ -1727,11 +1778,11 @@
         </option>
         <option>
           <name>IlinkIcfOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>lnk0t.icf</state>
+          <state>$PROJ_DIR$/../iar/linker/project.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>
@@ -1791,7 +1842,7 @@
         </option>
         <option>
           <name>IlinkProgramEntryLabel</name>
-          <state></state>
+          <state>__iar_program_start</state>
         </option>
         <option>
           <name>DoFill</name>
@@ -2221,6 +2272,7 @@
             <name>$PROJ_DIR$\..\src\platform\hal\Microsemi\drivers\mss_ethernet_mac\m88e1340_phy.c</name>
             <excluded>
               <configuration>Debug</configuration>
+              <configuration>Release</configuration>
             </excluded>
           </file>
           <file>

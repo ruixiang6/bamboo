@@ -335,7 +335,7 @@ void hal_rf_param_init(void)
 			rf_param.ofdm_rssi_offset[index] = 0;
 			rf_param.ofdm_lms_power[index] = 0x121e;
 		}
-		rf_param.ofdm_rssi_thred = -90;
+		rf_param.ofdm_rssi_thred = -85;
 		//判断频率范围
 		rf_param.use_level = hal_rf_param_level(rf_param.freq_cal.lo);
 		hal_flash_write(HAL_RF_PARAM_SAVE_ADDR, (uint8_t *)&rf_param, sizeof(hal_rf_param_t));

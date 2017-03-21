@@ -353,8 +353,8 @@ void phy_init(void)
 	if (version>=0x5022)
 	{
 		//版本高于0x5020时，可以使用此定时来替代基带定时器
-		hal_fpga_tim_init();
-		DBG_PRINTF("Fpga Timer\r\n");
+		//hal_fpga_tim_init();
+		//DBG_PRINTF("Fpga Timer\r\n");
 	}
 }
 
