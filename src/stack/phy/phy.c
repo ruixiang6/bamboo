@@ -350,11 +350,11 @@ void phy_init(void)
 	version = phy_version();
 	
 	DBG_PRINTF("Baseband Version = 0x%X\r\n", version);
-	if (version>=0x5022)
+	if (version>=0x5031)
 	{
 		//版本高于0x5020时，可以使用此定时来替代基带定时器
-		//hal_fpga_tim_init();
-		//DBG_PRINTF("Fpga Timer\r\n");
+		hal_fpga_tim_init();
+		DBG_PRINTF("Fpga Timer\r\n");
 	}
 }
 

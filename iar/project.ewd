@@ -1530,7 +1530,7 @@
         </option>
         <option>
           <name>MemFile</name>
-          <state></state>
+          <state>$TOOLKIT_DIR$\CONFIG\debugger\Microsemi\M2S050.ddf</state>
         </option>
         <option>
           <name>RunToEnable</name>
@@ -1582,7 +1582,7 @@
         </option>
         <option>
           <name>UseFlashLoader</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CLowLevel</name>
@@ -1602,7 +1602,7 @@
         </option>
         <option>
           <name>FlashLoadersV3</name>
-          <state>$TOOLKIT_DIR$\config\flashloader\</state>
+          <state>$TOOLKIT_DIR$\config\flashloader\Microsemi\FlashM2Sxxx.board</state>
         </option>
         <option>
           <name>OCImagesSuppressCheck1</name>
@@ -2338,7 +2338,7 @@
         <option>
           <name>CCJLinkResetList</name>
           <version>6</version>
-          <state>5</state>
+          <state>7</state>
         </option>
         <option>
           <name>CCJLinkInterfaceCmdLine</name>
