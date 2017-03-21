@@ -16,6 +16,7 @@ app_audio_t app_audio;
 app_test_mac_t app_test_mac;
 app_test_nwk_t app_test_nwk;
 app_sniffer_t app_sniffer;
+app_msgt_t app_msgt;
 
 void gui_hook_func(void);//per2ms
 
@@ -50,8 +51,6 @@ void app_init(void)
 
 	//初始化测试
 	mem_set(&app_test_nwk, 0 , sizeof(app_test_nwk_t));
-	//测试阶段先直接打开
-	app_test_nwk.debug_flag = PLAT_TRUE;
 	mem_set(&app_test_mac, 0 , sizeof(app_test_mac_t));
 	list_init(&app_test_mac.kbuf_rx_list);
 	//初始化监听
@@ -63,6 +62,8 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 {
 	(void)param;
 	bool_t res;
+	int32_t sock_noblock = 1;
+	int32_t optval = 1;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	
 	DBG_TRACE("APP_TASK!\r\n");
@@ -84,8 +85,55 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 										p_device_info->remote_ip_addr[1]<<8|
 										p_device_info->remote_ip_addr[0];
 		}
-		//作为监听设备，则不打开调试
-		app_test_nwk.debug_flag = PLAT_FALSE;
+	}
+	{
+		app_msgt.socket_id = socket(AF_INET, SOCK_DGRAM, 0);
+		if (app_msgt.socket_id < 0)
+		{
+			DBG_TRACE("msgt socket err!\r\n");
+		}
+		else
+		{
+			mem_set(&app_msgt.s_addr, 0, sizeof(app_msgt.s_addr));
+			mem_set(&app_msgt.s_addr_bc, 0, sizeof(app_msgt.s_addr_bc));
+			app_msgt.s_addr.sin_family = AF_INET;
+			app_msgt.s_addr.sin_port = htons(APP_MSGT_MY_PORT);
+			app_msgt.s_addr.sin_addr.s_addr = IPADDR_ANY;
+			app_msgt.s_addr_bc.sin_family = AF_INET;
+			app_msgt.s_addr_bc.sin_port = htons(APP_MSGT_DEFAULT_PORT);
+			app_msgt.s_addr_bc.sin_addr.s_addr = 0xff<<24|
+												p_device_info->local_ip_addr[2]<<16|
+												p_device_info->local_ip_addr[1]<<8|
+												p_device_info->local_ip_addr[0];
+
+/*
+			if (setsockopt(app_msgt.socket_id, SOL_SOCKET, SO_BROADCAST, (void *)&optval, sizeof(optval)) < 0)
+			{
+				DBG_TRACE("msgt socket setsockopt err!\r\n");
+			}
+*/
+			if (ioctlsocket(app_msgt.socket_id, FIONBIO, &sock_noblock) < 0)
+			{
+				DBG_TRACE("msgt socket ioctlsocket err!\r\n");
+			}
+
+			if (bind(app_msgt.socket_id, (struct sockaddr *)&app_msgt.s_addr, sizeof(app_msgt.s_addr)) < 0)
+			{
+				DBG_TRACE("msgt socket bind err!\r\n");
+			}
+
+			app_msgt.tx_buf = kbuf_alloc(KBUF_BIG_TYPE);
+			DBG_ASSERT(app_msgt.tx_buf != PLAT_NULL);
+			app_msgt.tx_buf->offset = app_msgt.tx_buf->base + sizeof(app_msgt_frm_head_t);
+			app_msgt.tx_buf->valid_len = 0;
+			app_msgt.rx_buf = kbuf_alloc(KBUF_BIG_TYPE);
+			DBG_ASSERT(app_msgt.rx_buf != PLAT_NULL);
+			app_msgt.rx_buf->offset = app_msgt.rx_buf->base + sizeof(app_msgt_frm_head_t);
+			app_msgt.rx_buf->valid_len = 0;
+		}
+		
+		//非监听设备测试阶段暂时打开NWK打印
+		app_test_nwk.debug_flag = PLAT_TRUE;
 	}
 
 	while (1)

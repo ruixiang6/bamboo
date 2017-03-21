@@ -59,6 +59,8 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 		mac_send_entity[i].total_size = 0;		
 	}
 
+	osel_systick_delay(2000);
+
 	phy_init();
 	phy_ofdm_init(mac_ofdm_send_cb, mac_ofdm_recv_cb);
 	phy_tmr_init();

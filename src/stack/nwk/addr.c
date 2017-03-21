@@ -2,6 +2,11 @@
 #include <addr.h>
 
 
+
+static gateway_table_t gateway_table;
+static broadcast_rcv_table_t broadcast_rcv_table;
+
+
 #if ADDR_TABLE_MODE_QUEUE
 
 static list_t addr_queue_list;
@@ -203,8 +208,32 @@ void addr_table_query(uint8_t *p_addr, uint8_t *p_id)
 			return;
 		}
 	}
+}
 
-	//DBG_PRINTF("addr_table_query error\r\n");
+
+void addr_table_query_by_ip(uint8_t *p_ip, uint8_t *p_addr, uint8_t *p_id)
+{
+	uint8_t i = 0;
+
+	*p_id = 0;
+
+	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++)
+	{
+		if ((addr_table.item[i].ip[0] == p_ip[0]) && (addr_table.item[i].ip[1] == p_ip[1]) 
+			&& (addr_table.item[i].ip[2] == p_ip[2]) && (addr_table.item[i].ip[3] == p_ip[3]))
+		{
+			p_addr[0] = addr_table.item[i].addr[0];
+			p_addr[1] = addr_table.item[i].addr[1];
+			p_addr[2] = addr_table.item[i].addr[2];
+			p_addr[3] = addr_table.item[i].addr[3];
+			p_addr[4] = addr_table.item[i].addr[4];
+			p_addr[5] = addr_table.item[i].addr[5];
+
+			*p_id = addr_table.item[i].id;
+
+			return;
+		}
+	}
 }
 
 
@@ -232,6 +261,34 @@ void addr_table_init(void)
 }
 
 
+void addr_table_get_mount(uint8_t id, uint8_t *p)
+{
+	uint8_t i = 0, j = 0;
+
+	for (i = 0; i < ADDR_TABLE_MAX_NUM; i++) 
+	{
+		if (addr_table.item[i].id == id)
+		{
+			
+			p[1+j*10] = addr_table.item[i].ip[0];
+			p[1+j*10+1] = addr_table.item[i].ip[1];
+			p[1+j*10+2] = addr_table.item[i].ip[2];
+			p[1+j*10+3] = addr_table.item[i].ip[3];
+			p[1+j*10+4] = addr_table.item[i].addr[0];
+			p[1+j*10+5] = addr_table.item[i].addr[1];
+			p[1+j*10+6] = addr_table.item[i].addr[2];
+			p[1+j*10+7] = addr_table.item[i].addr[3];
+			p[1+j*10+8] = addr_table.item[i].addr[4];
+			p[1+j*10+9] = addr_table.item[i].addr[5];
+
+			j++;
+		}
+	}
+
+	p[0] = j;
+}
+
+
 void addr_table_print(void)
 {
 	uint8_t i = 0;
@@ -253,7 +310,100 @@ void addr_table_print(void)
 #endif
 
 
-static broadcast_rcv_table_t broadcast_rcv_table;
+bool_t gateway_table_query(uint8_t *p_addr, uint32_t net_segment)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		if ((gateway_table.item[i].net_segment == net_segment) && (net_segment > 0))
+		{
+			p_addr[0] = gateway_table.item[i].addr[0];
+			p_addr[1] = gateway_table.item[i].addr[1];
+			p_addr[2] = gateway_table.item[i].addr[2];
+			p_addr[3] = gateway_table.item[i].addr[3];
+			p_addr[4] = gateway_table.item[i].addr[4];
+			p_addr[5] = gateway_table.item[i].addr[5];
+
+			return PLAT_TRUE;
+		}
+	}
+
+	return PLAT_FALSE;
+}
+
+
+void gateway_table_add(uint8_t *p_addr, uint32_t net_segment)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		if ((gateway_table.item[i].net_segment == net_segment) || (gateway_table.item[i].net_segment == 0))
+		{
+			gateway_table.item[i].net_segment = net_segment;
+			gateway_table.item[i].addr[0] = p_addr[0];
+			gateway_table.item[i].addr[1] = p_addr[1];
+			gateway_table.item[i].addr[2] = p_addr[2];
+			gateway_table.item[i].addr[3] = p_addr[3];
+			gateway_table.item[i].addr[4] = p_addr[4];
+			gateway_table.item[i].addr[5] = p_addr[5];
+
+			break;
+		}
+	}
+
+	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
+}
+
+
+void gateway_table_del(uint32_t net_segment)
+{
+	uint8_t i = 0;
+
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		if (gateway_table.item[i].net_segment == net_segment)
+		{
+			gateway_table.item[i].net_segment = 0;
+			gateway_table.item[i].addr[0] = 0;
+			gateway_table.item[i].addr[1] = 0;
+			gateway_table.item[i].addr[2] = 0;
+			gateway_table.item[i].addr[3] = 0;
+			gateway_table.item[i].addr[4] = 0;
+			gateway_table.item[i].addr[5] = 0;
+
+			break;
+		}
+	}
+
+	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
+}
+
+
+void gateway_table_clear(void)
+{
+	mem_clr((uint8_t *)&gateway_table, sizeof(gateway_table_t));
+	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
+}
+
+
+void gateway_table_init(void)
+{
+	uint8_t i = 0;
+	gateway_table_t *p_gateway_table = (gateway_table_t *)GATEWAY_TABLE_SAVE_ADDR;
+
+	mem_cpy((uint8_t *)&gateway_table, (uint8_t *)p_gateway_table, sizeof(gateway_table_t));
+
+	DBG_PRINTF("gateway table:\r\n");
+	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
+	{
+		DBG_PRINTF("%x--%x:%x:%x:%x:%x:%x\r\n", gateway_table.item[i].net_segment, 
+			gateway_table.item[i].addr[0], gateway_table.item[i].addr[1], gateway_table.item[i].addr[2],
+			gateway_table.item[i].addr[3], gateway_table.item[i].addr[4], gateway_table.item[i].addr[5]);			
+	}
+	DBG_PRINTF("\r\n");
+}
 
 
 void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq)

@@ -12,6 +12,8 @@
 
 const uint8_t gps_config_fix_plus_cmd[] = "$PMTK285,4,100*38\r\n";
 
+static bool_t app_msgt_login = PLAT_FALSE;
+
 static void app_gps_handler(void);
 static void app_uart_handler(void);	
 static void app_audio_handler(void);
@@ -20,12 +22,17 @@ static void app_audio_out_proc(void);
 static void app_audio_in_proc(void);
 static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type);
 
+static void app_msgt_proc(uint16_t timeout_cnt_ms);
 static void app_test_nwk_proc(uint16_t timeout_cnt_ms);
 static void app_test_mac_proc(uint16_t timeout_cnt_ms);
 static void app_test_mac_handler(void);
 
+
 static void app_sniffer_handler(void);
 static void app_sniffer_send(kbuf_t *kbuf);
+
+static void app_msgt_handler(void);
+
 
 void app_handler(uint16_t event_type)
 {
@@ -49,6 +56,12 @@ void app_handler(uint16_t event_type)
 		osel_event_clear(app_event_h, &object);
 		app_audio_handler();		
 	}
+	else if (event_type & APP_EVENT_MSGT)
+	{
+		object = APP_EVENT_MSGT;
+		osel_event_clear(app_event_h, &object);
+		app_msgt_handler();
+	}
 	else if (event_type & APP_EVENT_SNIFFER)
 	{
 		object = APP_EVENT_SNIFFER;
@@ -71,6 +84,8 @@ void app_timeout_handler(void)
 	app_test_mac_proc(count);
 
 	app_test_nwk_proc(count);
+
+	app_msgt_proc(count);
 }
 
 static void app_gps_handler(void)
@@ -574,6 +589,18 @@ static void app_gps_proc(char_t *p_data, uint16_t size, uint8_t type)
 }
 
 
+static void app_msgt_proc(uint16_t timeout_cnt_ms)
+{
+	uint16_t object = APP_EVENT_MSGT;
+
+	//每隔1S，触发网管软件交互事件
+	if (timeout_cnt_ms % 1000 == 0)
+	{
+		osel_event_set(app_event_h, &object);
+	}
+}
+
+
 static void app_test_nwk_proc(uint16_t timeout_cnt_ms)
 {
 	if (app_test_nwk.debug_flag != PLAT_TRUE)
@@ -776,4 +803,203 @@ static void app_sniffer_send(kbuf_t *kbuf)
 }
 
 
+static bool_t app_msgt_config_pkt_parse(void)
+{
+	
+	app_msgt_frm_head_t *p_msgt_frm_head = (app_msgt_frm_head_t *)app_msgt.rx_buf->base;
+	uint8_t *p = app_msgt.rx_buf->offset;
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 
+	app_msgt.rx_buf->valid_len = 0;
+
+	if (p_msgt_frm_head->type == APP_MSGT_TYPE_CONFIG)
+	{
+		switch (p_msgt_frm_head->stype) {
+			case APP_MSGT_STYPE_CONFIG_LOGIN:
+			{
+				//此处应比较密码，待添加
+				app_msgt_login = PLAT_TRUE;
+				p_msgt_frm_head->length = 1 + sizeof(app_msgt_frm_head_t);
+				p_msgt_frm_head->stype = APP_MSGT_STYPE_CONFIG_LOGIN_ACK;
+				p[0] = 0;
+				app_msgt.rx_buf->valid_len = p_msgt_frm_head->length;
+				break;
+			}
+			case APP_MSGT_STYPE_CONFIG_ID:
+			{
+				p_msgt_frm_head->length = 4 + sizeof(app_msgt_frm_head_t);
+				p_msgt_frm_head->stype = APP_MSGT_STYPE_CONFIG_ID_ACK;
+				app_msgt.rx_buf->valid_len = p_msgt_frm_head->length;
+				if (app_msgt_login == PLAT_TRUE)
+				{
+					//此处应判断ID合法性，待添加
+					mem_cpy(p_device_info->id, p, 4);
+					p[0] = 0;
+				}
+				else
+				{
+					p[0] = 1;
+				}
+				break;
+			}
+			case APP_MSGT_STYPE_CONFIG_IP:
+			{
+				p_msgt_frm_head->length = 12 + sizeof(app_msgt_frm_head_t);
+				p_msgt_frm_head->stype = APP_MSGT_STYPE_CONFIG_IP_ACK;
+				app_msgt.rx_buf->valid_len = p_msgt_frm_head->length;
+				if (app_msgt_login == PLAT_TRUE)
+				{
+					//此处应判断IP合法性，待添加
+					mem_cpy(p_device_info->local_ip_addr, p, 4);
+					mem_cpy(p_device_info->local_netmask_addr, p+4, 4);
+					mem_cpy(p_device_info->local_netmask_addr, p+8, 4);
+					p[0] = 0;
+				}
+				else
+				{
+					p[0] = 1;
+				}
+				break;
+			}
+			case APP_MSGT_STYPE_CONFIG_POWER:
+			{
+				p_msgt_frm_head->length = 1 + sizeof(app_msgt_frm_head_t);
+				p_msgt_frm_head->stype = APP_MSGT_STYPE_CONFIG_POWER_ACK;
+				app_msgt.rx_buf->valid_len = p_msgt_frm_head->length;
+				if (app_msgt_login == PLAT_TRUE)
+				{
+					//待添加
+					p[0] = 0;
+				}
+				else
+				{
+					p[0] = 1;
+				}
+				break;
+			}
+			case APP_MSGT_STYPE_CONFIG_MOUNT:
+			{
+				p_msgt_frm_head->stype = APP_MSGT_STYPE_CONFIG_POWER_ACK;
+				if (app_msgt_login == PLAT_TRUE)
+				{
+					addr_table_get_mount(GET_DEV_ID(p_device_info->id), p);
+
+					p_msgt_frm_head->length = p[0] + sizeof(app_msgt_frm_head_t);
+					p_msgt_frm_head->stype = APP_MSGT_STYPE_CONFIG_POWER_ACK;
+					app_msgt.rx_buf->valid_len = p_msgt_frm_head->length;
+				}
+				else
+				{
+					p[0] = 0;
+				}
+				break;
+
+			}
+			case APP_MSGT_STYPE_CONFIG_FP:
+			{
+				p_msgt_frm_head->length = 1 + sizeof(app_msgt_frm_head_t);
+				p_msgt_frm_head->stype = APP_MSGT_STYPE_CONFIG_FP_ACK;
+				app_msgt.rx_buf->valid_len = p_msgt_frm_head->length;
+				if (app_msgt_login == PLAT_TRUE)
+				{
+					//待添加
+					p[0] = 0;
+				}
+				else
+				{
+					p[0] = 1;
+				}
+				break;
+			}
+			default:
+			{
+				return PLAT_FALSE;
+			}
+		}
+
+		return PLAT_TRUE;
+	}
+
+	return PLAT_FALSE;
+}
+
+
+static void app_msgt_config_pkt_recv(void)
+{
+	int32_t len;
+	bool_t ret = PLAT_FALSE;
+	struct sockaddr_in addr;
+	int32_t addr_len = sizeof(struct sockaddr_in);
+	
+	if (app_msgt.socket_id >= 0)
+	{
+		len = recvfrom(app_msgt.socket_id, app_msgt.rx_buf->base, KBUF_BIG_SIZE, 0, (struct sockaddr *)&addr, &addr_len);
+		if (len > 0)
+		{
+			ret = app_msgt_config_pkt_parse();
+			if (ret)
+			{
+				sendto(app_msgt.socket_id, app_msgt.rx_buf->base, app_msgt.rx_buf->valid_len, 0, (struct sockaddr *)&addr, sizeof(addr));
+			}
+		}
+	}	
+}
+
+
+static void app_msgt_status_pkt_fill(void)
+{	
+	app_msgt_frm_head_t *p_msgt_frm_head = (app_msgt_frm_head_t *)app_msgt.tx_buf->base;
+	uint8_t *p = app_msgt.tx_buf->offset;
+	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
+	
+	p_msgt_frm_head->head = APP_MSGT_HEAD;
+	p_msgt_frm_head->length = 150 + sizeof(app_msgt_frm_head_t);
+	p_msgt_frm_head->type = APP_MSGT_TYPE_STATUS;
+	p_msgt_frm_head->stype = APP_MSGT_STYPE_STATUS_PUSH;
+
+	//id
+	mem_cpy(p, p_device_info->id, 4);
+	//ip,netmask,gateway
+	mem_cpy(p+4, p_device_info->local_ip_addr, 4);
+	mem_cpy(p+8, p_device_info->local_netmask_addr, 4);
+	mem_cpy(p+12, p_device_info->local_gateway_addr, 4);
+	//macaddr
+	mem_cpy(p+16, p_device_info->local_eth_mac_addr, 6);
+	//功率和电量待填
+	//pos
+	mem_cpy(p+24, (uint8_t *)&p_device_info->pos, 10);
+	//route
+	route_table_to_app(p+34);
+
+	app_msgt.tx_buf->valid_len = p_msgt_frm_head->length;
+}
+
+
+static void app_msgt_status_pkt_send(void)
+{
+	int32_t len;
+
+	app_msgt_status_pkt_fill();
+	
+	if (app_msgt.socket_id >= 0)
+	{
+		len = sendto(app_msgt.socket_id, app_msgt.tx_buf->base, app_msgt.tx_buf->valid_len, 0, (struct sockaddr *)&app_msgt.s_addr_bc, sizeof(app_msgt.s_addr_bc));
+	}
+}
+
+
+static void app_msgt_handler(void)
+{
+	static uint8_t count = 0;
+
+	//每隔5S，发送状态广播包
+	count++;
+	if (count == 5)
+	{
+		count = 0;
+		app_msgt_status_pkt_send();
+	}
+
+	//每隔1S，非阻塞接收网管软件的消息
+	app_msgt_config_pkt_recv();
+}

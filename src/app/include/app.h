@@ -26,6 +26,32 @@
 
 #define APP_SNIFF_HEAD				0xD5C8
 
+#define APP_MSGT_HEAD				0xD5C8
+
+#define APP_MSGT_TYPE_SNIFF				0
+#define APP_MSGT_TYPE_STATUS			0x1
+#define APP_MSGT_TYPE_CONFIG			0x2
+
+#define APP_MSGT_STYPE_STATUS_PUSH			0
+#define APP_MSGT_STYPE_CONFIG_LOGIN			0
+#define APP_MSGT_STYPE_CONFIG_LOGIN_ACK		0x1
+#define APP_MSGT_STYPE_CONFIG_ID			0x2
+#define APP_MSGT_STYPE_CONFIG_ID_ACK		0x3
+#define APP_MSGT_STYPE_CONFIG_IP			0x4
+#define APP_MSGT_STYPE_CONFIG_IP_ACK		0x5
+#define APP_MSGT_STYPE_CONFIG_POWER			0x6
+#define APP_MSGT_STYPE_CONFIG_POWER_ACK		0x7
+#define APP_MSGT_STYPE_CONFIG_MOUNT			0x8
+#define APP_MSGT_STYPE_CONFIG_MOUNT_ACK		0x9
+#define APP_MSGT_STYPE_CONFIG_FP			0xa
+#define APP_MSGT_STYPE_CONFIG_FP_ACK		0xb
+
+
+
+#define APP_MSGT_MY_PORT			60001
+#define APP_MSGT_DEFAULT_PORT		APP_MSGT_MY_PORT
+
+
 extern osel_task_t *app_task_h;
 extern osel_event_t *app_event_h;
 
@@ -79,6 +105,21 @@ typedef struct
 	uint32_t type;
 }app_sniffer_frm_head_t;
 
+typedef struct {
+	int32_t socket_id;
+	struct sockaddr_in s_addr;
+	struct sockaddr_in s_addr_bc;
+	kbuf_t *tx_buf;
+	kbuf_t *rx_buf;
+} app_msgt_t;
+
+typedef struct {
+	uint16_t head;
+	uint16_t length;
+	uint16_t type;
+	uint16_t stype;
+} app_msgt_frm_head_t;
+
 #pragma pack()
 
 extern app_audio_t app_audio;
@@ -88,10 +129,12 @@ extern uint8_t *app_gps_buf;
 extern app_test_nwk_t app_test_nwk;
 extern app_test_mac_t app_test_mac;
 extern app_sniffer_t app_sniffer;
+extern app_msgt_t app_msgt;
 
 #define APP_EVENT_GPS			(1u<<0)
 #define APP_EVENT_UART			(1u<<1)
 #define APP_EVENT_AUDIO			(1u<<2)
+#define APP_EVENT_MSGT			(1u<<5)
 #define APP_EVENT_SNIFFER		(1u<<6)
 #define APP_EVENT_TEST_MAC		(1u<<7)
 
