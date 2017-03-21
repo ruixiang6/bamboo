@@ -15,7 +15,7 @@ const uint8_t slience_enforce_2400bps_voice[] =
 const uint8_t TEST_INTERFACE[] = 
 "\r\n\
 <***********************************************>\r\n\
-Test Software Version 4.4(Burst RF) (by qhw)\r\n\
+Test Software Version 4.5(Burst RF) (by qhw)\r\n\
 1.RF DSSS Test\r\n\
 2.RF OFDM Test\r\n\
 3.Misc Test\r\n\

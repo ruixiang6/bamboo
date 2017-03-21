@@ -27,6 +27,11 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 	{
 		return PLAT_FALSE;
 	}
+	//防止mac层没有启动，nwk和其他数据需要发送到队列中去，并堆积数据
+	if (mac_timer.send_id == 0)
+	{
+		return PLAT_FALSE;
+	}
 
 	p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
 	//填写MESH_ID
