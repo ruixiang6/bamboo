@@ -1192,10 +1192,10 @@ static void config_set_param()
 	}
 	////////设置ip//////////////
 	str = (char_t *)uart_buf;
-	str = strstr((char_t *)str, "ip=");
+	str = strstr((char_t *)str, "local_ip=");
 	if (str)
 	{
-		str = str + strlen("ip=");
+		str = str + strlen("local_ip=");
 		DBG_PRINTF("\r\n");
 		
 		for (uint8_t index=0; index<4; index++)
@@ -1207,7 +1207,7 @@ static void config_set_param()
 			str = &stop_str[1];
 		}				
 		update_flag = PLAT_TRUE;
-		DBG_PRINTF("Set IP OK!=%d:%d:%d:%d\r\n", 
+		DBG_PRINTF("Set Local IP OK!=%d:%d:%d:%d\r\n", 
 				p_device_info->local_ip_addr[0],
 				p_device_info->local_ip_addr[1],
 				p_device_info->local_ip_addr[2],

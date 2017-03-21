@@ -2,7 +2,7 @@
 #include "device.h"
 #include <string.h>
 
-#define VERSION		"V.1.0.2.1"
+#define VERSION		"V.1.0.2.2"
 #define SAVE_SIZE	(sizeof(device_info_t)-sizeof(dev_time_t)-sizeof(dev_pos_t))
 
 #define DEVICE_BASE_ADDR		HAL_FLASH_BASE_ADDR
@@ -22,7 +22,7 @@ void device_info_init(void)
 		DBG_ASSERT(pg_device_info != PLAT_NULL);
 	}
 	
-    //ÄªÃû±ØÐë¸³Öµ£¬²»È»flashµÄÊý¾ÝÅÐ¶ÏÎÊÌâ
+    //èŽ«åå¿…é¡»èµ‹å€¼ï¼Œä¸ç„¶flashçš„æ•°æ®åˆ¤æ–­é—®é¢˜
     mem_cpy(pg_device_info->id, p_flash_device_info->id, 4);
 
 	if (GET_DEV_ID(pg_device_info->id) == 0xff || GET_DEV_ID(pg_device_info->id) == 0)
@@ -93,7 +93,7 @@ void device_info_init(void)
 				pg_device_info->local_eth_mac_addr[4],
 				pg_device_info->local_eth_mac_addr[5]);
 
-	DBG_PRINTF("ip(dec)=%d:%d:%d:%d\r\n", 
+	DBG_PRINTF("local_ip(dec)=%d:%d:%d:%d\r\n", 
 				pg_device_info->local_ip_addr[0],
 				pg_device_info->local_ip_addr[1],
 				pg_device_info->local_ip_addr[2],
