@@ -64,6 +64,8 @@ OSEL_DECLARE_TASK(MAC_TASK, param)
 	phy_init();
 	phy_ofdm_init(mac_ofdm_send_cb, mac_ofdm_recv_cb);
 	phy_tmr_init();
+	//进入接收
+	phy_ofdm_recv();
 
 	mem_set(&mac_timer, 0, sizeof(mac_timer_t));
 	mac_timer.send_id = phy_tmr_alloc(mac_send_cb);

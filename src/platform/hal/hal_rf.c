@@ -868,6 +868,16 @@ fp32_t hal_rf_ofdm_cal_rssi(bool_t realtime, bool_t *flag)
 	return rssi;
 }
 
+void hal_rf_ofdm_set_rssi_thred(fp32_t rssi)
+{
+	rf_param.ofdm_rssi_thred = rssi;
+}
+
+fp32_t hal_rf_ofdm_get_rssi_thred(void)
+{
+	return rf_param.ofdm_rssi_thred;
+}
+
 fp32_t hal_rf_ofdm_cal_sn(void)
 {
 	fp32_t lqi_dB = 0; 

@@ -22,6 +22,9 @@ void phy_ofdm_send(void);
 void phy_ofdm_idle(void);
 bool_t phy_ofdm_cca(void);
 uint16_t phy_ofdm_snr(void);
+fp32_t phy_ofdm_measure_thred(void);
+void phy_ofdm_set_thred(fp32_t rssi);
+fp32_t phy_ofdm_get_thred(void);
 
 bool_t phy_ofdm_write(uint8_t *buf, uint32_t size);
 bool_t phy_ofdm_read(uint8_t *buf, uint32_t size);

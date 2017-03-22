@@ -296,6 +296,11 @@ void hal_rf_misc_set_rf_switch(uint16_t sw);
 void hal_rf_misc_set_lms_bw_cfg(uint32_t bw);
 
 bool_t hal_rf_misc_calib_freq(hal_rf_freq_t *freq);
+
+void hal_rf_ofdm_set_rssi_thred(fp32_t rssi);
+
+fp32_t hal_rf_ofdm_get_rssi_thred(void);
+
 //////////////////////////////////////////////////////////////////
 void hal_rf_param_init(void);
 

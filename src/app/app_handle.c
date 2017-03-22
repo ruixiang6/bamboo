@@ -627,15 +627,29 @@ static void app_test_mac_proc(uint16_t timeout_cnt_ms)
 	{
 		return;
 	}
-
-	if (app_test_mac.send_frm_interval != timeout_cnt_ms-interval)
-	{
-		return;
-	}
-	else
-	{
-		interval = timeout_cnt_ms;
-	}
+    
+    if (timeout_cnt_ms>=interval)
+    {
+        if (app_test_mac.send_frm_interval >= timeout_cnt_ms-interval)
+        {
+            return;
+        }
+        else
+        {
+            interval = timeout_cnt_ms;
+        }
+    }
+    else
+    {
+         if (app_test_mac.send_frm_interval >= timeout_cnt_ms+0xFFFF-interval)
+         {
+             return;
+         }
+         else
+         {
+             interval = timeout_cnt_ms;
+         }
+    }	
 
 	kbuf = kbuf_alloc(KBUF_BIG_TYPE);
 	
@@ -654,6 +668,7 @@ static void app_test_mac_proc(uint16_t timeout_cnt_ms)
 		{
 			kbuf_free(kbuf);
 		}
+        DBG_PRINTF("test_send:%d\r\n", send_info.seq_num);
 			
 	}
 	else

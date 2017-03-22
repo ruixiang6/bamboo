@@ -323,6 +323,21 @@ bool_t phy_ofdm_cca(void)
 	return flag;
 }
 
+fp32_t phy_ofdm_measure_thred(void)
+{
+	return hal_rf_ofdm_cal_rssi(PLAT_TRUE, PLAT_NULL);
+}
+
+void phy_ofdm_set_thred(fp32_t rssi)
+{
+	hal_rf_ofdm_set_rssi_thred(rssi);
+}
+
+fp32_t phy_ofdm_get_thred(void)
+{
+	return hal_rf_ofdm_get_rssi_thred();
+}
+
 uint16_t phy_ofdm_snr(void)
 {
 	uint16_t snr;
@@ -333,8 +348,6 @@ uint16_t phy_ofdm_snr(void)
     
     return snr;
 }
-
-uint8_t id = 0;
 
 void phy_test(void)
 {
@@ -350,9 +363,9 @@ void phy_init(void)
 	version = phy_version();
 	
 	DBG_PRINTF("Baseband Version = 0x%X\r\n", version);
-	if (version>=0x5031)
+	if (version>=0x5030)
 	{
-		//版本高于0x5020时，可以使用此定时来替代基带定时器
+		//版本高于xxx时，可以使用此定时来替代基带定时器
 		hal_fpga_tim_init();
 		DBG_PRINTF("Fpga Timer\r\n");
 	}
