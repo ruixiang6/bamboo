@@ -114,8 +114,6 @@ void mac_csma_cb(void)
 	uint16_t object = MAC_EVENT_CSMA;
 
 	osel_event_set(mac_event_h, &object);
-
-	//DBG_PRINTF("-");
 }
 
 void mac_ofdm_recv_cb(void)
@@ -179,7 +177,8 @@ void mac_ofdm_send_cb(void)
 	if (mac_rdy_snd_kbuf)
 	{
 		kbuf_free(mac_rdy_snd_kbuf);
-		mac_rdy_snd_kbuf = PLAT_NULL;		
+		mac_rdy_snd_kbuf = PLAT_NULL;
+		//DBG_PRINTF("V");
 	}
 	//进入接收状态
 	phy_ofdm_recv();
@@ -203,7 +202,7 @@ void mac_live_cb(void)
 		mac_rdy_snd_kbuf = PLAT_NULL;
 	}
 
-	DBG_PRINTF("[%d]", mac_timer.csma_difs_cnt);
+	DBG_PRINTF("[%d,%d]", mac_timer.csma_difs_cnt, mac_timer.live_us);
 
 	mac_timer.csma_difs_cnt = 0;
 	mac_timer.csma_slot_cnt = 0;

@@ -29,12 +29,13 @@
 #define QOS_M						2
 #define QOS_L						1
 
-#define MAC_PKT_LIVE_US			    100000
-#define MAC_PKT_PROBE_LIVE_US	    50000
-#define MAC_PKT_DIFS_US			    1550
-#define MAC_PKT_SLOT_UNIT_US	    50
+#define MAC_PKT_LIVE_US			    25000
+#define MAC_PKT_PROBE_LIVE_US	    25000
+#define MAC_PKT_REPEAT_SEND_CNT		100
+#define MAC_PKT_DIFS_US			    50
+#define MAC_PKT_SLOT_UNIT_US	    10
 #define MAC_IDLE_TO_SEND_US		    80
-#define MAC_SEND_INTERVAL_US	    2500
+#define MAC_SEND_INTERVAL_US	    1050
 #define MAC_SEND_PROBE_US			500000
 
 #pragma pack(1)
@@ -91,6 +92,7 @@ typedef struct
 	uint8_t csma_id;
 	uint8_t send_id;	
 	uint8_t live_id;
+	uint16_t live_us;
 	uint8_t idle_id;
 	uint16_t idle_us;
 	bool_t idle_state;

@@ -114,11 +114,14 @@ osel_event_res_t osel_event_set(osel_event_t *event, void *object)
 {
 	uint8_t err, offset; 
     uint16_t bitset;
+	OSEL_DECL_CRITICAL();
 
 	if (event == PLAT_NULL) 
 	{
 		return OSEL_EVENT_ERR;
 	}
+	
+	OSEL_ENTER_CRITICAL();
 
 	if (event->type == OSEL_EVENT_TYPE_SEM)
 	{
@@ -140,7 +143,11 @@ osel_event_res_t osel_event_set(osel_event_t *event, void *object)
 			event->object.sem.ext_data |= bitset;
 		}
 		err = OSSemPost((OS_EVENT *)event->handle);
-		if (err == OS_ERR_NONE) return OSEL_EVENT_NONE;
+		if (err == OS_ERR_NONE) 
+		{
+			OSEL_EXIT_CRITICAL();
+			return OSEL_EVENT_NONE;
+		}
 	}
 	else if (event->type == OSEL_EVENT_TYPE_MSG)
 	{
@@ -149,12 +156,22 @@ osel_event_res_t osel_event_set(osel_event_t *event, void *object)
 			err = OSQPostOpt((OS_EVENT *)event->handle, 
                             object,
                             OS_POST_OPT_BROADCAST);
-			if (err == OS_ERR_NONE) return OSEL_EVENT_NONE;
-			if (err == OS_ERR_Q_FULL) return OSEL_EVENT_FULL;
+			if (err == OS_ERR_NONE)
+			{
+				OSEL_EXIT_CRITICAL();
+				return OSEL_EVENT_NONE;
+			}
+			
+			if (err == OS_ERR_Q_FULL) 
+			{
+				OSEL_EXIT_CRITICAL();
+				return OSEL_EVENT_FULL;
+			}
 		}
 		
 	}
-    
+	
+    OSEL_EXIT_CRITICAL();
 	return OSEL_EVENT_ERR;	
 }
 
@@ -162,16 +179,20 @@ osel_event_res_t osel_event_clear(osel_event_t *event, void *object)
 {
 	uint8_t offset; 
     uint16_t bitclr;
+	OSEL_DECL_CRITICAL();
 
 	if (event == PLAT_NULL)
 	{
 		return OSEL_EVENT_ERR;
 	}
 
+	OSEL_ENTER_CRITICAL();
+
 	if (event->type == OSEL_EVENT_TYPE_SEM)
 	{
         if (object == PLAT_NULL)
         {
+			OSEL_EXIT_CRITICAL();
             return OSEL_EVENT_NONE;
         }
         
@@ -189,15 +210,18 @@ osel_event_res_t osel_event_clear(osel_event_t *event, void *object)
 			{
 				event->object.sem.ext_data &= ~bitclr;
 			}
-		}	
+		}
+		OSEL_EXIT_CRITICAL();
 		return OSEL_EVENT_NONE;
 	}
 	else if (event->type == OSEL_EVENT_TYPE_MSG)
 	{
 		event->object.msg.fetch = PLAT_NULL;
+		OSEL_EXIT_CRITICAL();
 		return OSEL_EVENT_NONE;
 	}
 
+	OSEL_EXIT_CRITICAL();
 	return OSEL_EVENT_ERR;
 }
 

@@ -68,7 +68,7 @@ uint8_t phy_tmr_alloc(fpv_t func)
 				phy_tmr_array[index].count = 0;
 				phy_tmr_array[index].used = PLAT_TRUE;
 				hal_fpga_tim_int_reg(index, func);
-				hal_fpga_tim_enable(index);
+				//hal_fpga_tim_enable(index);
 				//hal_fpga_tim_int_clear(index);
 				//hal_fpga_tim_int_enable(index);
 				return index+1;
@@ -144,10 +144,11 @@ bool_t phy_tmr_start(uint8_t id, uint32_t delay_us)
 	{		
 		if (hal_fpga_tim_exist())
 		{
-			phy_tmr_array[index].count = 12.5*delay_us;
-            hal_fpga_tim_int_clear(index);
+			phy_tmr_array[index].count = (25*delay_us)>>4;
+			hal_fpga_tim_int_clear(index);
 			hal_fpga_tim_int_enable(index);
 			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);
+			hal_fpga_tim_enable(index);
 		}
 		else
 		{
@@ -180,7 +181,8 @@ bool_t phy_tmr_stop(uint8_t id)
 	if (phy_tmr_array[index].used)
 	{
 		if (hal_fpga_tim_exist())
-		{			
+		{
+			hal_fpga_tim_disable(index);
 			hal_fpga_tim_int_disable(index);
 			hal_fpga_tim_int_clear(index);
 			hal_fpga_tim_set_value(index, 0);			
@@ -218,7 +220,7 @@ bool_t phy_tmr_add(uint8_t id, uint32_t delay_us)
 		if (hal_fpga_tim_exist())
 		{
 			cur_cnt = hal_fpga_tim_get_value(index);
-			phy_tmr_array[index].count = cur_cnt+(12.5*delay_us);
+			phy_tmr_array[index].count = cur_cnt+(25*delay_us)>>4;;
 			hal_fpga_tim_int_clear(index);
 			hal_fpga_tim_int_enable(index);
 			hal_fpga_tim_set_value(index, phy_tmr_array[index].count);

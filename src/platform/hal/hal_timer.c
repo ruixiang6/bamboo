@@ -321,6 +321,11 @@ void hal_fpga_tim_init(void)
 	NVIC_ClearPendingIRQ(FabricIrq10_IRQn);
     NVIC_EnableIRQ(FabricIrq10_IRQn);
 
+	for (uint8_t i=0; i<HAL_FPGA_TIM_NUM; i++)
+	{
+		tim_handler.hw[i]->prescale = 3;//鍒嗛16
+	}
+
 	tim_handler.used_flag = PLAT_TRUE;
 }
 

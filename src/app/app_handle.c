@@ -662,13 +662,15 @@ static void app_test_mac_proc(uint16_t timeout_cnt_ms)
         send_info.sender_id = GET_DEV_ID(p_device_info->id);
         send_info.target_id = BROADCAST_ID;
         send_info.seq_num = app_test_mac.send_frm_seq++;
-        send_info.frm_ctrl.reserve = PLAT_TRUE;		
+        send_info.frm_ctrl.reserve = PLAT_TRUE;
+        send_info.frm_ctrl.qos_level = 0;		
 		//发送给mac层
 		if (!mac_send(kbuf, &send_info))
 		{
 			kbuf_free(kbuf);
+            return;
 		}
-        DBG_PRINTF("test_send:%d\r\n", send_info.seq_num);
+        //DBG_PRINTF("tx=%d\r\n", send_info.seq_num);
 			
 	}
 	else
@@ -681,6 +683,8 @@ static void app_test_mac_handler(void)
 {
 	kbuf_t *kbuf = PLAT_NULL;
 	mac_frm_head_t *p_mac_frm_head;
+	static uint8_t prev_seq = 0;
+	uint16_t diff;
 	
 	OSEL_DECL_CRITICAL();
 
@@ -693,7 +697,29 @@ static void app_test_mac_handler(void)
 		if (kbuf)
 		{
 			p_mac_frm_head = (mac_frm_head_t *)kbuf->base;
+			
+			if (p_mac_frm_head->sender_id != 0x12)
+			{
+				kbuf_free(kbuf);
+				return;
+			}
+			
 			DBG_PRINTF("Q=%d\r\n", p_mac_frm_head->seq_ctrl.seq_num);
+			if (prev_seq <= p_mac_frm_head->seq_ctrl.seq_num)
+			{
+				diff = p_mac_frm_head->seq_ctrl.seq_num - prev_seq;
+			}
+			else
+			{
+				diff = p_mac_frm_head->seq_ctrl.seq_num + 256 - prev_seq;
+			}
+			
+			if (diff>1)
+			{
+				DBG_PRINTF("*******=%d\r\n", diff-1);
+			}			
+
+			prev_seq = p_mac_frm_head->seq_ctrl.seq_num;
 			kbuf_free(kbuf);
 		}
 	}while(kbuf);
@@ -1012,9 +1038,9 @@ static void app_msgt_handler(void)
 	if (count == 5)
 	{
 		count = 0;
-		app_msgt_status_pkt_send();
+		//app_msgt_status_pkt_send();
 	}
 
 	//每隔1S，非阻塞接收网管软件的消息
-	app_msgt_config_pkt_recv();
+	//app_msgt_config_pkt_recv();
 }
