@@ -157,9 +157,8 @@ static void mac_of_tx_handler(void)
 	{
 		probe_cnt = 0;
 		kbuf_probe = probe_frame_fetch();
-		//kbuf_probe = PLAT_NULL;
 		mem_clr(&send_info, sizeof(packet_info_t));
-		DBG_PRINTF("P");
+		//DBG_PRINTF("P");
 	}
 	else
 	{
@@ -226,11 +225,9 @@ static void mac_of_tx_handler(void)
 			}			
 			mac_rdy_snd_kbuf = kbuf;
 			
-			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);
-			//phy_tmr_stop(mac_timer.live_id);
+			phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);			
 			phy_tmr_start(mac_timer.live_id, MAC_PKT_LIVE_US);
-			mac_timer.live_us = MAC_PKT_LIVE_US;
-			//DBG_PRINTF("+");
+			mac_timer.live_us = MAC_PKT_LIVE_US;			
 			break;
 		}
 		OSEL_EXIT_CRITICAL();
@@ -257,8 +254,7 @@ static void mac_of_tx_handler(void)
 				{
 					mac_rdy_snd_kbuf = kbuf;
 					//添加探针信息
-					phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);
-					//phy_tmr_stop(mac_timer.live_id);
+					phy_ofdm_write(mac_rdy_snd_kbuf->base, mac_rdy_snd_kbuf->valid_len);					
 					phy_tmr_start(mac_timer.live_id, MAC_PKT_PROBE_LIVE_US);
 					mac_timer.live_us = MAC_PKT_PROBE_LIVE_US;
 				}
@@ -287,23 +283,22 @@ static void mac_of_tx_handler(void)
 		tmp = MAC_PKT_DIFS_US*(rand()%4)+MAC_PKT_DIFS_US;
 		//DBG_PRINTF("\r\na%d", tmp);
 		phy_tmr_start(mac_timer.csma_id, tmp);
-		//减去存活时间
-		mac_timer.live_us -= tmp;
+		//减去存活时间		
 		mac_timer.csma_difs_cnt = 1;
 		mac_timer.csma_slot_cnt = 0;
-		return;
 	}
 	else
 	{ 
         mac_timer.csma_type = MAC_CSMA_SLOT;
-		phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US);
 		//DBG_PRINTF("\r\nb50");
+		phy_tmr_start(mac_timer.csma_id, MAC_PKT_SLOT_UNIT_US);		
 		//减去存活时间
 		mac_timer.live_us -= MAC_PKT_SLOT_UNIT_US;
 		mac_timer.csma_difs_cnt = 0;
-		mac_timer.csma_slot_cnt = 1;
-		return;
+		mac_timer.csma_slot_cnt = 1;		
 	}
+	mac_timer.live_us -= tmp;
+	return;
 }
 
 void mac_csma_handler(void)
@@ -374,7 +369,7 @@ void mac_csma_handler(void)
 			phy_ofdm_send();
 			phy_tmr_stop(mac_timer.live_id);						
 			phy_tmr_stop(mac_timer.csma_id);
-			DBG_PRINTF("\r\nS%d", mac_timer.csma_difs_cnt);
+			//DBG_PRINTF("\r\nS%d", mac_timer.csma_difs_cnt);
 			mac_timer.csma_difs_cnt = 0;
 			mac_timer.csma_slot_cnt = 0;
 			mac_timer.csma_type = MAC_CSMA_FREE;
