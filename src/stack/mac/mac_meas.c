@@ -34,7 +34,7 @@ void mac_meas_cca_thred(void)
 		{
 			meas_cnt = 1;
 			phy_ofdm_set_thred(cca_value+5);
-            DBG_PRINTF("cca=%0.2f\r\n", cca_value);
+            //DBG_PRINTF("cca=%0.2f\r\n", cca_value);
 		}
 	}    
 }
