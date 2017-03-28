@@ -136,6 +136,7 @@ extern osel_event_t *mac_event_h;
 extern mac_timer_t mac_timer;
 extern kbuf_t *mac_rdy_snd_kbuf;
 
+void mac_idle_hook(void);
 bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info);
 void mac_handler(uint16_t event_type);
 void mac_init(void);
@@ -147,5 +148,8 @@ void mac_csma_cb(void);
 void mac_ofdm_recv_cb(void);
 void mac_ofdm_send_cb(void);
 void mac_live_cb(void);
+//@mac_meas.c
+void mac_meas_cca_thred(void);
+
 
 #endif

@@ -2565,6 +2565,9 @@
       <file>
         <name>$PROJ_DIR$\..\src\stack\mac\mac_handle.c</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\stack\mac\mac_meas.c</name>
+      </file>
     </group>
     <group>
       <name>nwk</name>

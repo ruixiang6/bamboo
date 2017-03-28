@@ -42,6 +42,11 @@ void mac_deinit(void)
 	phy_tmr_free(mac_timer.live_id);
 }
 
+void mac_idle_hook(void)
+{
+	mac_meas_cca_thred();
+}
+
 OSEL_DECLARE_TASK(MAC_TASK, param)
 {
     (void)param;

@@ -71,7 +71,9 @@ OSEL_DECLARE_TASK(INIT_TASK, param)
     /* MAC Task */
 	mac_init();
 
-	osel_task_idle_hook_reg(nwk_idle_hook);
+	osel_task_idle_hook_reg(2, nwk_idle_hook);//nwk
+
+	osel_task_idle_hook_reg(1, mac_idle_hook);//mac
 	
     while(1)
 	{

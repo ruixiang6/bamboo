@@ -4,16 +4,16 @@
 #define STK_MEM_SIZE	(16*1024)
 #define STK_MEM_WORD_SIZE	(STK_MEM_SIZE/sizeof(OS_STK))
 
-/*ÈÎÎñ¹ÜÀí³Ø*/
+/*ä»»åŠ¡ç®¡ç†æ± */
 static pool_t *task_pool;
-/*ÈÎÎñ¶ÑÕ»¹ÜÀí*/
+/*ä»»åŠ¡å †æ ˆç®¡ç†*/
 static OS_STK* task_heap_free_ptr;
 static uint32_t task_heap_free_size;
-/*ÈÎÎñ¶ÑÕ»*/
+/*ä»»åŠ¡å †æ ˆ*/
 #pragma location = ".task_stk"
 __no_init static OS_STK task_stk[STK_MEM_WORD_SIZE];
 
-static fpv_t osel_task_idle_hook = PLAT_NULL;
+static fpv_t osel_task_idle_hook[OS_MAX_TASKS];
 
 bool_t osel_task_init(void)
 {
@@ -25,6 +25,11 @@ bool_t osel_task_init(void)
 	
 	task_heap_free_ptr = task_stk;
 	task_heap_free_size = STK_MEM_WORD_SIZE;
+
+	for(uint8_t index=0; index<OS_MAX_TASKS; index++)
+	{
+		osel_task_idle_hook[index] = PLAT_NULL;
+	}
 
 	return PLAT_TRUE;
 }
@@ -160,15 +165,21 @@ bool_t osel_task_query(osel_task_t *task)
 	}
 }
 
-void osel_task_idle_hook_reg(fpv_t func)
+void osel_task_idle_hook_reg(uint8_t index, fpv_t func)
 {
-	osel_task_idle_hook = func;
+	if (index<OS_MAX_TASKS)
+	{
+		osel_task_idle_hook[index] = func;
+	}
 }
 
 void osel_idle_task_hook(void)
 {
-	if (osel_task_idle_hook)
+	for (uint8_t index=0; index<OS_MAX_TASKS; index++)
 	{
-		osel_task_idle_hook();
-	}
+		if (osel_task_idle_hook[index])
+		{
+			osel_task_idle_hook[index]();
+		}
+	}	
 }

@@ -113,7 +113,8 @@ bool_t osel_task_resume(osel_task_t *task);
  */
 bool_t osel_task_query(osel_task_t *task);
 
-void osel_task_idle_hook_reg(fpv_t func);
+void osel_task_idle_hook_reg(uint8_t index, fpv_t func);
+
 #endif
 
 /**
