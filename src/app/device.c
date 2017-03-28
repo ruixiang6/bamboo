@@ -2,7 +2,7 @@
 #include "device.h"
 #include <string.h>
 
-#define VERSION		"V.1.0.2.5"
+#define VERSION		"V.1.0.2.6"
 #define SAVE_SIZE	(sizeof(device_info_t)-sizeof(dev_time_t)-sizeof(dev_pos_t))
 
 #define DEVICE_BASE_ADDR		HAL_FLASH_BASE_ADDR

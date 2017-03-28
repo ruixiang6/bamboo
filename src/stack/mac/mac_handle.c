@@ -75,6 +75,14 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 		list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
 		mac_send_entity[0].total_size += kbuf->valid_len;
 		mac_send_entity[0].total_num++;
+		if (mac_send_entity[0].total_num > QOS_H_LIST_MAX_NUM)
+		{
+			kbuf = (kbuf_t *)list_front_get(&mac_send_entity[0].tx_list);
+			if (kbuf)
+			{
+				kbuf_free(kbuf);
+			}
+		}
 		OSEL_EXIT_CRITICAL();
 	}
 	else if (p_mac_frm_head->frm_ctrl.qos_level == QOS_M)
@@ -83,7 +91,15 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
         list_behind_put(&kbuf->list, &mac_send_entity[1].tx_list);
         mac_send_entity[1].total_size += kbuf->valid_len;
         mac_send_entity[1].total_num++;
-        OSEL_EXIT_CRITICAL();	
+		if (mac_send_entity[1].total_num > QOS_M_LIST_MAX_NUM)
+		{
+			kbuf = (kbuf_t *)list_front_get(&mac_send_entity[1].tx_list);
+			if (kbuf)
+			{
+				kbuf_free(kbuf);
+			}
+		}
+        OSEL_EXIT_CRITICAL();
 	}
 	else if (p_mac_frm_head->frm_ctrl.qos_level == QOS_L)
 	{
@@ -91,10 +107,19 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 		list_behind_put(&kbuf->list, &mac_send_entity[2].tx_list);
 		mac_send_entity[2].total_size += kbuf->valid_len;
 		mac_send_entity[2].total_num++;
+		if (mac_send_entity[2].total_num > QOS_L_LIST_MAX_NUM)
+		{
+			kbuf = (kbuf_t *)list_front_get(&mac_send_entity[2].tx_list);
+			if (kbuf)
+			{
+				kbuf_free(kbuf);
+			}
+		}
 		OSEL_EXIT_CRITICAL();
 	}
 	else if (p_mac_frm_head->frm_ctrl.reserve)
 	{
+		//测试数据优先发送
 		OSEL_ENTER_CRITICAL();
 		list_behind_put(&kbuf->list, &mac_send_entity[0].tx_list);
 		mac_send_entity[0].total_size += kbuf->valid_len;
@@ -198,7 +223,7 @@ static void mac_of_tx_handler(void)
 		if (kbuf)
 		{
 			mac_send_entity[loop].total_size -= kbuf->valid_len;
-			mac_send_entity[loop].total_num--;			
+			mac_send_entity[loop].total_num--;
 			OSEL_EXIT_CRITICAL();
 			//添加探针信息
 			if (kbuf_probe)

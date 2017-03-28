@@ -29,6 +29,10 @@
 #define QOS_M						2
 #define QOS_L						1
 
+#define QOS_H_LIST_MAX_NUM			300
+#define QOS_M_LIST_MAX_NUM			500
+#define QOS_L_LIST_MAX_NUM			800
+
 #define MAC_PKT_LIVE_US			    25000
 #define MAC_PKT_PROBE_LIVE_US	    25000
 #define MAC_PKT_REPEAT_SEND_CNT		100
