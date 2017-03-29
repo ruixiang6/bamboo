@@ -1,8 +1,9 @@
 #include <platform.h>
 #include "device.h"
 #include <string.h>
+#include <Control_IO.h>
 
-#define VERSION		"V.1.0.2.6"
+#define VERSION		"V.1.1.0.0"
 #define SAVE_SIZE	(sizeof(device_info_t)-sizeof(dev_time_t)-sizeof(dev_pos_t))
 
 #define DEVICE_BASE_ADDR		HAL_FLASH_BASE_ADDR
@@ -13,6 +14,7 @@ static device_info_t *pg_device_info = PLAT_NULL;
 void device_info_init(void)
 {
 	device_info_t *p_flash_device_info = (device_info_t *)DEVICE_BASE_ADDR;
+	device_type_t dev_type = DEV_NULL;
 
 	DBG_ASSERT(SAVE_SIZE <= DEVICE_MEM_MAX_SIZE);
 
@@ -76,8 +78,19 @@ void device_info_init(void)
 	{
 		mem_cpy(pg_device_info, p_flash_device_info, SAVE_SIZE);
 		strcpy(pg_device_info->version, VERSION);
-	}	
-	DBG_PRINTF("software version=%s\r\n", pg_device_info->version);
+		
+	}
+	
+	dev_type = ControlIO_Get_Version();
+
+	if (dev_type != DEV_NULL)
+	{
+		SET_TYPE_ID(pg_device_info->id, dev_type);
+	}
+	
+	DBG_PRINTF("Hardware version=%d\r\n", GET_TYPE_ID(pg_device_info->id));
+	
+	DBG_PRINTF("Software version=%s\r\n", pg_device_info->version);
 
 	DBG_PRINTF("type(dec)=%d\r\nmode(dec)=%d\r\ndev_id(hex)=%x\r\nmesh_id(hex)=%x\r\n", 
 				GET_TYPE_ID(pg_device_info->id),

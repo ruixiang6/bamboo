@@ -1,21 +1,13 @@
-
 #include <platform.h>
 #include <test.h>
 #include <mss_gpio.h>
 #include <Control_IO.h>
 #include <device.h>
 
-const uint8_t slience_enforce_2400bps_voice[] = 
-{
-	//0000
-	0x13,0xec,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xBC,0xA8,0xC2,0x42,0x72,0x78,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-};
-
-
 const uint8_t TEST_INTERFACE[] = 
 "\r\n\
 <***********************************************>\r\n\
-Test Software Version 4.5(Burst RF) (by qhw)\r\n\
+Test Software Version 5.0.0(Burst RF) (by qhw)\r\n\
 1.RF DSSS Test\r\n\
 2.RF OFDM Test\r\n\
 3.Misc Test\r\n\
@@ -91,6 +83,22 @@ static void test_rf_timeout_cb(void);
 
 volatile test_cb_t test_cb;
 
+static ambe_cb_t ambe_cb;
+static list_t audio_send_list;
+static uint16_t ptt_timer_id = 0;
+static uint8_t *audio_recv_buf = PLAT_NULL;
+static pool_t *audio_send_pool = PLAT_NULL;
+static void ptt_detect_proc(void);
+static void ptt_timer_cb(void);
+static void ptt_proc(void);
+static void ambe_in_proc(void);
+static void ambe_out_proc(void);
+static void ambe_epr_proc_cb(void);
+static void ambe_dpe_proc_cb(void);
+static void test_ambe_handler(void);
+
+static void test_oled_handler(void);
+
 static void config_set_register(void);
 static void config_set_rf_param(void);
 static void config_set_param(void);
@@ -134,9 +142,11 @@ void test_handler(void)
 	//使能串口
 	hal_uart_rx_irq_enable(UART_DEBUG, test_uart_rx_cb);		
 	//使能dma_ofdm接收和发送中断
-	hal_rf_of_int_reg_handler(HAL_RF_OF_DMA_TX_FIN_INT, test_ofdm_dma_send_cb);
-	hal_rf_of_int_reg_handler(HAL_RF_OF_DMA_RX_FIN_INT, test_ofdm_dma_recv_cb);
-	//使能ofdm接收和发送中断
+	//hal_rf_of_int_reg_handler(HAL_RF_OF_DMA_TX_FIN_INT, test_ofdm_dma_send_cb);
+	//hal_rf_of_int_reg_handler(HAL_RF_OF_DMA_RX_FIN_INT, test_ofdm_dma_recv_cb);
+	//将rf关闭处于idle态
+    hal_rf_of_set_state(HAL_RF_OF_IDLE_M);	
+    //使能ofdm接收和发送中断
 	hal_rf_of_int_reg_handler(HAL_RF_OF_TX_FIN_INT, test_ofdm_send_cb);
 	hal_rf_of_int_reg_handler(HAL_RF_OF_RX_FIN_INT, test_ofdm_recv_cb);	
 	////////////////////////////////////////////////
@@ -850,7 +860,9 @@ static void test_config_handler(void)
 static void test_lpddr_handler(void)
 {
 	volatile uint32_t start_addr = 0xa0000000;
-	
+	OSEL_DECL_CRITICAL();
+
+	OSEL_ENTER_CRITICAL();
 	DBG_PRINTF("32bits ddr write\r\n");	
 	for (uint32_t loop=0; loop<DDR_32BIT_SIZE; loop++)
 	{
@@ -889,7 +901,8 @@ static void test_lpddr_handler(void)
 		{
 		  	DBG_PRINTF("err\r\n");
 		}
-	}	
+	}
+	OSEL_EXIT_CRITICAL();
 }
 
 extern void netio_init(void);//@netio.c
@@ -901,8 +914,70 @@ static void test_eth_handler(void)
 }
 
 static void test_power_handler(void)
-{	
+{
+	rtc_info_t rtc_info;
+	battery_info_t bat_info;
+	temper_info_t temper_info;
+	bool_t res;
 	
+	hal_sensor_init(0);
+
+	rtc_info.year = 17;
+	rtc_info.month = 3;
+	rtc_info.date = 29;
+	rtc_info.hour = 16;
+	rtc_info.minute = 18;
+	rtc_info.second = 30;
+
+	hal_sensor_set_data(SEN_RTC, &rtc_info);
+
+	while(!test_cb.uart_recv_date)
+	{
+		res = hal_sensor_get_data(SEN_BAT, &bat_info);
+		DBG_PRINTF("******BATTERY*******\r\n");
+		if (res)
+		{			
+			DBG_PRINTF("bat_info(temper)=%d\r\n", bat_info.temper);
+			DBG_PRINTF("bat_info(voltage)=%d\r\n", bat_info.voltage);
+			DBG_PRINTF("bat_info(current)=%d\r\n", bat_info.current);
+			DBG_PRINTF("bat_info(rsoc)=%d\r\n", bat_info.rsoc);
+			DBG_PRINTF("bat_info(fcc)=%d\r\n", bat_info.fcc);
+		}
+		else
+		{
+			DBG_PRINTF("BAT Failed\r\n");
+		}
+		
+		res = hal_sensor_get_data(SEN_RTC, &rtc_info);
+		DBG_PRINTF("******RTC********\r\n");
+		if (res)
+		{
+			
+			DBG_PRINTF("rtc_info(year)=%d\r\n", rtc_info.year+2000);
+			DBG_PRINTF("rtc_info(month)=%d\r\n", rtc_info.month);
+			DBG_PRINTF("rtc_info(date)=%d\r\n", rtc_info.date);
+			DBG_PRINTF("rtc_info(hour)=%d\r\n", rtc_info.hour);
+			DBG_PRINTF("rtc_info(minute)=%d\r\n", rtc_info.minute);
+			DBG_PRINTF("rtc_info(second)=%d\r\n", rtc_info.second);		
+		}		
+		else
+		{
+			DBG_PRINTF("RTC Failed\r\n");
+		}
+		
+		res = hal_sensor_get_data(SEN_TEMPER, &temper_info);
+		DBG_PRINTF("******TEMP*******\r\n");
+		if (res)
+		{
+			
+			DBG_PRINTF("temper_info=%0.2f\r\n", temper_info.temper);
+		}
+		else
+		{
+			DBG_PRINTF("Temperatrue Failed\r\n");
+		}
+		delay_ms(1000);
+	}
 }
 
 static void bd_print(void)
@@ -1351,7 +1426,7 @@ static void test_misc_handler(void)
 		DBG_PRINTF("AMBE Test\r\n");		
 		test_cb.uart_state = UART_MENU_STATE;
 		test_cb.uart_recv_date = PLAT_FALSE;
-		//test_ambe_handler();		
+		test_ambe_handler();		
 		while(!test_cb.uart_recv_date);
 		DBG_PRINTF("AMBE Test Over\r\n");		
 		break;
@@ -1359,7 +1434,7 @@ static void test_misc_handler(void)
 		DBG_PRINTF("OLED Test\r\n");		
 		test_cb.uart_state = UART_MENU_STATE;
 		test_cb.uart_recv_date = PLAT_FALSE;
-		//test_oled_handler();
+		test_oled_handler();
 		DBG_PRINTF("OLED Test Over\r\n");
 		break;		
 	case STEP_LEVEL3_5://ETH 
@@ -1377,7 +1452,7 @@ static void test_misc_handler(void)
 		hal_uart_printf(UART_DEBUG, "Power Test\r\n");		
 		test_cb.uart_state = UART_MENU_STATE;
 		test_cb.uart_recv_date = PLAT_FALSE;
-		//test_power_handler();		
+		test_power_handler();		
 		while(!test_cb.uart_recv_date);
 		DBG_PRINTF("Power Test Over\r\n");
 		break;	
@@ -1424,6 +1499,230 @@ static void test_ofdm_recv_cb(void)
 	{
 		hal_rf_of_read_ram(p_of_frm, p_of_frm->head.frm_len*HAL_RF_OF_REG_MAX_RAM_SIZE);
 	}
+}
+
+/////////////////////AMBE Test Function Start////////////////////
+static void ptt_detect_proc(void)
+{
+	if (ambe_cb.m_ptt_state == AMBE_PTT_UP
+			&& hal_audio_is_ptt() 
+			&& ambe_cb.m_flag.ptt_cnt == 0
+			&& ambe_cb.m_flag.ptt_flag == PLAT_FALSE)
+	{
+		ambe_cb.m_flag.ptt_cnt = 1;
+		ptt_timer_id = hal_timer_free(ptt_timer_id);
+		ptt_timer_id = hal_timer_alloc(50000, ptt_timer_cb);
+	}
+	else if (ambe_cb.m_ptt_state == AMBE_PTT_DOWN
+		&& !hal_audio_is_ptt() 
+		&& ambe_cb.m_flag.ptt_cnt == 0
+		&& ambe_cb.m_flag.ptt_flag == PLAT_FALSE)
+	{
+		ambe_cb.m_flag.ptt_cnt = 1;
+		ptt_timer_id = hal_timer_free(ptt_timer_id);
+		ptt_timer_id = hal_timer_alloc(50000, ptt_timer_cb);
+	}
+}
+
+static void ptt_timer_cb(void)
+{
+	ptt_timer_id = hal_timer_free(ptt_timer_id);
+	
+	if (ambe_cb.m_ptt_state == AMBE_PTT_UP)
+	{
+		if (hal_audio_is_ptt())
+		{			
+			ambe_cb.m_flag.ptt_cnt++;
+			if (ambe_cb.m_flag.ptt_cnt == 10)
+			{
+				ambe_cb.m_flag.ptt_cnt = 0;
+				ambe_cb.m_flag.ptt_flag = PLAT_TRUE;
+				ambe_cb.m_ptt_state = AMBE_PTT_DOWN;				
+			}
+			else
+			{
+				ptt_timer_id = hal_timer_alloc(50000, ptt_timer_cb);
+			}
+		}
+		else
+		{
+			ambe_cb.m_flag.ptt_cnt = 0;
+			ambe_cb.m_ptt_state = AMBE_PTT_UP;
+		}
+	}
+	else if (ambe_cb.m_ptt_state == AMBE_PTT_DOWN)
+	{
+		if (!hal_audio_is_ptt())
+		{			
+			ambe_cb.m_flag.ptt_cnt++;
+			if (ambe_cb.m_flag.ptt_cnt == 10)
+			{
+				ambe_cb.m_flag.ptt_cnt = 0;
+				ambe_cb.m_flag.ptt_flag = PLAT_TRUE;
+				ambe_cb.m_ptt_state = AMBE_PTT_UP;				
+			}
+			else
+			{
+				ptt_timer_id = hal_timer_alloc(50000, ptt_timer_cb);
+			}
+		}
+		else
+		{
+			ambe_cb.m_flag.ptt_cnt = 0;
+			ambe_cb.m_ptt_state = AMBE_PTT_DOWN;
+		}
+	}
+}
+
+static void ambe_out_proc(void)
+{
+	hal_audio_read(audio_recv_buf);
+    if (audio_recv_buf[0] != 0x13 
+        || audio_recv_buf[1] != 0xEC)
+    {
+        DBG_PRINTF("ReadHeadErr=[%x][%x]", 
+                   audio_recv_buf[0],
+                   audio_recv_buf[1]);
+        return;
+    }
+	if (ambe_cb.m_ptt_state == AMBE_PTT_DOWN)
+	{
+		audio_send_t *p_audio_m = NULL;
+
+		p_audio_m = (audio_send_t *)pool_alloc(audio_send_pool);		
+		
+		if (p_audio_m)
+		{
+			p_audio_m->p_buf = (uint8_t *)p_audio_m+sizeof(audio_send_t);
+			mem_cpy(p_audio_m->p_buf, audio_recv_buf, AUDIO_BUF_SIZE);
+		  	p_audio_m->p_buf[3] = 0x00;
+			p_audio_m->p_buf[4] = 0x00;
+			p_audio_m->p_buf[5] = 0x00;
+			p_audio_m->p_buf[6] = 0x00;
+			p_audio_m->p_buf[7] = 0x00;
+			p_audio_m->p_buf[8] = 0x00;
+			p_audio_m->p_buf[9] = 0x00;
+			list_behind_put(&p_audio_m->list, &audio_send_list);
+            DBG_PRINTF("R");
+		}
+		else
+		{
+			DBG_PRINTF("#");
+		}
+	}
+    //DBG_PRINTF("O");	
+}
+
+static void ambe_in_proc(void)
+{
+	uint8_t temp_buf[36];
+	audio_send_t *p_audio_m = NULL;
+	static uint8_t loss_audio_cnt = 0;
+	uint8_t rate = hal_audio_get_rate();
+	
+	if (ambe_cb.m_ptt_state == AMBE_PTT_DOWN)
+	{
+		hal_audio_write((uint8_t *)&slience_enforce_voice[rate][0]);
+		return;
+	}
+	
+	p_audio_m = (audio_send_t *)list_front_get(&audio_send_list);
+	if (p_audio_m)
+	{
+		loss_audio_cnt = 0;
+		hal_audio_write(p_audio_m->p_buf);		
+		pool_free(audio_send_pool, p_audio_m);
+        DBG_PRINTF("P");
+	}
+	else
+	{
+		loss_audio_cnt++;
+		mem_set(temp_buf, 0, AUDIO_BUF_SIZE);
+		if (loss_audio_cnt<3)
+		{
+			temp_buf[0] = 0x13;
+			temp_buf[1] = 0xec;
+			temp_buf[2] = 0x00;
+			temp_buf[3] = 0x80;//control_0 repeat frame
+			hal_audio_write(temp_buf);
+		}
+		else
+		{
+			//control_0 enforce silence frame
+			hal_audio_write((uint8_t *)&slience_enforce_voice[rate][0]);
+			loss_audio_cnt = 10;
+            DBG_PRINTF(".");
+		}		
+	}
+}
+
+static void test_ambe_handler(void)
+{  
+	list_init(&audio_send_list);
+	
+	audio_recv_buf = heap_alloc(AUDIO_BUF_SIZE, PLAT_TRUE);
+	DBG_ASSERT(audio_recv_buf != PLAT_NULL);
+	audio_send_pool = (pool_t *)pool_create(AUDIO_BUF_NUM, sizeof(audio_send_t)+AUDIO_BUF_SIZE);
+	DBG_ASSERT(audio_send_pool != PLAT_NULL);
+	
+	mem_set(&ambe_cb, 0, sizeof(ambe_cb_t));
+    
+    hal_audio_init();
+	
+	hal_audio_set_rate(VOICE_9600BPS_FEC_LEVEL);
+	DBG_PRINTF("AMBERate=%d\r\n", hal_audio_get_rate());
+
+	hal_audio_change_gain(3);
+		
+	while(!test_cb.uart_recv_date)
+	{
+		ptt_detect_proc();	
+		
+        if (hal_audio_is_read())
+		{
+			ambe_out_proc();           
+		}       
+		
+        if (hal_audio_is_write())
+		{
+			ambe_in_proc();      		
+		}
+
+		if (ambe_cb.m_flag.ptt_flag == PLAT_TRUE)
+		{
+			//ptt_proc();
+			ambe_cb.m_flag.ptt_flag = PLAT_FALSE;
+		}
+	}
+	
+	hal_audio_deinit();
+}
+
+static void test_oled_handler(void)
+{
+	uint8_t x,y;
+
+	hal_lcd_init();
+
+	while(!test_cb.uart_recv_date)
+	{
+		for (x=0; x<LCD_X_DOT; x++)
+		{
+			for (y=0; y<LCD_X_DOT; y++)
+			{
+				hal_lcd_set_pixel(x, y, 1);
+			}
+		}
+		
+		for (x=0; x<LCD_X_DOT; x++)
+		{
+			for (y=0; y<LCD_X_DOT; y++)
+			{
+				hal_lcd_set_pixel(x, y, 0);
+			}
+		}
+	}
+	hal_lcd_backlight(PLAT_FALSE);
 }
 
 

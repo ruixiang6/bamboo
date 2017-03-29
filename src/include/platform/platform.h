@@ -62,4 +62,6 @@ typedef void (*fppv_t)(void *);   /* function pointer void and parameter void po
 #include <hal_usb.h>
 #include <hal_ethernet.h>
 #include <hal_audio.h>
+#include <hal_lcd.h>
+#include <hal_sensor.h>
 #endif

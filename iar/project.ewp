@@ -2392,6 +2392,9 @@
         <name>$PROJ_DIR$\..\src\platform\hal\hal_gpio.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\src\platform\hal\hal_lcd.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\src\platform\hal\hal_mem.c</name>
       </file>
       <file>
@@ -2399,6 +2402,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\src\platform\hal\hal_rf.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\src\platform\hal\hal_sensor.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\src\platform\hal\hal_timer.c</name>

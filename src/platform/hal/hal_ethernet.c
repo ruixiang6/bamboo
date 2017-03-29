@@ -1,4 +1,5 @@
 #include <platform.h>
+#include <Control_IO.h>
 #include <mss_gpio.h>
 #include <mss_ethernet_mac.h>
 #include <mss_ethernet_mac_regs.h>
@@ -29,9 +30,11 @@ bool_t hal_eth_init(hal_eth_mcb_t *eth_mcb)
 	{
 		return PLAT_FALSE;
 	}
-	
-	hal_gpio_output(GPIO_ETH, 1);
-	delay_ms(1000);
+
+	hal_gpio_output(ETH_RST, 0);
+	delay_ms(200);
+	hal_gpio_output(ETH_RST, 1);
+	delay_ms(200);
 
 	MSS_MAC_cfg_struct_def_init(&eth_config);
 
@@ -52,7 +55,7 @@ bool_t hal_eth_init(hal_eth_mcb_t *eth_mcb)
     res = MSS_MAC_init(&eth_config);
 	if (res == PLAT_FALSE)
 	{
-		hal_gpio_output(GPIO_ETH, 0);
+		hal_gpio_output(ETH_RST, 0);
 		return PLAT_FALSE;
 	}
    
@@ -80,9 +83,9 @@ bool_t hal_eth_deinit()
 	MSS_MAC_cfg_struct_def_init(&eth_config);
 	MSS_MAC_init(&eth_config);
 
-	hal_gpio_output(GPIO_ETH, 0);
+	hal_gpio_output(ETH_RST, 0);
 
-	delay_ms(1000);
+	delay_ms(200);
 	
 	eth_tx_cb = PLAT_NULL;
 	eth_rx_cb = PLAT_NULL;

@@ -1,9 +1,9 @@
 #include <platform.h>
 #include <mss_gpio.h>
 #include <mss_spi.h>
+#include <Control_IO.h>
 
-
-//±¾°æ±¾Ö§³ÖOLEDÉè±¸SPD0301    
+//æœ¬ç‰ˆæœ¬æ”¯æŒOLEDè®¾å¤‡SPD0301    
 /***************************************************************************//**
  * Mask of transfer protocol and SPO, SPH bits within control register.
  */
@@ -75,9 +75,7 @@
 #define FIFO_DEEP_32BITS	8
 #define FIFO_DEEP_8BITS		32
 
-
 static inline void oled_write(bool_t dc, uint8_t data);
-static void hal_lcd_test(void);
 static void hal_lcd_cfg(void);
 static uint8_t *p_display_ram = NULL;
 
@@ -87,48 +85,16 @@ static void ssp0_write(bool_t dc, uint8_t data);
 #define CMD 	0
 #define DATA 	1
 
-#define OLED_BKL()   		{MSS_GPIO_config(MSS_GPIO_23, MSS_GPIO_OUTPUT_MODE);}
-#define OLED_BKL_L() 		{MSS_GPIO_set_output(MSS_GPIO_23, 0);}
-#define OLED_BKL_H()   		{MSS_GPIO_set_output(MSS_GPIO_23, 1);}
+#define OLED_DC_L()    		{hal_gpio_output(OLCD_DC, 0);}
+#define OLED_DC_H()   		{hal_gpio_output(OLCD_DC, 1);}
 
-#define OLED_CS()   		{MSS_GPIO_config(MSS_GPIO_24, MSS_GPIO_OUTPUT_MODE);}
-#define OLED_CS_L() 		{MSS_GPIO_set_output(MSS_GPIO_24, 0);}
-#define OLED_CS_H()   		{MSS_GPIO_set_output(MSS_GPIO_24, 1);}
-
-#define OLED_MOSI()   		{MSS_GPIO_config(MSS_GPIO_28, MSS_GPIO_OUTPUT_MODE);}
-#define OLED_MOSI_L()    	{MSS_GPIO_set_output(MSS_GPIO_28, 0);}
-#define OLED_MOSI_H()   	{MSS_GPIO_set_output(MSS_GPIO_28, 1);}
-
-#define OLED_CLK()   		{MSS_GPIO_config(MSS_GPIO_27, MSS_GPIO_OUTPUT_MODE);}
-#define OLED_CLK_L()    	{MSS_GPIO_set_output(MSS_GPIO_27, 0);}
-#define OLED_CLK_H()   		{MSS_GPIO_set_output(MSS_GPIO_27, 1);}
-
-#define OLED_DC()   		{MSS_GPIO_config(MSS_GPIO_26, MSS_GPIO_OUTPUT_MODE);}
-#define OLED_DC_L()    		{MSS_GPIO_set_output(MSS_GPIO_26, 0);}
-#define OLED_DC_H()   		{MSS_GPIO_set_output(MSS_GPIO_26, 1);}
-
-#define OLED_RST()   		{MSS_GPIO_config(MSS_GPIO_25, MSS_GPIO_OUTPUT_MODE);}
-#define OLED_RST_L()    	{MSS_GPIO_set_output(MSS_GPIO_25, 0);}
-#define OLED_RST_H()   		{MSS_GPIO_set_output(MSS_GPIO_25, 1);}
+#define OLED_RST_L()    	{hal_gpio_output(OLCD_RST, 0);}
+#define OLED_RST_H()   		{hal_gpio_output(OLCD_RST, 1);}
 
 void hal_lcd_init(void)
 {
-	OLED_BKL();
-	OLED_BKL_H();
-	
-	//OLED_CS();
-	//OLED_CS_H();	
-	
-	//OLED_MOSI();
-	//OLED_MOSI_L();
-	
-	//OLED_CLK();
-	//OLED_CLK_L();
-	
-	OLED_DC();
 	OLED_DC_L();
 	
-	OLED_RST();
 	OLED_RST_L();
 
 	ssp0_init();
@@ -276,11 +242,11 @@ void hal_lcd_backlight(bool_t state)
 {
 	if (state) 
 	{
-		OLED_BKL_H();
+		
 	}
 	else
 	{
-		OLED_BKL_L();
+		
 	}
 }
 
@@ -311,9 +277,9 @@ static inline void oled_write(bool_t dc, uint8_t data)
         {
             OLED_MOSI_L();            
         }
-        //delay_us(1);       // ´óÓÚ200ns
+        //delay_us(1);       // å¤§äºŽ200ns
         OLED_CLK_H();
-        //delay_us(1);       // ´óÓÚ200ns
+        //delay_us(1);       // å¤§äºŽ200ns
     }
     OLED_CS_H();
 #endif
@@ -375,7 +341,7 @@ static inline void ssp0_write(bool_t dc, uint8_t data)
     }	
 	/* Set slave select */
 	hw_reg->SLAVE_SELECT |= ((uint32_t)1 << (uint32_t)MSS_SPI_SLAVE_0);
-	loop = 0x0f;//×îÐ¡ÑÓÊ±
+	loop = 0x0f;//æœ€å°å»¶æ—¶
     while(loop--);
     while (hw_reg->STATUS & TX_FIFO_FULL_MASK);
 	hw_reg->TX_DATA = data;

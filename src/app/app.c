@@ -40,11 +40,11 @@ void app_init(void)
 	DBG_ASSERT(app_gps_buf != PLAT_NULL);
 	hal_uart_rx_irq_enable(UART_BD, gps_recv_callback);		
 	
-	//ControlIO_Power(AUDIO_POWER, PLAT_TRUE);
+	ControlIO_Power(HD_AMBE1K_POWER, PLAT_TRUE);
 	mem_set(&app_audio, 0, sizeof(app_audio_t));
 	list_init(&app_audio.kbuf_rx_list);
 	list_init(&app_audio.kbuf_tx_list);
-	hal_audio_init(PLAT_NULL, PLAT_NULL);
+	hal_audio_init();
 	
 	//初始化串口回调
 	hal_uart_rx_irq_enable(UART_DEBUG, uart_recv_callback);

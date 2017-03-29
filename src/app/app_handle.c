@@ -301,10 +301,11 @@ static void app_audio_in_proc(void)
 	uint8_t audio_send_buf[AUDIO_BUF_SIZE];	
 	static uint8_t loss_audio_cnt = 0;
 	static uint16_t send_audio_len = 0;
+	uint8_t rate = hal_audio_get_rate();
 
 	if (app_audio.mcb.m_ptt_state == AMBE_PTT_DOWN)
 	{
-		hal_audio_write((uint8_t *)slience_enforce_2400bps_voice);            
+		hal_audio_write((uint8_t *)&slience_enforce_voice[rate][0]);
 		//DBG_PRINTF("0");
         return;
 	}
@@ -356,7 +357,7 @@ static void app_audio_in_proc(void)
 		}
 		else
 		{
-			hal_audio_write((uint8_t *)slience_enforce_2400bps_voice);            
+			hal_audio_write((uint8_t *)&slience_enforce_voice[rate][0]);
 			loss_audio_cnt = 10;
             //DBG_PRINTF(".");
 		}
