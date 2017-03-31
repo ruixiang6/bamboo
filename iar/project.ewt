@@ -2097,7 +2097,22 @@
   <group>
     <name>app</name>
     <group>
+      <name>BMP</name>
+      <file>
+        <name>$PROJ_DIR$\..\src\app\BMP\bootimg.c</name>
+      </file>
+    </group>
+    <group>
+      <name>Font</name>
+      <file>
+        <name>$PROJ_DIR$\..\src\app\Font\SimSun_12.c</name>
+      </file>
+    </group>
+    <group>
       <name>include</name>
+      <file>
+        <name>$PROJ_DIR$\..\src\app\include\app.h</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\..\src\app\include\Control_IO.h</name>
       </file>
@@ -2109,6 +2124,12 @@
       <name>Logic</name>
       <file>
         <name>$PROJ_DIR$\..\src\app\Logic\Control_IO.c</name>
+      </file>
+    </group>
+    <group>
+      <name>Surface</name>
+      <file>
+        <name>$PROJ_DIR$\..\src\app\Surface\SurfaceDlg.c</name>
       </file>
     </group>
     <file>
