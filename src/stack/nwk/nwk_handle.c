@@ -10,8 +10,8 @@
 
 void nwk_print(void)
 {
-	//neighbor_table_print();
-	//route_table_print();
+	neighbor_table_print();
+	route_table_print();
 	//addr_table_print();
 }
 

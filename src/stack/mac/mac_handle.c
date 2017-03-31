@@ -80,6 +80,8 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 			kbuf = (kbuf_t *)list_front_get(&mac_send_entity[0].tx_list);
 			if (kbuf)
 			{
+				mac_send_entity[0].total_size -= kbuf->valid_len;
+				mac_send_entity[0].total_num--;
 				kbuf_free(kbuf);
 			}
 		}
@@ -96,6 +98,8 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 			kbuf = (kbuf_t *)list_front_get(&mac_send_entity[1].tx_list);
 			if (kbuf)
 			{
+				mac_send_entity[1].total_size -= kbuf->valid_len;
+				mac_send_entity[1].total_num--;
 				kbuf_free(kbuf);
 			}
 		}
@@ -112,6 +116,8 @@ bool_t mac_send(kbuf_t *kbuf, packet_info_t *p_send_info)
 			kbuf = (kbuf_t *)list_front_get(&mac_send_entity[2].tx_list);
 			if (kbuf)
 			{
+				mac_send_entity[2].total_size -= kbuf->valid_len;
+				mac_send_entity[2].total_num--;
 				kbuf_free(kbuf);
 			}
 		}

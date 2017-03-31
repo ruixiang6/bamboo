@@ -133,7 +133,7 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 		}
 		
 		//非监听设备测试阶段暂时打开NWK打印
-		app_test_nwk.debug_flag = PLAT_TRUE;
+		app_test_nwk.debug_flag = PLAT_FALSE;
 	}
 
 	while (1)

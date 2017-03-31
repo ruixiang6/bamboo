@@ -85,7 +85,7 @@ void app_timeout_handler(void)
 
 	app_test_nwk_proc(count);
 
-	app_msgt_proc(count);
+	//app_msgt_proc(count);
 }
 
 static void app_gps_handler(void)
@@ -1038,9 +1038,9 @@ static void app_msgt_handler(void)
 	if (count == 5)
 	{
 		count = 0;
-		//app_msgt_status_pkt_send();
+		app_msgt_status_pkt_send();
 	}
 
 	//每隔1S，非阻塞接收网管软件的消息
-	//app_msgt_config_pkt_recv();
+	app_msgt_config_pkt_recv();
 }
