@@ -55,7 +55,7 @@ void app_init(void)
 	list_init(&app_test_mac.kbuf_rx_list);
 	//初始化监听
 	mem_set(&app_sniffer, 0 , sizeof(app_sniffer_t));
-	list_init(&app_sniffer.kbuf_rx_list);
+	list_init(&app_sniffer.kbuf_rx_list);	
 }
 
 OSEL_DECLARE_TASK(APP_TASK, param)
@@ -66,7 +66,7 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 	int32_t optval = 1;
 	device_info_t *p_device_info = device_info_get(PLAT_FALSE);
 	
-	DBG_TRACE("APP_TASK!\r\n");
+	DBG_TRACE("APP_TASK!\r\n");	
 
 	if (GET_MODE_ID(p_device_info->id) == MODE_SINFFER)
 	{
@@ -133,8 +133,10 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 		}
 		
 		//非监听设备测试阶段暂时打开NWK打印
-		app_test_nwk.debug_flag = PLAT_TRUE;
+		app_test_nwk.debug_flag = PLAT_FALSE;
 	}
+
+	paintBootDlg();
 
 	while (1)
 	{

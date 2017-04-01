@@ -11,7 +11,7 @@
 #ifndef __OSEL_KERNEL_H
 #define __OSEL_KERNEL_H
 
-#define OSEL_DECL_CRITICAL()	 uint32_t cpu_sr
+#define OSEL_DECL_CRITICAL()	uint32_t cpu_sr
 #define OSEL_ENTER_CRITICAL()	OS_ENTER_CRITICAL()
 #define OSEL_EXIT_CRITICAL()	OS_EXIT_CRITICAL()
 

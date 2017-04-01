@@ -46,11 +46,8 @@
 #define APP_MSGT_STYPE_CONFIG_FP			0xa
 #define APP_MSGT_STYPE_CONFIG_FP_ACK		0xb
 
-
-
 #define APP_MSGT_MY_PORT			60001
 #define APP_MSGT_DEFAULT_PORT		APP_MSGT_MY_PORT
-
 
 extern osel_task_t *app_task_h;
 extern osel_event_t *app_event_h;
@@ -130,6 +127,11 @@ extern app_test_nwk_t app_test_nwk;
 extern app_test_mac_t app_test_mac;
 extern app_sniffer_t app_sniffer;
 extern app_msgt_t app_msgt;
+
+#include <GUI.h>
+
+extern GUI_CONST_STORAGE GUI_BITMAP bmbootimg;
+
 
 #define APP_EVENT_GPS			(1u<<0)
 #define APP_EVENT_UART			(1u<<1)

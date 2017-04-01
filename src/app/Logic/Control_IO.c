@@ -34,7 +34,7 @@ void ControlIO_Init(void)
 			ControlIO_Power(HD_GPS_POWER, PLAT_TRUE);
 			//ControlIO_Power(HD_PA2_POWER, PLAT_TRUE);
 			ControlIO_Power(HD_SPEAKER_POWER, PLAT_TRUE);			
-			//ControlIO_Power(HD_AMBE1K_POWER, PLAT_TRUE);
+			ControlIO_Power(HD_AMBE1K_POWER, PLAT_TRUE);
 			ControlIO_Power(HD_PHY_WIFI_POWER, PLAT_TRUE);
 			ControlIO_Power(HD_OLED_POWER, PLAT_TRUE);
 			break;

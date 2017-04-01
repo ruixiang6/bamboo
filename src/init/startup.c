@@ -6,6 +6,7 @@
 #include <nwk_eth.h>
 #include <mac.h>
 #include "Control_IO.h"
+#include <app.h>
 
 #define INIT_TASK_STK_SIZE			256
 #define INIT_TASK_PRIO				OSEL_TASK_PRIO(0)
@@ -14,6 +15,7 @@ OSEL_DECLARE_TASK(INIT_TASK, param);
 osel_task_t *init_task_h;
 
 extern void app_init(void);
+extern void gui_proc(void);
 
 void main(void)
 {	
@@ -70,10 +72,14 @@ OSEL_DECLARE_TASK(INIT_TASK, param)
 	nwk_init();
     /* MAC Task */
 	mac_init();
+	/* GUI */
+   	GUI_Init();
 
 	osel_task_idle_hook_reg(2, nwk_idle_hook);//nwk
 
 	osel_task_idle_hook_reg(1, mac_idle_hook);//mac
+
+	osel_task_idle_hook_reg(5, gui_proc);//mac
 	
     while(1)
 	{
