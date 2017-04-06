@@ -20,6 +20,27 @@ typedef enum
 
 typedef enum
 {
+	RIGHT_DOWN_KEY = (1u<<0),
+	LEFT_DOWN_KEY = (1u<<1),
+	MID_KEY = (1u<<2),
+	LEFT_UP_KEY = (1u<<3),
+	RIGHT_UP_KEY = (1u<<4),
+	PTT_KEY = (1u<<5),
+}key_t;
+
+typedef struct
+{
+  	int32_t right_down;
+	int32_t left_down;
+	int32_t left_up;
+	int32_t right_up;
+	int32_t mid;
+	int32_t ptt;
+}key_status_t;
+
+
+typedef enum
+{
 	HD_PA1_6002_POWER 	= (1u<<0),
 	HD_PA2_POWER 		= (1u<<1),
 	HD_SPEAKER_POWER	= (1u<<2),
@@ -68,6 +89,7 @@ device_type_t ControlIO_Get_Version(void);
 void ControlIO_PowerOff(void);
 void ControlIO_DecPowerOn(void);
 uint8_t ControlIO_Power(uint8_t power, bool_t flag);
+uint8_t ControlIO_KeyStatus(void);
 
 
 #endif

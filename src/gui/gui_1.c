@@ -8,10 +8,12 @@
 #include <device.h>
 
 static osel_event_t *gui_lock_event_handle;
+static key_status_t key;
 
 void GUI_X_Init(void)
 {
-	//Empty
+	//
+	mem_clr(&key, sizeof(key_status_t));
 }
 
 void LCD_InitPanel()
@@ -22,7 +24,75 @@ void LCD_InitPanel()
 
 void GUI_Key_X_Exec(void)
 {
-
+	uint8_t key_value;
+	
+	key_value = ControlIO_KeyStatus();
+	////////////////////////////////
+	if (key_value & PTT_KEY)
+	{
+		//DBG_TRACE("PTT_KEY Pressed\r\n");
+		key.ptt++;
+	}
+	else
+	{
+		key.ptt = 0;
+	}
+	/////////////////////////////////
+	if (key_value & RIGHT_DOWN_KEY)
+	{
+		//DBG_TRACE("RIGHT_DOWN_KEY Pressed\r\n");
+		key.right_down++;
+        if (key.right_down>1000)
+		{
+			//关机
+			uint16_t object = APP_EVENT_SHUTDOWN;
+			osel_event_set(app_event_h, &object);
+		}
+	}
+	else
+	{
+		key.right_down = 0;
+	}
+	/////////////////////////////////
+	if (key_value & LEFT_DOWN_KEY)
+	{
+		//DBG_TRACE("LEFT_DOWN_KEY Pressed\r\n");
+		key.left_down++;
+	}
+	else
+	{
+		key.left_down = 0;
+	}
+	/////////////////////////////////
+	if (key_value & MID_KEY)
+	{
+		//DBG_TRACE("MID_KEY Pressed\r\n");
+		key.mid++;
+	}
+	else
+	{
+		key.mid = 0;
+	}
+	//////////////////////////////////
+	if (key_value & LEFT_UP_KEY)
+	{
+		//DBG_TRACE("LEFT_UP_KEY Pressed\r\n");
+		key.left_up++;
+	}
+	else
+	{
+		key.left_up = 0;
+	}
+	//////////////////////////////////
+	if (key_value & RIGHT_UP_KEY)
+	{
+		//DBG_TRACE("RIGHT_UP_KEY Pressed\r\n");
+		key.right_up++;		
+	}
+	else
+	{
+		key.right_up = 0;
+	}
 }
 
 /**** ExecIdle - called if nothing else is left to do ****/

@@ -3,10 +3,10 @@
 *                                            UCGUI
 *                                       http://www.ucgui.com
 *
-*                             (c) Copyright 2005-2006, UCGUI◊®“µ¬€Ã≥, —ßœ∞Ωª¡˜UCGUI
+*                             (c) Copyright 2005-2006, UCGUI‰∏ì‰∏öËÆ∫Âùõ, Â≠¶‰π†‰∫§ÊµÅUCGUI
 *
 *                               	ucgui@16.com 2005.07.31
-*                                           ◊˜’ﬂ: ucgui
+*                                           ‰ΩúËÄÖ: ucgui
 *********************************************************************************************************
 */
 
@@ -1456,7 +1456,7 @@ ________,
 ________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b1a3[24] = {	/* ±£ 0xb1a3*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b1a3[24] = {	/* ‰øù 0xb1a3*/
 ___X____,________,
 ___X_XXX,XX______,
 __X__X__,_X______,
@@ -1471,7 +1471,7 @@ __X_X__X,__X_____,
 __X____X,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b1b1[24] = {	/* ±± 0xb1b1*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b1b1[24] = {	/* Âåó 0xb1b1*/
 ___X__X_,________,
 ___X__X_,________,
 ___X__X_,__X_____,
@@ -1486,7 +1486,7 @@ ___X__X_,__X_____,
 ___X___X,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b1b8[24] = {	/* ±∏ 0xb1b8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b1b8[24] = {	/* Â§á 0xb1b8*/
 ___X____,________,
 __XXXXXX,X_______,
 _X_X___X,________,
@@ -1501,7 +1501,7 @@ __XXXXXX,X_______,
 __X_____,X_______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b1be[24] = {	/* ±æ 0xb1be*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b1be[24] = {	/* Êú¨ 0xb1be*/
 _____X__,________,
 _____X__,________,
 XXXXXXXX,XXX_____,
@@ -1516,7 +1516,7 @@ _____X__,________,
 _____X__,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b1ea[24] = {	/* ±Í 0xb1ea*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b1ea[24] = {	/* Ê†á 0xb1ea*/
 __X_____,________,
 __X__XXX,XX______,
 __X_____,________,
@@ -1531,7 +1531,7 @@ __X____X,________,
 __X___XX,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b2bd[24] = {	/* ≤Ω 0xb2bd*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b2bd[24] = {	/* Ê≠• 0xb2bd*/
 _____X__,________,
 __X__X__,________,
 __X__XXX,XX______,
@@ -1546,7 +1546,7 @@ ____XX__,________,
 _XXX____,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b3c9[24] = {	/* ≥… 0xb3c9*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b3c9[24] = {	/* Êàê 0xb3c9*/
 ______X_,X_______,
 ______X_,_X______,
 _XXXXXXX,XXX_____,
@@ -1561,7 +1561,7 @@ _X___X__,_XX_____,
 X___X___,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b4ab[24] = {	/* ¥´ 0xb4ab*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b4ab[24] = {	/* ‰º† 0xb4ab*/
 ___X___X,________,
 ___X___X,________,
 __X_XXXX,XX______,
@@ -1576,7 +1576,7 @@ __X____X,X_______,
 __X_____,_X______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b4e6[24] = {	/* ¥Ê 0xb4e6*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b4e6[24] = {	/* Â≠ò 0xb4e6*/
 ____X___,________,
 ____X___,________,
 XXXXXXXX,XXX_____,
@@ -1591,7 +1591,7 @@ __X____X,________,
 __X___XX,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b5cd[24] = {	/* µÕ 0xb5cd*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b5cd[24] = {	/* ‰Ωé 0xb5cd*/
 ___X____,XX______,
 ___XXXXX,________,
 __X_X__X,________,
@@ -1606,7 +1606,7 @@ __X_X_X_,_XX_____,
 __X____X,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b5d8[24] = {	/* µÿ 0xb5d8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b5d8[24] = {	/* Âú∞ 0xb5d8*/
 __X____X,________,
 __X____X,________,
 __X__X_X,_XX_____,
@@ -1621,7 +1621,7 @@ XX___X__,__X_____,
 ______XX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b6a8[24] = {	/* ∂® 0xb6a8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b6a8[24] = {	/* ÂÆö 0xb6a8*/
 ____X___,________,
 _____X__,________,
 XXXXXXXX,XXX_____,
@@ -1636,7 +1636,7 @@ _X_X_X__,________,
 X___XXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b6ab[24] = {	/* ∂´ 0xb6ab*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b6ab[24] = {	/* ‰∏ú 0xb6ab*/
 ____X___,________,
 ____X___,________,
 XXXXXXXX,XXX_____,
@@ -1651,7 +1651,7 @@ X____X__,__X_____,
 ____XX__,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b6c8[24] = {	/* ∂» 0xb6c8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b6c8[24] = {	/* Â∫¶ 0xb6c8*/
 ______X_,________,
 _XXXXXXX,XXX_____,
 _X__X___,X_______,
@@ -1666,7 +1666,7 @@ _X____XX,________,
 X__XXX__,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b6ce[24] = {	/* ∂Œ 0xb6ce*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b6ce[24] = {	/* ÊÆµ 0xb6ce*/
 ___X__XX,XX______,
 _XX___X_,_X______,
 _X____X_,_X______,
@@ -1681,7 +1681,7 @@ _X____X_,X_______,
 _X__XX__,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b7b5[24] = {	/* ∑µ 0xb7b5*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b7b5[24] = {	/* Ëøî 0xb7b5*/
 _X______,XXX_____,
 __X_XXXX,________,
 ____X___,________,
@@ -1696,7 +1696,7 @@ _X_X____,________,
 X___XXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b7bd[24] = {	/* ∑Ω 0xb7bd*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b7bd[24] = {	/* Êñπ 0xb7bd*/
 ____X___,________,
 _____X__,________,
 XXXXXXXX,XXX_____,
@@ -1711,7 +1711,7 @@ _X______,_X______,
 X_____XX,X_______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b8df[24] = {	/* ∏ﬂ 0xb8df*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b8df[24] = {	/* È´ò 0xb8df*/
 _____X__,________,
 XXXXXXXX,XXX_____,
 ________,________,
@@ -1726,7 +1726,7 @@ X__X___X,__X_____,
 X__XXXXX,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b9a6[24] = {	/* π¶ 0xb9a6*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b9a6[24] = {	/* Âäü 0xb9a6*/
 ______X_,________,
 ______X_,________,
 XXXXX_X_,________,
@@ -1741,7 +1741,7 @@ ____X___,__X_____,
 ___X____,XX______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_b9d8[24] = {	/* πÿ 0xb9d8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_b9d8[24] = {	/* ÂÖ≥ 0xb9d8*/
 __X_____,X_______,
 ___X___X,________,
 ________,________,
@@ -1756,7 +1756,7 @@ __X_____,X_______,
 XX______,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bac5[24] = {	/* ∫≈ 0xbac5*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bac5[24] = {	/* Âè∑ 0xbac5*/
 __XXXXXX,X_______,
 __X_____,X_______,
 __X_____,X_______,
@@ -1771,7 +1771,7 @@ ________,_X______,
 _______X,X_______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bacf[24] = {	/* ∫œ 0xbacf*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bacf[24] = {	/* Âêà 0xbacf*/
 _____X__,________,
 ____X_X_,________,
 ___X___X,________,
@@ -1786,7 +1786,7 @@ _XXXXXXX,XX______,
 _X______,_X______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bbb0[24] = {	/* ª∞ 0xbbb0*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bbb0[24] = {	/* ËØù 0xbbb0*/
 _X______,XXX_____,
 __X_XXXX,________,
 _______X,________,
@@ -1801,7 +1801,7 @@ _X__XXXX,XXX_____,
 ____X___,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bbd8[24] = {	/* ªÿ 0xbbd8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bbd8[24] = {	/* Âõû 0xbbd8*/
 ________,________,
 _XXXXXXX,XXX_____,
 _X______,__X_____,
@@ -1816,7 +1816,7 @@ _XXXXXXX,XXX_____,
 _X______,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bbfa[24] = {	/* ª˙ 0xbbfa*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bbfa[24] = {	/* Êú∫ 0xbbfa*/
 __X_____,________,
 __X__XXX,X_______,
 __X__X__,X_______,
@@ -1831,7 +1831,7 @@ __X_X___,X_X_____,
 __XX____,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bce4[24] = {	/* º‰ 0xbce4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bce4[24] = {	/* Èó¥ 0xbce4*/
 _X__XXXX,XXX_____,
 __X_____,__X_____,
 ________,__X_____,
@@ -1846,7 +1846,7 @@ _X______,__X_____,
 _X______,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bcfc[24] = {	/* º¸ 0xbcfc*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bcfc[24] = {	/* ÈîÆ 0xbcfc*/
 _X_____X,________,
 _XX___XX,XX______,
 X__XX__X,_X______,
@@ -1861,7 +1861,7 @@ _XX_X__X,________,
 _X_X_XXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bdd3[24] = {	/* Ω” 0xbdd3*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bdd3[24] = {	/* Êé• 0xbdd3*/
 __X___X_,________,
 __X____X,________,
 __X_XXXX,XXX_____,
@@ -1876,7 +1876,7 @@ __X____X,X_______,
 _XX_XXX_,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bdf8[24] = {	/* Ω¯ 0xbdf8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bdf8[24] = {	/* Ëøõ 0xbdf8*/
 _X___X__,X_______,
 __X__X__,X_______,
 ____XXXX,XX______,
@@ -1891,7 +1891,7 @@ _X_X____,________,
 X___XXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bead[24] = {	/* æ≠ 0xbead*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bead[24] = {	/* Áªè 0xbead*/
 __X_____,________,
 __X__XXX,XX______,
 _X______,X_______,
@@ -1906,7 +1906,7 @@ XX_____X,________,
 ____XXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_bfaa[24] = {	/* ø™ 0xbfaa*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_bfaa[24] = {	/* ÂºÄ 0xbfaa*/
 ________,________,
 _XXXXXXX,XX______,
 ___X___X,________,
@@ -1921,7 +1921,7 @@ __X____X,________,
 _X_____X,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c1ac[24] = {	/* ¡¨ 0xc1ac*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c1ac[24] = {	/* Ëøû 0xc1ac*/
 X_____X_,________,
 _X____X_,________,
 ___XXXXX,XXX_____,
@@ -1936,7 +1936,7 @@ _X_____X,________,
 X_XXXXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c1bf[24] = {	/* ¡ø 0xc1bf*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c1bf[24] = {	/* Èáè 0xc1bf*/
 _XXXXXXX,XX______,
 _X___X__,_X______,
 _X____X_,_X______,
@@ -1951,7 +1951,7 @@ _____X__,________,
 XXXXXXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c2eb[24] = {	/* ¬Î 0xc2eb*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c2eb[24] = {	/* Á†Å 0xc2eb*/
 ____XXXX,XX______,
 XXXX____,_X______,
 __X__X__,_X______,
@@ -1966,7 +1966,7 @@ _X_X____,__X_____,
 ________,XX______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c3dc[24] = {	/* √‹ 0xc3dc*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c3dc[24] = {	/* ÂØÜ 0xc3dc*/
 _____X__,________,
 XXXXXXXX,XXX_____,
 X___X___,__X_____,
@@ -1981,7 +1981,7 @@ _X___X__,_X______,
 _XXXXXXX,XX______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c4cf[24] = {	/* ƒœ 0xc4cf*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c4cf[24] = {	/* Âçó 0xc4cf*/
 _____X__,________,
 XXXXXXXX,XXX_____,
 _____X__,________,
@@ -1996,7 +1996,7 @@ _X___X__,_X______,
 _X_____X,XX______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c5e4[24] = {	/* ≈‰ 0xc5e4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c5e4[24] = {	/* ÈÖç 0xc5e4*/
 ________,________,
 XXXXXXX_,XXX_____,
 __X_X___,__X_____,
@@ -2011,7 +2011,7 @@ XXXXXXX_,X_X_____,
 X_____X_,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c6b5[24] = {	/* ∆µ 0xc6b5*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c6b5[24] = {	/* È¢ë 0xc6b5*/
 ___X__XX,XXX_____,
 _X_XXX__,X_______,
 _X_X___X,________,
@@ -2026,7 +2026,7 @@ __X____X,_X______,
 XX____X_,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c6e4[24] = {	/* ∆‰ 0xc6e4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c6e4[24] = {	/* ÂÖ∂ 0xc6e4*/
 __X_____,X_______,
 __X_____,X_______,
 XXXXXXXX,XXX_____,
@@ -2041,7 +2041,7 @@ __X_____,X_______,
 _X______,_X______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c6f4[24] = {	/* ∆Ù 0xc6f4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c6f4[24] = {	/* ÂêØ 0xc6f4*/
 _____X__,________,
 ______X_,________,
 __XXXXXX,XXX_____,
@@ -2056,7 +2056,7 @@ _X_XXXXX,XXX_____,
 X__X____,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c8eb[24] = {	/* »Î 0xc8eb*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c8eb[24] = {	/* ÂÖ• 0xc8eb*/
 __XX____,________,
 ____X___,________,
 _____X__,________,
@@ -2071,7 +2071,7 @@ _X______,_X______,
 X_______,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c9cf[24] = {	/* …œ 0xc9cf*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c9cf[24] = {	/* ‰∏ä 0xc9cf*/
 ____X___,________,
 ____X___,________,
 ____X___,________,
@@ -2086,7 +2086,7 @@ ____X___,________,
 XXXXXXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_c9e8[24] = {	/* …Ë 0xc9e8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_c9e8[24] = {	/* ËÆæ 0xc9e8*/
 _X___XXX,X_______,
 __X__X__,X_______,
 _____X__,X_______,
@@ -2101,7 +2101,7 @@ __X___X_,X_______,
 ____XX__,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cab1[24] = {	/*  ± 0xcab1*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cab1[24] = {	/* Êó∂ 0xcab1*/
 ________,_X______,
 XXXX____,_X______,
 X__X____,_X______,
@@ -2116,7 +2116,7 @@ X__X____,_X______,
 _______X,XX______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cae4[24] = {	/*  ‰ 0xcae4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cae4[24] = {	/* Ëæì 0xcae4*/
 __X____X,________,
 __X___X_,X_______,
 XXXX_X__,_X______,
@@ -2131,7 +2131,7 @@ __X_X_X_,__X_____,
 __X_X_X_,_XX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cafd[24] = {	/*  ˝ 0xcafd*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cafd[24] = {	/* Êï∞ 0xcafd*/
 ___X___X,________,
 _X_X_X_X,________,
 ___X___X,________,
@@ -2146,7 +2146,7 @@ __XX___X,_X______,
 XX__X_X_,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cbe6[24] = {	/* ÀÊ 0xcbe6*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cbe6[24] = {	/* Èöè 0xcbe6*/
 XXX____X,________,
 X_X_XXXX,XXX_____,
 X_X___X_,________,
@@ -2161,7 +2161,7 @@ X___X___,________,
 X__X_XXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cbfb[24] = {	/* À˚ 0xcbfb*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cbfb[24] = {	/* ‰ªñ 0xcbfb*/
 ___X___X,________,
 ___X___X,________,
 __X__X_X,_XX_____,
@@ -2176,7 +2176,7 @@ __X__X__,__X_____,
 __X___XX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_ccac[24] = {	/* Ã¨ 0xccac*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_ccac[24] = {	/* ÊÄÅ 0xccac*/
 _____X__,________,
 _____X__,________,
 XXXXXXXX,XXX_____,
@@ -2191,7 +2191,7 @@ X__X____,X_X_____,
 ____XXXX,X_______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cdac[24] = {	/* Õ¨ 0xcdac*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cdac[24] = {	/* Âêå 0xcdac*/
 ________,________,
 _XXXXXXX,XXX_____,
 _X______,__X_____,
@@ -2206,7 +2206,7 @@ _X______,__X_____,
 _X______,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cdf8[24] = {	/* Õ¯ 0xcdf8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cdf8[24] = {	/* ÁΩë 0xcdf8*/
 XXXXXXXX,XXX_____,
 X_______,__X_____,
 X_______,__X_____,
@@ -2221,7 +2221,7 @@ X_______,__X_____,
 X_______,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_ceb3[24] = {	/* Œ≥ 0xceb3*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_ceb3[24] = {	/* Á∫¨ 0xceb3*/
 __X____X,________,
 __X____X,________,
 _X__XXXX,XXX_____,
@@ -2236,7 +2236,7 @@ XX_____X,________,
 _______X,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cebb[24] = {	/* Œª 0xcebb*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cebb[24] = {	/* ‰Ωç 0xcebb*/
 __X___X_,________,
 __X____X,________,
 _X______,________,
@@ -2251,7 +2251,7 @@ _X_____X,________,
 _X_XXXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cef7[24] = {	/* Œ˜ 0xcef7*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cef7[24] = {	/* Ë•ø 0xcef7*/
 XXXXXXXX,XXX_____,
 ____X_X_,________,
 ____X_X_,________,
@@ -2266,7 +2266,7 @@ _XXXXXXX,XX______,
 _X______,_X______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cfc2[24] = {	/* œ¬ 0xcfc2*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cfc2[24] = {	/* ‰∏ã 0xcfc2*/
 ________,________,
 XXXXXXXX,XXX_____,
 ____X___,________,
@@ -2281,7 +2281,7 @@ ____X___,________,
 ____X___,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_cff2[24] = {	/* œÚ 0xcff2*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_cff2[24] = {	/* Âêë 0xcff2*/
 ____X___,________,
 ___X____,________,
 XXXXXXXX,XXX_____,
@@ -2296,7 +2296,7 @@ X_______,__X_____,
 X_______,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d2f4[24] = {	/* “Ù 0xd2f4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d2f4[24] = {	/* Èü≥ 0xd2f4*/
 _____X__,________,
 _XXXXXXX,XX______,
 __X_____,X_______,
@@ -2311,7 +2311,7 @@ _XXXXXXX,XX______,
 _X______,_X______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d3d2[24] = {	/* ”“ 0xd3d2*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d3d2[24] = {	/* Âè≥ 0xd3d2*/
 _____X__,________,
 _____X__,________,
 XXXXXXXX,XXX_____,
@@ -2326,7 +2326,7 @@ ___XXXXX,XX______,
 ___X____,_X______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d6c3[24] = {	/* ÷√ 0xd6c3*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d6c3[24] = {	/* ÁΩÆ 0xd6c3*/
 _XXXXXXX,XX______,
 _X__X_X_,_X______,
 _XXXXXXX,XX______,
@@ -2341,7 +2341,7 @@ __X__X__,X_______,
 XXXXXXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d6d0[24] = {	/* ÷– 0xd6d0*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d6d0[24] = {	/* ‰∏≠ 0xd6d0*/
 _____X__,________,
 _____X__,________,
 _____X__,________,
@@ -2356,7 +2356,7 @@ _____X__,________,
 _____X__,________,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d6d8[24] = {	/* ÷ÿ 0xd6d8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d6d8[24] = {	/* Èáç 0xd6d8*/
 ______XX,XX______,
 _XXXXX__,________,
 _____X__,________,
@@ -2371,7 +2371,7 @@ _____X__,________,
 XXXXXXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d7b4[24] = {	/* ◊¥ 0xd7b4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d7b4[24] = {	/* Áä∂ 0xd7b4*/
 __X____X,________,
 __X____X,_X______,
 X_X____X,__X_____,
@@ -2386,7 +2386,7 @@ __X__X__,_X______,
 __X_X___,__X_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d7d4[24] = {	/* ◊‘ 0xd7d4*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d7d4[24] = {	/* Ëá™ 0xd7d4*/
 _____X__,________,
 ____X___,________,
 _XXXXXXX,XX______,
@@ -2401,7 +2401,7 @@ _X______,_X______,
 _XXXXXXX,XX______,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d7e9[24] = {	/* ◊È 0xd7e9*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d7e9[24] = {	/* ÁªÑ 0xd7e9*/
 __X_____,________,
 __X__XXX,XX______,
 _X___X__,_X______,
@@ -2416,7 +2416,7 @@ XX___X__,_X______,
 ____XXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d7f3[24] = {	/* ◊Û 0xd7f3*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d7f3[24] = {	/* Â∑¶ 0xd7f3*/
 ____X___,________,
 ____X___,________,
 XXXXXXXX,XXX_____,
@@ -2431,7 +2431,7 @@ X_____X_,________,
 __XXXXXX,XXX_____,
 };
 
-GUI_FLASH  const unsigned char acFontHZSimSun_12_d7f8[24] = {	/* ◊¯ 0xd7f8*/
+GUI_FLASH  const unsigned char acFontHZSimSun_12_d7f8[24] = {	/* Âùê 0xd7f8*/
 _____X__,________,
 __X__X__,X_______,
 __X__X__,X_______,
@@ -2543,75 +2543,75 @@ GUI_FLASH const GUI_CHARINFO GUI_FontHZSimSun_12_CharInfo[7710] = {
 { 6, 6, 1, (void GUI_FLASH *)&acFontHZSimSun_12_007d},/* } 93 */
 { 6, 6, 1, (void GUI_FLASH *)&acFontHZSimSun_12_007e},/* ~ 94 */
 { 6, 6, 1, (void GUI_FLASH *)&acFontHZSimSun_12_007f},/*  95 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1a3},/* ±£ 96 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1b1},/* ±± 97 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1b8},/* ±∏ 98 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1be},/* ±æ 99 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1ea},/* ±Í 100 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b2bd},/* ≤Ω 101 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b3c9},/* ≥… 102 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b4ab},/* ¥´ 103 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b4e6},/* ¥Ê 104 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b5cd},/* µÕ 105 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b5d8},/* µÿ 106 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6a8},/* ∂® 107 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6ab},/* ∂´ 108 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6c8},/* ∂» 109 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6ce},/* ∂Œ 110 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b7b5},/* ∑µ 111 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b7bd},/* ∑Ω 112 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b8df},/* ∏ﬂ 113 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b9a6},/* π¶ 114 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b9d8},/* πÿ 115 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bac5},/* ∫≈ 116 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bacf},/* ∫œ 117 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bbb0},/* ª∞ 118 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bbd8},/* ªÿ 119 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bbfa},/* ª˙ 120 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bce4},/* º‰ 121 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bcfc},/* º¸ 122 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bdd3},/* Ω” 123 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bdf8},/* Ω¯ 124 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bead},/* æ≠ 125 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bfaa},/* ø™ 126 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c1ac},/* ¡¨ 127 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c1bf},/* ¡ø 128 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c2eb},/* ¬Î 129 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c3dc},/* √‹ 130 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c4cf},/* ƒœ 131 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c5e4},/* ≈‰ 132 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c6b5},/* ∆µ 133 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c6e4},/* ∆‰ 134 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c6f4},/* ∆Ù 135 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c8eb},/* »Î 136 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c9cf},/* …œ 137 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c9e8},/* …Ë 138 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cab1},/*  ± 139 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cae4},/*  ‰ 140 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cafd},/*  ˝ 141 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cbe6},/* ÀÊ 142 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cbfb},/* À˚ 143 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_ccac},/* Ã¨ 144 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cdac},/* Õ¨ 145 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cdf8},/* Õ¯ 146 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_ceb3},/* Œ≥ 147 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cebb},/* Œª 148 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cef7},/* Œ˜ 149 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cfc2},/* œ¬ 150 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cff2},/* œÚ 151 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d2f4},/* “Ù 152 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d3d2},/* ”“ 153 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d6c3},/* ÷√ 154 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d6d0},/* ÷– 155 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d6d8},/* ÷ÿ 156 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7b4},/* ◊¥ 157 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7d4},/* ◊‘ 158 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7e9},/* ◊È 159 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7f3},/* ◊Û 160 */
-{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7f8},/* ◊¯ 161 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1a3},/* ‰øù 96 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1b1},/* Âåó 97 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1b8},/* Â§á 98 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1be},/* Êú¨ 99 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b1ea},/* Ê†á 100 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b2bd},/* Ê≠• 101 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b3c9},/* Êàê 102 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b4ab},/* ‰º† 103 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b4e6},/* Â≠ò 104 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b5cd},/* ‰Ωé 105 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b5d8},/* Âú∞ 106 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6a8},/* ÂÆö 107 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6ab},/* ‰∏ú 108 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6c8},/* Â∫¶ 109 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b6ce},/* ÊÆµ 110 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b7b5},/* Ëøî 111 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b7bd},/* Êñπ 112 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b8df},/* È´ò 113 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b9a6},/* Âäü 114 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_b9d8},/* ÂÖ≥ 115 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bac5},/* Âè∑ 116 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bacf},/* Âêà 117 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bbb0},/* ËØù 118 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bbd8},/* Âõû 119 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bbfa},/* Êú∫ 120 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bce4},/* Èó¥ 121 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bcfc},/* ÈîÆ 122 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bdd3},/* Êé• 123 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bdf8},/* Ëøõ 124 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bead},/* Áªè 125 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_bfaa},/* ÂºÄ 126 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c1ac},/* Ëøû 127 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c1bf},/* Èáè 128 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c2eb},/* Á†Å 129 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c3dc},/* ÂØÜ 130 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c4cf},/* Âçó 131 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c5e4},/* ÈÖç 132 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c6b5},/* È¢ë 133 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c6e4},/* ÂÖ∂ 134 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c6f4},/* ÂêØ 135 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c8eb},/* ÂÖ• 136 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c9cf},/* ‰∏ä 137 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_c9e8},/* ËÆæ 138 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cab1},/* Êó∂ 139 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cae4},/* Ëæì 140 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cafd},/* Êï∞ 141 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cbe6},/* Èöè 142 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cbfb},/* ‰ªñ 143 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_ccac},/* ÊÄÅ 144 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cdac},/* Âêå 145 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cdf8},/* ÁΩë 146 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_ceb3},/* Á∫¨ 147 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cebb},/* ‰Ωç 148 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cef7},/* Ë•ø 149 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cfc2},/* ‰∏ã 150 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_cff2},/* Âêë 151 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d2f4},/* Èü≥ 152 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d3d2},/* Âè≥ 153 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d6c3},/* ÁΩÆ 154 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d6d0},/* ‰∏≠ 155 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d6d8},/* Èáç 156 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7b4},/* Áä∂ 157 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7d4},/* Ëá™ 158 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7e9},/* ÁªÑ 159 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7f3},/* Â∑¶ 160 */
+{ 12, 12, 2, (void GUI_FLASH *)&acFontHZSimSun_12_d7f8},/* Âùê 161 */
 };
 
-/*◊¯--◊¯*/
+/*Âùê--Âùê*/
 
 GUI_FLASH const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd7f8= {
       0xd7f8,
@@ -2619,455 +2619,455 @@ GUI_FLASH const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd7f8= {
       &GUI_FontHZSimSun_12_CharInfo[161],
       (void *)0 
 };
-/*◊Û--◊Û*/
+/*Â∑¶--Â∑¶*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd7f3= {
       0xd7f3,
       0xd7f3,
       &GUI_FontHZSimSun_12_CharInfo[160],
       (void *)&GUI_FontHZSimSun_12_Propd7f8 
 };
-/*◊È--◊È*/
+/*ÁªÑ--ÁªÑ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd7e9= {
       0xd7e9,
       0xd7e9,
       &GUI_FontHZSimSun_12_CharInfo[159],
       (void *)&GUI_FontHZSimSun_12_Propd7f3 
 };
-/*◊‘--◊‘*/
+/*Ëá™--Ëá™*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd7d4= {
       0xd7d4,
       0xd7d4,
       &GUI_FontHZSimSun_12_CharInfo[158],
       (void *)&GUI_FontHZSimSun_12_Propd7e9 
 };
-/*◊¥--◊¥*/
+/*Áä∂--Áä∂*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd7b4= {
       0xd7b4,
       0xd7b4,
       &GUI_FontHZSimSun_12_CharInfo[157],
       (void *)&GUI_FontHZSimSun_12_Propd7d4 
 };
-/*÷ÿ--÷ÿ*/
+/*Èáç--Èáç*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd6d8= {
       0xd6d8,
       0xd6d8,
       &GUI_FontHZSimSun_12_CharInfo[156],
       (void *)&GUI_FontHZSimSun_12_Propd7b4 
 };
-/*÷–--÷–*/
+/*‰∏≠--‰∏≠*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd6d0= {
       0xd6d0,
       0xd6d0,
       &GUI_FontHZSimSun_12_CharInfo[155],
       (void *)&GUI_FontHZSimSun_12_Propd6d8 
 };
-/*÷√--÷√*/
+/*ÁΩÆ--ÁΩÆ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd6c3= {
       0xd6c3,
       0xd6c3,
       &GUI_FontHZSimSun_12_CharInfo[154],
       (void *)&GUI_FontHZSimSun_12_Propd6d0 
 };
-/*”“--”“*/
+/*Âè≥--Âè≥*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd3d2= {
       0xd3d2,
       0xd3d2,
       &GUI_FontHZSimSun_12_CharInfo[153],
       (void *)&GUI_FontHZSimSun_12_Propd6c3 
 };
-/*“Ù--“Ù*/
+/*Èü≥--Èü≥*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propd2f4= {
       0xd2f4,
       0xd2f4,
       &GUI_FontHZSimSun_12_CharInfo[152],
       (void *)&GUI_FontHZSimSun_12_Propd3d2 
 };
-/*œÚ--œÚ*/
+/*Âêë--Âêë*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcff2= {
       0xcff2,
       0xcff2,
       &GUI_FontHZSimSun_12_CharInfo[151],
       (void *)&GUI_FontHZSimSun_12_Propd2f4 
 };
-/*œ¬--œ¬*/
+/*‰∏ã--‰∏ã*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcfc2= {
       0xcfc2,
       0xcfc2,
       &GUI_FontHZSimSun_12_CharInfo[150],
       (void *)&GUI_FontHZSimSun_12_Propcff2 
 };
-/*Œ˜--Œ˜*/
+/*Ë•ø--Ë•ø*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcef7= {
       0xcef7,
       0xcef7,
       &GUI_FontHZSimSun_12_CharInfo[149],
       (void *)&GUI_FontHZSimSun_12_Propcfc2 
 };
-/*Œª--Œª*/
+/*‰Ωç--‰Ωç*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcebb= {
       0xcebb,
       0xcebb,
       &GUI_FontHZSimSun_12_CharInfo[148],
       (void *)&GUI_FontHZSimSun_12_Propcef7 
 };
-/*Œ≥--Œ≥*/
+/*Á∫¨--Á∫¨*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propceb3= {
       0xceb3,
       0xceb3,
       &GUI_FontHZSimSun_12_CharInfo[147],
       (void *)&GUI_FontHZSimSun_12_Propcebb 
 };
-/*Õ¯--Õ¯*/
+/*ÁΩë--ÁΩë*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcdf8= {
       0xcdf8,
       0xcdf8,
       &GUI_FontHZSimSun_12_CharInfo[146],
       (void *)&GUI_FontHZSimSun_12_Propceb3 
 };
-/*Õ¨--Õ¨*/
+/*Âêå--Âêå*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcdac= {
       0xcdac,
       0xcdac,
       &GUI_FontHZSimSun_12_CharInfo[145],
       (void *)&GUI_FontHZSimSun_12_Propcdf8 
 };
-/*Ã¨--Ã¨*/
+/*ÊÄÅ--ÊÄÅ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propccac= {
       0xccac,
       0xccac,
       &GUI_FontHZSimSun_12_CharInfo[144],
       (void *)&GUI_FontHZSimSun_12_Propcdac 
 };
-/*À˚--À˚*/
+/*‰ªñ--‰ªñ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcbfb= {
       0xcbfb,
       0xcbfb,
       &GUI_FontHZSimSun_12_CharInfo[143],
       (void *)&GUI_FontHZSimSun_12_Propccac 
 };
-/*ÀÊ--ÀÊ*/
+/*Èöè--Èöè*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcbe6= {
       0xcbe6,
       0xcbe6,
       &GUI_FontHZSimSun_12_CharInfo[142],
       (void *)&GUI_FontHZSimSun_12_Propcbfb 
 };
-/* ˝-- ˝*/
+/*Êï∞--Êï∞*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcafd= {
       0xcafd,
       0xcafd,
       &GUI_FontHZSimSun_12_CharInfo[141],
       (void *)&GUI_FontHZSimSun_12_Propcbe6 
 };
-/* ‰-- ‰*/
+/*Ëæì--Ëæì*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcae4= {
       0xcae4,
       0xcae4,
       &GUI_FontHZSimSun_12_CharInfo[140],
       (void *)&GUI_FontHZSimSun_12_Propcafd 
 };
-/* ±-- ±*/
+/*Êó∂--Êó∂*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propcab1= {
       0xcab1,
       0xcab1,
       &GUI_FontHZSimSun_12_CharInfo[139],
       (void *)&GUI_FontHZSimSun_12_Propcae4 
 };
-/*…Ë--…Ë*/
+/*ËÆæ--ËÆæ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc9e8= {
       0xc9e8,
       0xc9e8,
       &GUI_FontHZSimSun_12_CharInfo[138],
       (void *)&GUI_FontHZSimSun_12_Propcab1 
 };
-/*…œ--…œ*/
+/*‰∏ä--‰∏ä*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc9cf= {
       0xc9cf,
       0xc9cf,
       &GUI_FontHZSimSun_12_CharInfo[137],
       (void *)&GUI_FontHZSimSun_12_Propc9e8 
 };
-/*»Î--»Î*/
+/*ÂÖ•--ÂÖ•*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc8eb= {
       0xc8eb,
       0xc8eb,
       &GUI_FontHZSimSun_12_CharInfo[136],
       (void *)&GUI_FontHZSimSun_12_Propc9cf 
 };
-/*∆Ù--∆Ù*/
+/*ÂêØ--ÂêØ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc6f4= {
       0xc6f4,
       0xc6f4,
       &GUI_FontHZSimSun_12_CharInfo[135],
       (void *)&GUI_FontHZSimSun_12_Propc8eb 
 };
-/*∆‰--∆‰*/
+/*ÂÖ∂--ÂÖ∂*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc6e4= {
       0xc6e4,
       0xc6e4,
       &GUI_FontHZSimSun_12_CharInfo[134],
       (void *)&GUI_FontHZSimSun_12_Propc6f4 
 };
-/*∆µ--∆µ*/
+/*È¢ë--È¢ë*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc6b5= {
       0xc6b5,
       0xc6b5,
       &GUI_FontHZSimSun_12_CharInfo[133],
       (void *)&GUI_FontHZSimSun_12_Propc6e4 
 };
-/*≈‰--≈‰*/
+/*ÈÖç--ÈÖç*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc5e4= {
       0xc5e4,
       0xc5e4,
       &GUI_FontHZSimSun_12_CharInfo[132],
       (void *)&GUI_FontHZSimSun_12_Propc6b5 
 };
-/*ƒœ--ƒœ*/
+/*Âçó--Âçó*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc4cf= {
       0xc4cf,
       0xc4cf,
       &GUI_FontHZSimSun_12_CharInfo[131],
       (void *)&GUI_FontHZSimSun_12_Propc5e4 
 };
-/*√‹--√‹*/
+/*ÂØÜ--ÂØÜ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc3dc= {
       0xc3dc,
       0xc3dc,
       &GUI_FontHZSimSun_12_CharInfo[130],
       (void *)&GUI_FontHZSimSun_12_Propc4cf 
 };
-/*¬Î--¬Î*/
+/*Á†Å--Á†Å*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc2eb= {
       0xc2eb,
       0xc2eb,
       &GUI_FontHZSimSun_12_CharInfo[129],
       (void *)&GUI_FontHZSimSun_12_Propc3dc 
 };
-/*¡ø--¡ø*/
+/*Èáè--Èáè*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc1bf= {
       0xc1bf,
       0xc1bf,
       &GUI_FontHZSimSun_12_CharInfo[128],
       (void *)&GUI_FontHZSimSun_12_Propc2eb 
 };
-/*¡¨--¡¨*/
+/*Ëøû--Ëøû*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propc1ac= {
       0xc1ac,
       0xc1ac,
       &GUI_FontHZSimSun_12_CharInfo[127],
       (void *)&GUI_FontHZSimSun_12_Propc1bf 
 };
-/*ø™--ø™*/
+/*ÂºÄ--ÂºÄ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbfaa= {
       0xbfaa,
       0xbfaa,
       &GUI_FontHZSimSun_12_CharInfo[126],
       (void *)&GUI_FontHZSimSun_12_Propc1ac 
 };
-/*æ≠--æ≠*/
+/*Áªè--Áªè*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbead= {
       0xbead,
       0xbead,
       &GUI_FontHZSimSun_12_CharInfo[125],
       (void *)&GUI_FontHZSimSun_12_Propbfaa 
 };
-/*Ω¯--Ω¯*/
+/*Ëøõ--Ëøõ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbdf8= {
       0xbdf8,
       0xbdf8,
       &GUI_FontHZSimSun_12_CharInfo[124],
       (void *)&GUI_FontHZSimSun_12_Propbead 
 };
-/*Ω”--Ω”*/
+/*Êé•--Êé•*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbdd3= {
       0xbdd3,
       0xbdd3,
       &GUI_FontHZSimSun_12_CharInfo[123],
       (void *)&GUI_FontHZSimSun_12_Propbdf8 
 };
-/*º¸--º¸*/
+/*ÈîÆ--ÈîÆ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbcfc= {
       0xbcfc,
       0xbcfc,
       &GUI_FontHZSimSun_12_CharInfo[122],
       (void *)&GUI_FontHZSimSun_12_Propbdd3 
 };
-/*º‰--º‰*/
+/*Èó¥--Èó¥*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbce4= {
       0xbce4,
       0xbce4,
       &GUI_FontHZSimSun_12_CharInfo[121],
       (void *)&GUI_FontHZSimSun_12_Propbcfc 
 };
-/*ª˙--ª˙*/
+/*Êú∫--Êú∫*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbbfa= {
       0xbbfa,
       0xbbfa,
       &GUI_FontHZSimSun_12_CharInfo[120],
       (void *)&GUI_FontHZSimSun_12_Propbce4 
 };
-/*ªÿ--ªÿ*/
+/*Âõû--Âõû*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbbd8= {
       0xbbd8,
       0xbbd8,
       &GUI_FontHZSimSun_12_CharInfo[119],
       (void *)&GUI_FontHZSimSun_12_Propbbfa 
 };
-/*ª∞--ª∞*/
+/*ËØù--ËØù*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbbb0= {
       0xbbb0,
       0xbbb0,
       &GUI_FontHZSimSun_12_CharInfo[118],
       (void *)&GUI_FontHZSimSun_12_Propbbd8 
 };
-/*∫œ--∫œ*/
+/*Âêà--Âêà*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbacf= {
       0xbacf,
       0xbacf,
       &GUI_FontHZSimSun_12_CharInfo[117],
       (void *)&GUI_FontHZSimSun_12_Propbbb0 
 };
-/*∫≈--∫≈*/
+/*Âè∑--Âè∑*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propbac5= {
       0xbac5,
       0xbac5,
       &GUI_FontHZSimSun_12_CharInfo[116],
       (void *)&GUI_FontHZSimSun_12_Propbacf 
 };
-/*πÿ--πÿ*/
+/*ÂÖ≥--ÂÖ≥*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb9d8= {
       0xb9d8,
       0xb9d8,
       &GUI_FontHZSimSun_12_CharInfo[115],
       (void *)&GUI_FontHZSimSun_12_Propbac5 
 };
-/*π¶--π¶*/
+/*Âäü--Âäü*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb9a6= {
       0xb9a6,
       0xb9a6,
       &GUI_FontHZSimSun_12_CharInfo[114],
       (void *)&GUI_FontHZSimSun_12_Propb9d8 
 };
-/*∏ﬂ--∏ﬂ*/
+/*È´ò--È´ò*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb8df= {
       0xb8df,
       0xb8df,
       &GUI_FontHZSimSun_12_CharInfo[113],
       (void *)&GUI_FontHZSimSun_12_Propb9a6 
 };
-/*∑Ω--∑Ω*/
+/*Êñπ--Êñπ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb7bd= {
       0xb7bd,
       0xb7bd,
       &GUI_FontHZSimSun_12_CharInfo[112],
       (void *)&GUI_FontHZSimSun_12_Propb8df 
 };
-/*∑µ--∑µ*/
+/*Ëøî--Ëøî*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb7b5= {
       0xb7b5,
       0xb7b5,
       &GUI_FontHZSimSun_12_CharInfo[111],
       (void *)&GUI_FontHZSimSun_12_Propb7bd 
 };
-/*∂Œ--∂Œ*/
+/*ÊÆµ--ÊÆµ*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb6ce= {
       0xb6ce,
       0xb6ce,
       &GUI_FontHZSimSun_12_CharInfo[110],
       (void *)&GUI_FontHZSimSun_12_Propb7b5 
 };
-/*∂»--∂»*/
+/*Â∫¶--Â∫¶*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb6c8= {
       0xb6c8,
       0xb6c8,
       &GUI_FontHZSimSun_12_CharInfo[109],
       (void *)&GUI_FontHZSimSun_12_Propb6ce 
 };
-/*∂´--∂´*/
+/*‰∏ú--‰∏ú*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb6ab= {
       0xb6ab,
       0xb6ab,
       &GUI_FontHZSimSun_12_CharInfo[108],
       (void *)&GUI_FontHZSimSun_12_Propb6c8 
 };
-/*∂®--∂®*/
+/*ÂÆö--ÂÆö*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb6a8= {
       0xb6a8,
       0xb6a8,
       &GUI_FontHZSimSun_12_CharInfo[107],
       (void *)&GUI_FontHZSimSun_12_Propb6ab 
 };
-/*µÿ--µÿ*/
+/*Âú∞--Âú∞*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb5d8= {
       0xb5d8,
       0xb5d8,
       &GUI_FontHZSimSun_12_CharInfo[106],
       (void *)&GUI_FontHZSimSun_12_Propb6a8 
 };
-/*µÕ--µÕ*/
+/*‰Ωé--‰Ωé*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb5cd= {
       0xb5cd,
       0xb5cd,
       &GUI_FontHZSimSun_12_CharInfo[105],
       (void *)&GUI_FontHZSimSun_12_Propb5d8 
 };
-/*¥Ê--¥Ê*/
+/*Â≠ò--Â≠ò*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb4e6= {
       0xb4e6,
       0xb4e6,
       &GUI_FontHZSimSun_12_CharInfo[104],
       (void *)&GUI_FontHZSimSun_12_Propb5cd 
 };
-/*¥´--¥´*/
+/*‰º†--‰º†*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb4ab= {
       0xb4ab,
       0xb4ab,
       &GUI_FontHZSimSun_12_CharInfo[103],
       (void *)&GUI_FontHZSimSun_12_Propb4e6 
 };
-/*≥…--≥…*/
+/*Êàê--Êàê*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb3c9= {
       0xb3c9,
       0xb3c9,
       &GUI_FontHZSimSun_12_CharInfo[102],
       (void *)&GUI_FontHZSimSun_12_Propb4ab 
 };
-/*≤Ω--≤Ω*/
+/*Ê≠•--Ê≠•*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb2bd= {
       0xb2bd,
       0xb2bd,
       &GUI_FontHZSimSun_12_CharInfo[101],
       (void *)&GUI_FontHZSimSun_12_Propb3c9 
 };
-/*±Í--±Í*/
+/*Ê†á--Ê†á*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb1ea= {
       0xb1ea,
       0xb1ea,
       &GUI_FontHZSimSun_12_CharInfo[100],
       (void *)&GUI_FontHZSimSun_12_Propb2bd 
 };
-/*±æ--±æ*/
+/*Êú¨--Êú¨*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb1be= {
       0xb1be,
       0xb1be,
       &GUI_FontHZSimSun_12_CharInfo[99],
       (void *)&GUI_FontHZSimSun_12_Propb1ea 
 };
-/*±∏--±∏*/
+/*Â§á--Â§á*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb1b8= {
       0xb1b8,
       0xb1b8,
       &GUI_FontHZSimSun_12_CharInfo[98],
       (void *)&GUI_FontHZSimSun_12_Propb1be 
 };
-/*±±--±±*/
+/*Âåó--Âåó*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb1b1= {
       0xb1b1,
       0xb1b1,
       &GUI_FontHZSimSun_12_CharInfo[97],
       (void *)&GUI_FontHZSimSun_12_Propb1b8 
 };
-/*±£--±£*/
+/*‰øù--‰øù*/
 GUI_FLASH  const GUI_FONT_PROP GUI_FontHZSimSun_12_Propb1a3= {
       0xb1a3,
       0xb1a3,

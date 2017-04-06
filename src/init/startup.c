@@ -28,6 +28,7 @@ void main(void)
 	hal_timer_init();
     /* 调试串口初始化 */
 	hal_uart_init(UART_DEBUG, 115200);
+    DBG_TRACE("Start!\r\n");
 	/* GPIO初始化 */
 	hal_gpio_init(PLAT_TRUE);
 	//开机上电检测
@@ -69,9 +70,9 @@ OSEL_DECLARE_TASK(INIT_TASK, param)
 	/* APP Task */
 	app_init();
 	/* NWK Task */
-	nwk_init();
+	//nwk_init();
     /* MAC Task */
-	mac_init();
+	//mac_init();
 	/* GUI */
    	GUI_Init();
 

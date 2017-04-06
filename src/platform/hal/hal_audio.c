@@ -353,7 +353,7 @@ bool_t hal_audio_is_ptt(void)
 	if (dev_type == HANDSET)
 	{		
 		//低电平表示按下
-		if (hal_gpio_input(HD_KEY_1) == 0)
+		if (hal_gpio_input(HD_KEY_1) == 0)	//HD_KEY_0
 		{
 			return PLAT_TRUE;
 		}

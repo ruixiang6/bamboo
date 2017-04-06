@@ -74,6 +74,15 @@ void app_handler(uint16_t event_type)
 		osel_event_clear(app_event_h, &object);
 		app_test_mac_handler();
 	}
+	else if (event_type & APP_EVENT_SHUTDOWN)
+	{
+		object = APP_EVENT_SHUTDOWN;
+		osel_event_clear(app_event_h, &object);		
+		DBG_TRACE("Power Off Pressed\r\n");
+		paintShutDownDlg();
+		osel_systick_delay(1000);
+		ControlIO_PowerOff();
+	}
 }
 
 void app_timeout_handler(void)

@@ -20,9 +20,9 @@ static void ControlIO_Output(uint8_t bitmap);
 void ControlIO_Init(void)
 {
 	dev_type = ControlIO_Get_Version();
-
-	POWER_ON();
+	
 	//ControlIO_DecPowerOn();
+    POWER_ON();
 
 	SHIFT_OUT_CLR_HIGH();
 	ControlIO_Output(0x0);
@@ -34,7 +34,7 @@ void ControlIO_Init(void)
 			ControlIO_Power(HD_GPS_POWER, PLAT_TRUE);
 			//ControlIO_Power(HD_PA2_POWER, PLAT_TRUE);
 			ControlIO_Power(HD_SPEAKER_POWER, PLAT_TRUE);			
-			ControlIO_Power(HD_AMBE1K_POWER, PLAT_TRUE);
+			//ControlIO_Power(HD_AMBE1K_POWER, PLAT_TRUE);
 			ControlIO_Power(HD_PHY_WIFI_POWER, PLAT_TRUE);
 			ControlIO_Power(HD_OLED_POWER, PLAT_TRUE);
 			break;
@@ -60,7 +60,7 @@ void ControlIO_DecPowerOn(void)
 		case HANDSET:
 			for (uint8_t i=0; i<150; i++)
 			{
-				if (hal_gpio_input(HD_KEY_5))
+				if (hal_gpio_input(HD_KEY_5))//Power Key
 				{
 					POWER_OFF();
 					DBG_TRACE("Power off\r\n");
@@ -68,7 +68,7 @@ void ControlIO_DecPowerOn(void)
 				}
 				delay_ms(20);
 			}
-			DBG_TRACE("Power on\r\n");
+			DBG_TRACE("Power on\r\n");            
 			break;
 		default:break;
 	}
@@ -106,6 +106,47 @@ uint8_t ControlIO_Power(uint8_t power, bool_t flag)
 
 	return bitmap;
 }
+
+uint8_t ControlIO_KeyStatus(void)
+{
+	uint8_t key = 0;
+
+	if (dev_type == HANDSET)
+	{
+		if (!hal_gpio_input(HD_KEY_0))
+		{
+			key |= PTT_KEY;
+		}
+
+		if (!hal_gpio_input(HD_KEY_1))
+		{
+			key |= LEFT_UP_KEY;
+		}
+		
+		if (!hal_gpio_input(HD_KEY_2))
+		{
+			key |= RIGHT_UP_KEY;
+		}
+
+		if (!hal_gpio_input(HD_KEY_3))
+		{
+			key |= LEFT_DOWN_KEY;
+		}
+
+		if (!hal_gpio_input(HD_KEY_4))
+		{
+			key |= MID_KEY;
+		}
+
+		if (!hal_gpio_input(HD_KEY_5))
+		{
+			key |= RIGHT_DOWN_KEY;
+		}	
+	}
+	
+	return key;
+}
+
 
 /*******************************************/
 //|07|06|05|04|03|02|01|00|

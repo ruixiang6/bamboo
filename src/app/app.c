@@ -136,6 +136,8 @@ OSEL_DECLARE_TASK(APP_TASK, param)
 		app_test_nwk.debug_flag = PLAT_FALSE;
 	}
 
+	paintBootPicDlg();
+
 	paintBootDlg();
 
 	while (1)
