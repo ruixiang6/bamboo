@@ -88,7 +88,7 @@ void app_timeout_handler(void)
 
 	app_test_nwk_proc(count);
 
-	app_msgt_proc(count);
+	//app_msgt_proc(count);
 }
 
 static void app_gps_handler(void)
