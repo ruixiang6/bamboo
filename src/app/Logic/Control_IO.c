@@ -21,7 +21,7 @@ void ControlIO_Init(void)
 {
 	dev_type = ControlIO_Get_Version();
 	
-	//ControlIO_DecPowerOn();
+	ControlIO_DecPowerOn();
     POWER_ON();
 
 	SHIFT_OUT_CLR_HIGH();
@@ -66,7 +66,7 @@ void ControlIO_DecPowerOn(void)
 					DBG_TRACE("Power off\r\n");
 					while(1);
 				}
-				delay_ms(20);
+				delay_ms(5);
 			}
 			DBG_TRACE("Power on\r\n");            
 			break;

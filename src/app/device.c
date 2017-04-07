@@ -3,7 +3,7 @@
 #include <string.h>
 #include <Control_IO.h>
 
-#define VERSION		"V1.1.0.0"
+#define VERSION		"V1.1.0.1"
 #define SAVE_SIZE	(sizeof(device_info_t)-sizeof(dev_time_t)-sizeof(dev_pos_t))
 
 #define DEVICE_BASE_ADDR		HAL_FLASH_BASE_ADDR

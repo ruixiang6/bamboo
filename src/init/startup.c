@@ -70,9 +70,9 @@ OSEL_DECLARE_TASK(INIT_TASK, param)
 	/* APP Task */
 	app_init();
 	/* NWK Task */
-	//nwk_init();
+	nwk_init();
     /* MAC Task */
-	//mac_init();
+	mac_init();
 	/* GUI */
    	GUI_Init();
 

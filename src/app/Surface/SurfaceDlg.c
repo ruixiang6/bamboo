@@ -6,7 +6,7 @@
 void paintBootPicDlg(void)
 {
 	GUI_DrawBitmap(&bmbootimg, 0, 0);
-    osel_systick_delay(5000);
+    osel_systick_delay(2000);
 }
 
 void paintBootDlg(void)
@@ -17,7 +17,7 @@ void paintBootDlg(void)
 	GUI_SetFont(&GUI_FontHZ_SimSun_12);
 	GUI_DispStringAt(FONT_ZZWCSSB, MAIN_LINE_X_TITLE, MAIN_LINE2_Y);
 	GUI_DispStringAt(p_device_info->version, MAIN_LINE_X_M, MAIN_LINE3_Y);
-	osel_systick_delay(3000);
+	osel_systick_delay(2000);
 }
 
 void paintShutDownDlg(void)

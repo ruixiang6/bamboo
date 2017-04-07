@@ -89,7 +89,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>M2S050	Microsemi M2S050</state>
+          <state>M2S120	Microsemi M2S120</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -149,7 +149,7 @@
         </option>
         <option>
           <name>GFPUDeviceSlave</name>
-          <state>M2S050	Microsemi M2S050</state>
+          <state>M2S120	Microsemi M2S120</state>
         </option>
         <option>
           <name>FPU2</name>
@@ -412,7 +412,7 @@
         </option>
         <option>
           <name>CCPosIndNoDynInit</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>IccLang</name>
@@ -1095,7 +1095,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>M2S050	Microsemi M2S050</state>
+          <state>M2S120	Microsemi M2S120</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -1155,7 +1155,7 @@
         </option>
         <option>
           <name>GFPUDeviceSlave</name>
-          <state>M2S050	Microsemi M2S050</state>
+          <state>M2S120	Microsemi M2S120</state>
         </option>
         <option>
           <name>FPU2</name>
