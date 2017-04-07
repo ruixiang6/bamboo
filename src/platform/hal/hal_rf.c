@@ -5,6 +5,7 @@
 #include <mss_gpio.h>
 #include <hal_rf.h>
 #include <hal_gpio.h>
+#include <Control_IO.h>
 
 const fp32_t OFDM_CAL_ARRAY_1400[] = {
 30.6, 29.6, 28.6, 27.6, 26.6, 25.6, 24.6, 23.6, 22.6, 21.6, 20.6, 19.6, 18.6, 17.6, 16.6, 15.6, 14.6, 13.6, 12.6, 11.6, 
@@ -29,22 +30,6 @@ const fp32_t OFDM_CAL_ARRAY_1300[] = {
 
 static hal_rf_param_t rf_param;
 static fp32_t *OFDM_CAL_ARRAY[HAL_RF_PARA_NUM];
-
-
-#define LMS_6002_PWR_EN		{\
-							hal_gpio_output(GPIO_RF_MODULE, 1);\
-							}
-
-#define LMS_6002_PWR_DIS	{\
-							hal_gpio_output(GPIO_RF_MODULE, 0);\
-							}
-
-#define PA_PWR_EN			{\
-							hal_gpio_output(GPIO_RF_PA, 1);\
-							}
-#define PA_PWR_DIS			{\
-							hal_gpio_output(GPIO_RF_PA, 0);\
-							}
 
 #define FAILED	PLAT_FALSE
 #define SUCCESS	PLAT_TRUE
@@ -238,13 +223,18 @@ void hal_rf_init(void)
     hal_rf_param_t *p_rf_param = PLAT_NULL;
 
 	hal_rf_param_init();
-	
-	PA_PWR_DIS;
-	
-	LMS_6002_PWR_DIS;
-	delay_ms(500);
-	LMS_6002_PWR_EN;	
-	delay_ms(200);
+		
+	if (dev_type == HANDSET)
+	{
+		//ControlIO_Power(HD_PA1_6002_POWER, PLAT_TRUE);
+		//delay_ms(500);
+		//ControlIO_Power(HD_PA1_6002_POWER, PLAT_FALSE);
+		//delay_ms(200);
+	}
+	else
+	{
+		//TODO
+	}
 	
 	/* reset fpga */
 	SYSREG->SOFT_RST_CR &= ~SYSREG_FPGA_SOFTRESET_MASK;
@@ -310,10 +300,6 @@ void hal_rf_init(void)
 	NVIC_ClearPendingIRQ(FabricIrq2_IRQn);
 	/*注册FIC2中断 */
     NVIC_EnableIRQ(FabricIrq2_IRQn);	
-	//给PA上电
-	PA_PWR_EN;
-	//配置完RF给灯上电
-	hal_gpio_output(GPIO_LED, 1);
 }
 
 void hal_rf_param_init(void)

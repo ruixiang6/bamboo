@@ -63,6 +63,5 @@ void nwk_init(void)
 	{
 		nwk_mesh_init();
 	}
-	DBG_TRACE("nwk_init ok\r\n");	
 }
 

@@ -48,11 +48,8 @@
 #define APP_MSGT_STYPE_CONFIG_GT_CLEAR		0xc
 #define APP_MSGT_STYPE_CONFIG_GT_CLEAR_ACK	0xd
 
-
-
 #define APP_MSGT_MY_PORT			60001
 #define APP_MSGT_DEFAULT_PORT		APP_MSGT_MY_PORT
-
 
 extern osel_task_t *app_task_h;
 extern osel_event_t *app_event_h;
@@ -133,12 +130,33 @@ extern app_test_mac_t app_test_mac;
 extern app_sniffer_t app_sniffer;
 extern app_msgt_t app_msgt;
 
+#include <GUI.h>
+#include <FontConst.h>
+
+#define MAIN_LINE_X_L			5
+#define MAIN_LINE_X_TITLE		20
+#define MAIN_LINE_X_M			35
+#define MAIN_LINE_X_R			80
+#define MAIN_LINE1_Y			8
+#define MAIN_LINE2_Y			21
+#define MAIN_LINE3_Y			34
+#define MAIN_LINE4_Y			46
+
+extern GUI_CONST_STORAGE GUI_BITMAP bmbootimg;
+extern GUI_FONT GUI_FontHZ_SimSun_12;
+
+void paintBootPicDlg(void);
+void paintBootDlg(void);
+void paintShutDownDlg(void);
+
 #define APP_EVENT_GPS			(1u<<0)
 #define APP_EVENT_UART			(1u<<1)
 #define APP_EVENT_AUDIO			(1u<<2)
 #define APP_EVENT_MSGT			(1u<<5)
 #define APP_EVENT_SNIFFER		(1u<<6)
 #define APP_EVENT_TEST_MAC		(1u<<7)
+#define APP_EVENT_SHUTDOWN		(1u<<8)
+
 
 void app_handler(uint16_t event_type);
 void app_timeout_handler(void);

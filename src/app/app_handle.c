@@ -77,6 +77,15 @@ void app_handler(uint16_t event_type)
 		osel_event_clear(app_event_h, &object);
 		app_test_mac_handler();
 	}
+	else if (event_type & APP_EVENT_SHUTDOWN)
+	{
+		object = APP_EVENT_SHUTDOWN;
+		osel_event_clear(app_event_h, &object);		
+		DBG_TRACE("Power Off Pressed\r\n");
+		paintShutDownDlg();
+		osel_systick_delay(1000);
+		ControlIO_PowerOff();
+	}
 }
 
 void app_timeout_handler(void)
@@ -88,7 +97,7 @@ void app_timeout_handler(void)
 
 	app_test_nwk_proc(count);
 
-	//app_msgt_proc(count);
+	app_msgt_proc(count);
 }
 
 static void app_gps_handler(void)
@@ -304,10 +313,11 @@ static void app_audio_in_proc(void)
 	uint8_t audio_send_buf[AUDIO_BUF_SIZE];	
 	static uint8_t loss_audio_cnt = 0;
 	static uint16_t send_audio_len = 0;
+	uint8_t rate = hal_audio_get_rate();
 
 	if (app_audio.mcb.m_ptt_state == AMBE_PTT_DOWN)
 	{
-		hal_audio_write((uint8_t *)slience_enforce_2400bps_voice);            
+		hal_audio_write((uint8_t *)&slience_enforce_voice[rate][0]);
 		//DBG_PRINTF("0");
         return;
 	}
@@ -359,7 +369,7 @@ static void app_audio_in_proc(void)
 		}
 		else
 		{
-			hal_audio_write((uint8_t *)slience_enforce_2400bps_voice);            
+			hal_audio_write((uint8_t *)&slience_enforce_voice[rate][0]);
 			loss_audio_cnt = 10;
             //DBG_PRINTF(".");
 		}

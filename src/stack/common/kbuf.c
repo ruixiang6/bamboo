@@ -1,8 +1,6 @@
 #include <platform.h>
 #include <kbuf.h>
 
-OSEL_DECL_CRITICAL();
-
 static pool_t *kbuf_big_pool;
 static pool_t *kbuf_small_pool;
 
@@ -19,7 +17,8 @@ bool_t kbuf_init(void)
 
 kbuf_t *kbuf_alloc(uint8_t type)
 {
-	kbuf_t *kbuf = PLAT_NULL;
+	OSEL_DECL_CRITICAL();
+	kbuf_t *kbuf = PLAT_NULL;	
 
 	OSEL_ENTER_CRITICAL();
 	
@@ -64,6 +63,7 @@ kbuf_t *kbuf_alloc(uint8_t type)
 
 bool_t kbuf_free(kbuf_t *kbuf)
 {
+	OSEL_DECL_CRITICAL();
 	
 	if (kbuf == PLAT_NULL) return PLAT_FALSE;
 
