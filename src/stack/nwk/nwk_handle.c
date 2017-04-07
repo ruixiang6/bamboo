@@ -123,8 +123,9 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 						== (*(uint32_t *)p_device_info->local_ip_addr & *(uint32_t *)p_device_info->local_netmask_addr))
 					{
 						//此处查询网关表，确定目的IP段的网关设备是否和本机有连接，如果有则改变源目的MAC，将数据转交
-						//ret = gateway_table_query(p_eth_hdr->dest.addr, (p_ip_hdr->dest.addr & *(uint32_t *)p_device_info->local_netmask_addr))
-						//if (ret == PLAT_FALSE) return 0;
+						ret = gateway_table_query(p_eth_hdr->dest.addr, (p_ip_hdr->dest.addr & *(uint32_t *)p_device_info->local_netmask_addr));
+						if (ret == PLAT_FALSE) return 0;
+						/*
 						//目前测试，暂时直接填写
 						p_eth_hdr->dest.addr[0] = 0x4c;
 						p_eth_hdr->dest.addr[1] = 0xc0;
@@ -132,6 +133,7 @@ uint8_t nwk_pkt_transfer(uint8_t src_type, kbuf_t *kbuf, packet_info_t *pakcet_i
 						p_eth_hdr->dest.addr[3] = 0xc;
 						p_eth_hdr->dest.addr[4] = 0xd1;
 						p_eth_hdr->dest.addr[5] = 0x9b;
+						*/
 						
 						p_eth_hdr->src.addr[0] = p_device_info->local_eth_mac_addr[0];
 						p_eth_hdr->src.addr[1] = p_device_info->local_eth_mac_addr[1];

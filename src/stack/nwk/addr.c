@@ -333,50 +333,15 @@ bool_t gateway_table_query(uint8_t *p_addr, uint32_t net_segment)
 }
 
 
-void gateway_table_add(uint8_t *p_addr, uint32_t net_segment)
+void gateway_table_get(uint8_t *p)
 {
-	uint8_t i = 0;
-
-	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
-	{
-		if ((gateway_table.item[i].net_segment == net_segment) || (gateway_table.item[i].net_segment == 0))
-		{
-			gateway_table.item[i].net_segment = net_segment;
-			gateway_table.item[i].addr[0] = p_addr[0];
-			gateway_table.item[i].addr[1] = p_addr[1];
-			gateway_table.item[i].addr[2] = p_addr[2];
-			gateway_table.item[i].addr[3] = p_addr[3];
-			gateway_table.item[i].addr[4] = p_addr[4];
-			gateway_table.item[i].addr[5] = p_addr[5];
-
-			break;
-		}
-	}
-
-	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
+	mem_cpy(p, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
 }
 
 
-void gateway_table_del(uint32_t net_segment)
+void gateway_table_set(uint8_t *p)
 {
-	uint8_t i = 0;
-
-	for (i = 0; i < GATEWAY_TABLE_MAX_NUM; i++)
-	{
-		if (gateway_table.item[i].net_segment == net_segment)
-		{
-			gateway_table.item[i].net_segment = 0;
-			gateway_table.item[i].addr[0] = 0;
-			gateway_table.item[i].addr[1] = 0;
-			gateway_table.item[i].addr[2] = 0;
-			gateway_table.item[i].addr[3] = 0;
-			gateway_table.item[i].addr[4] = 0;
-			gateway_table.item[i].addr[5] = 0;
-
-			break;
-		}
-	}
-
+	mem_cpy((uint8_t *)&gateway_table, p, sizeof(gateway_table_t));
 	hal_flash_write(GATEWAY_TABLE_SAVE_ADDR, (uint8_t *)&gateway_table, sizeof(gateway_table_t));
 }
 

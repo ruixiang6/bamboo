@@ -67,8 +67,8 @@ extern void addr_table_query_by_ip(uint8_t *p_ip, uint8_t *p_addr, uint8_t *p_id
 extern void addr_table_get_mount(uint8_t id, uint8_t *p);
 extern void addr_table_init(void);
 extern bool_t gateway_table_query(uint8_t *p_addr, uint32_t net_segment);
-extern void gateway_table_add(uint8_t *p_addr, uint32_t net_segment);
-extern void gateway_table_del(uint32_t net_segment);
+extern void gateway_table_get(uint8_t *p);
+extern void gateway_table_set(uint8_t *p);
 extern void gateway_table_clear(void);
 extern void gateway_table_init(void);
 extern void broadcast_rcv_table_add(uint8_t src_id, uint8_t frame_seq);

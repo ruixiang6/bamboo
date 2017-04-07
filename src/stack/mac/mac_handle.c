@@ -466,6 +466,12 @@ static bool_t mac_ofdm_frame_parse(kbuf_t *kbuf)
 		OSEL_EXIT_CRITICAL();
 	}
 #endif
+
+	if (p_mac_frm_head->mesh_id != GET_MESH_ID(p_device_info->id))
+	{
+		kbuf_free(kbuf);
+		return PLAT_FALSE;
+	}
 	
 	//如果收到PROB的信息，则不用判断地址，可能是一个拼帧，需要复制一份，上传给设备
 	if (p_mac_frm_head->frm_ctrl.probe_flag == PROBE)
